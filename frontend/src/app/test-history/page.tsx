@@ -10,47 +10,35 @@ import {
   TableHeader, TableRow,
 } from "@/components/ui/table";
 import { buttonVariants } from "@/components/ui/button";
+import { MiniStatCard } from "@/components/shared/mini-stat-card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { useFilteredList } from "@/hooks/use-filtered-list";
+import { formatDate, formatTime } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import {
-  CheckCircle2, XCircle, Clock, Globe,
-  Eye, Play, Terminal, Filter,
+  CheckCircle2, XCircle, Globe, Eye,
+  Play, Terminal, Filter,
 } from "lucide-react";
-import { useState } from "react";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
 
 type FilterStatus = "all" | "passed" | "failed";
 
 export default function TestHistoryPage() {
   const { testResults } = useBugContext();
-  const [filter, setFilter] = useState<FilterStatus>("all");
-  const [urlFilter, setUrlFilter] = useState("");
 
-  // Get unique URLs for the URL grouping
-  const uniqueUrls = [...new Set(testResults.map((t) => t.url))];
-
-  // Filter results
-  const filtered = testResults.filter((t) => {
-    if (filter !== "all" && t.status !== filter) return false;
-    if (urlFilter && !t.url.toLowerCase().includes(urlFilter.toLowerCase())) return false;
-    return true;
+  const {
+    filtered,
+    statusFilter,
+    setStatusFilter,
+    searchQuery,
+    setSearchQuery,
+  } = useFilteredList(testResults, {
+    getStatus: (t) => t.status,
+    getSearchText: (t) => t.url,
   });
 
-  // Group by URL
+  const uniqueUrls = [...new Set(testResults.map((t) => t.url))];
+
+  // Group filtered results by URL
   const groupedByUrl = uniqueUrls.reduce<Record<string, typeof testResults>>((acc, url) => {
     const tests = filtered.filter((t) => t.url === url);
     if (tests.length > 0) acc[url] = tests;
@@ -74,39 +62,9 @@ export default function TestHistoryPage() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 py-3 px-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-              <Terminal className="h-5 w-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{testResults.length}</p>
-              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider font-semibold">Total Runs</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-green-500/20">
-          <CardContent className="flex items-center gap-3 py-3 px-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">{passedCount}</p>
-              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider font-semibold">Passed</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-red-500/20">
-          <CardContent className="flex items-center gap-3 py-3 px-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
-              <XCircle className="h-5 w-5 text-red-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-600">{failedCount}</p>
-              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider font-semibold">Failed</p>
-            </div>
-          </CardContent>
-        </Card>
+        <MiniStatCard icon={Terminal} value={testResults.length} label="Total Runs" color="blue" />
+        <MiniStatCard icon={CheckCircle2} value={passedCount} label="Passed" color="green" borderColor="border-green-500/20" />
+        <MiniStatCard icon={XCircle} value={failedCount} label="Failed" color="red" borderColor="border-red-500/20" />
       </div>
 
       {/* Filters */}
@@ -120,9 +78,9 @@ export default function TestHistoryPage() {
               {(["all", "passed", "failed"] as FilterStatus[]).map((s) => (
                 <button
                   key={s}
-                  onClick={() => setFilter(s)}
+                  onClick={() => setStatusFilter(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 capitalize ${
-                    filter === s
+                    statusFilter === s
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-card text-muted-foreground border-border hover:bg-accent"
                   }`}
@@ -135,8 +93,8 @@ export default function TestHistoryPage() {
             <input
               type="text"
               placeholder="Filter by URL..."
-              value={urlFilter}
-              onChange={(e) => setUrlFilter(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="px-3 py-1.5 rounded-lg text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-64"
             />
           </div>
@@ -146,10 +104,8 @@ export default function TestHistoryPage() {
       {/* Grouped results */}
       {Object.keys(groupedByUrl).length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Terminal className="h-8 w-8 mx-auto mb-3 opacity-40" />
-            <p className="font-medium">No test runs found</p>
-            <p className="text-sm mt-1">Run a test to see results here.</p>
+          <CardContent>
+            <EmptyState icon={Terminal} title="No test runs found" description="Run a test to see results here." />
           </CardContent>
         </Card>
       ) : (

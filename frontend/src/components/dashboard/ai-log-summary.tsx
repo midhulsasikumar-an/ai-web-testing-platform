@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TerminalLog } from "@/components/shared/terminal-log";
 import { Terminal } from "lucide-react";
 
 const logEntries = [
@@ -13,20 +14,6 @@ const logEntries = [
   { time: "10:33:04", level: "warn" as const, msg: "2 outdated packages detected with known CVEs: lodash@4.17.15, axios@0.21.0" },
   { time: "10:33:08", level: "success" as const, msg: "Full scan complete. 4 actionable items generated." },
 ];
-
-const levelColors: Record<string, string> = {
-  info: "log-info",
-  warn: "log-warn",
-  error: "log-error",
-  success: "log-success",
-};
-
-const levelIcons: Record<string, string> = {
-  info: "ℹ",
-  warn: "⚠",
-  error: "✕",
-  success: "✓",
-};
 
 export function AILogSummary() {
   return (
@@ -43,25 +30,7 @@ export function AILogSummary() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg bg-[#0d1117] p-4 max-h-56 overflow-y-auto terminal-log">
-          {logEntries.map((entry, i) => (
-            <div key={i} className="flex gap-2 py-0.5 leading-relaxed">
-              <span className="log-timestamp shrink-0 select-none">
-                [{entry.time}]
-              </span>
-              <span className={`shrink-0 w-3 text-center select-none ${levelColors[entry.level]}`}>
-                {levelIcons[entry.level]}
-              </span>
-              <span className={levelColors[entry.level]}>
-                {entry.msg}
-              </span>
-            </div>
-          ))}
-          <div className="flex gap-2 py-0.5 mt-1">
-            <span className="log-timestamp select-none">[10:33:12]</span>
-            <span className="log-info animate-pulse">▌</span>
-          </div>
-        </div>
+        <TerminalLog entries={logEntries} maxHeight="max-h-56" showCursor />
       </CardContent>
     </Card>
   );

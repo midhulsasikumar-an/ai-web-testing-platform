@@ -1,4 +1,4 @@
-import { Bug, TestResult, AIFinding, LogEntry } from "./types";
+import type { Bug, TestResult, AIFinding, LogEntry } from "@/types";
 
 // ── Seed bugs ──────────────────────────────────────────────────────
 

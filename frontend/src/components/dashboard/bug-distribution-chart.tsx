@@ -3,20 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart } from "lucide-react";
 import { useBugContext } from "@/context/bug-context";
-
-const severityColors: Record<string, string> = {
-  critical: "#ef4444",
-  high: "#f97316",
-  medium: "#eab308",
-  low: "#3b82f6",
-};
-
-const severityLabels: Record<string, string> = {
-  critical: "Critical",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
+import { SEVERITY_CHART_COLORS, SEVERITY_LABELS } from "@/lib/constants";
 
 export function BugDistributionChart() {
   const { bugs } = useBugContext();
@@ -80,7 +67,7 @@ export function BugDistributionChart() {
                     cy={cy}
                     r={r}
                     fill="none"
-                    stroke={severityColors[severity]}
+                    stroke={SEVERITY_CHART_COLORS[severity]}
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${dashLength} ${dashGap}`}
                     strokeDashoffset={-offset}
@@ -109,10 +96,10 @@ export function BugDistributionChart() {
                   <div className="flex items-center gap-2">
                     <div
                       className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: severityColors[severity] }}
+                      style={{ backgroundColor: SEVERITY_CHART_COLORS[severity] }}
                     />
                     <span className="text-xs font-medium">
-                      {severityLabels[severity]}
+                      {SEVERITY_LABELS[severity]}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

@@ -1,19 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Bug } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import type { Bug } from "@/types";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead,
+  TableHeader, TableRow,
 } from "@/components/ui/table";
-import { severityColor, statusColor, formatDate } from "./bug-utils";
+import { SeverityBadge } from "@/components/shared/severity-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { AvatarCircle } from "@/components/shared/avatar-circle";
+import { MiniStatCard } from "@/components/shared/mini-stat-card";
+import { formatDate } from "@/lib/formatters";
 import { Eye, AlertTriangle, CheckCircle2, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -76,16 +75,12 @@ export function BugTable({ bugs }: BugTableProps) {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={severityColor(bug.severity)}>
-                      {bug.severity}
-                    </Badge>
+                    <SeverityBadge severity={bug.severity} />
                   </TableCell>
                   <TableCell>
                     {bug.assignedTo ? (
                       <div className="flex items-center gap-1.5">
-                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-[0.55rem] font-bold shrink-0">
-                          {bug.assignedTo.split(" ").map(n => n[0]).join("")}
-                        </div>
+                        <AvatarCircle name={bug.assignedTo} size="sm" />
                         <span className="text-xs text-muted-foreground truncate max-w-[80px]">
                           {bug.assignedTo}
                         </span>
@@ -95,9 +90,7 @@ export function BugTable({ bugs }: BugTableProps) {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className={statusColor(bug.status)}>
-                      {bug.status}
-                    </Badge>
+                    <StatusBadge status={bug.status} />
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(bug.createdAt)}
@@ -116,39 +109,9 @@ export function BugTable({ bugs }: BugTableProps) {
 
       {/* Summary Stats Footer */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-red-500/20">
-          <CardContent className="flex items-center gap-3 py-3 px-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
-              <Flame className="h-5 w-5 text-red-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
-              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider font-semibold">Critical Open</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-green-500/20">
-          <CardContent className="flex items-center gap-3 py-3 px-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">{fixRate}%</p>
-              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider font-semibold">Fix Rate</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-amber-500/20">
-          <CardContent className="flex items-center gap-3 py-3 px-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-amber-600">{activeCount}</p>
-              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider font-semibold">Active</p>
-            </div>
-          </CardContent>
-        </Card>
+        <MiniStatCard icon={Flame} value={criticalCount} label="Critical Open" color="red" borderColor="border-red-500/20" />
+        <MiniStatCard icon={CheckCircle2} value={`${fixRate}%`} label="Fix Rate" color="green" borderColor="border-green-500/20" />
+        <MiniStatCard icon={AlertTriangle} value={activeCount} label="Active" color="amber" borderColor="border-amber-500/20" />
       </div>
     </div>
   );
