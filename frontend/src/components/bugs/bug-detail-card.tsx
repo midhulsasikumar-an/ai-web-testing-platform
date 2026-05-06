@@ -1,9 +1,13 @@
 "use client";
 
-import { Bug } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import type { Bug } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { severityColor, statusColor, formatDate } from "./bug-utils";
+import { SeverityBadge } from "@/components/shared/severity-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { AvatarCircle } from "@/components/shared/avatar-circle";
+import { MetadataField } from "@/components/shared/metadata-field";
+import { TerminalLog } from "@/components/shared/terminal-log";
+import { formatDate, formatTime24 } from "@/lib/formatters";
 import {
   ExternalLink, Calendar, AlertTriangle, Link2,
   Terminal, Monitor, User, Tag, Clock,
@@ -27,17 +31,12 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
                 <CardTitle className="text-xl">{bug.title}</CardTitle>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={severityColor(bug.severity)}>
-                  {bug.severity}
-                </Badge>
-                <Badge variant="secondary" className={statusColor(bug.status)}>
-                  {bug.status}
-                </Badge>
+                <SeverityBadge severity={bug.severity} />
+                <StatusBadge status={bug.status} />
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Meta row */}
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" />
@@ -45,24 +44,15 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
               </div>
               <div className="flex items-center gap-1.5">
                 <Link2 className="h-3.5 w-3.5" />
-                <a
-                  href={bug.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline flex items-center gap-1 text-primary"
-                >
+                <a href={bug.url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1 text-primary">
                   {bug.url}
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
             </div>
-
-            {/* Description */}
             <div>
               <h3 className="text-sm font-semibold mb-2">Description</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {bug.description}
-              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{bug.description}</p>
             </div>
           </CardContent>
         </Card>
@@ -82,9 +72,7 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                     {i + 1}
                   </span>
-                  <span className="text-muted-foreground leading-relaxed pt-0.5">
-                    {step}
-                  </span>
+                  <span className="text-muted-foreground leading-relaxed pt-0.5">{step}</span>
                 </li>
               ))}
             </ol>
@@ -101,37 +89,13 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg bg-[#0d1117] p-4 max-h-64 overflow-y-auto terminal-log">
-                {bug.logs.map((entry, i) => {
-                  const levelColors: Record<string, string> = {
-                    info: "log-info",
-                    warn: "log-warn",
-                    error: "log-error",
-                    success: "log-success",
-                  };
-                  const levelIcons: Record<string, string> = {
-                    info: "ℹ",
-                    warn: "⚠",
-                    error: "✕",
-                    success: "✓",
-                  };
-                  const time = new Date(entry.timestamp).toLocaleTimeString("en-US", {
-                    hour12: false,
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  });
-                  return (
-                    <div key={i} className="flex gap-2 py-0.5 leading-relaxed">
-                      <span className="log-timestamp shrink-0 select-none">[{time}]</span>
-                      <span className={`shrink-0 w-3 text-center select-none ${levelColors[entry.level]}`}>
-                        {levelIcons[entry.level]}
-                      </span>
-                      <span className={levelColors[entry.level]}>{entry.message}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              <TerminalLog
+                entries={bug.logs.map((entry) => ({
+                  time: formatTime24(entry.timestamp),
+                  level: entry.level,
+                  msg: entry.message,
+                }))}
+              />
             </CardContent>
           </Card>
         )}
@@ -169,76 +133,41 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
             <CardTitle className="text-sm font-semibold">Bug Metadata</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Assigned To */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                <User className="h-3 w-3" /> Assigned To
-              </div>
+            <MetadataField icon={User} label="Assigned To">
               {bug.assignedTo ? (
                 <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-[0.55rem] font-bold">
-                    {bug.assignedTo.split(" ").map(n => n[0]).join("")}
-                  </div>
+                  <AvatarCircle name={bug.assignedTo} size="md" />
                   <span className="text-sm font-medium">{bug.assignedTo}</span>
                 </div>
               ) : (
                 <span className="text-sm text-muted-foreground">Unassigned</span>
               )}
-            </div>
+            </MetadataField>
 
-            {/* Priority */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                <Tag className="h-3 w-3" /> Priority
-              </div>
-              <Badge variant="outline" className={severityColor(bug.severity)}>
-                {bug.severity}
-              </Badge>
-            </div>
+            <MetadataField icon={Tag} label="Priority">
+              <SeverityBadge severity={bug.severity} />
+            </MetadataField>
 
-            {/* Status */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                <Clock className="h-3 w-3" /> Status
-              </div>
-              <Badge variant="secondary" className={statusColor(bug.status)}>
-                {bug.status}
-              </Badge>
-            </div>
+            <MetadataField icon={Clock} label="Status">
+              <StatusBadge status={bug.status} />
+            </MetadataField>
 
-            {/* Created */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                <Calendar className="h-3 w-3" /> Created
-              </div>
+            <MetadataField icon={Calendar} label="Created">
               <p className="text-sm">{formatDate(bug.createdAt)}</p>
-            </div>
+            </MetadataField>
 
-            {/* Environment */}
             {bug.environment && (
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                  <Monitor className="h-3 w-3" /> Environment
-                </div>
+              <MetadataField icon={Monitor} label="Environment">
                 <p className="text-sm text-muted-foreground">{bug.environment}</p>
-              </div>
+              </MetadataField>
             )}
 
-            {/* URL */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                <Link2 className="h-3 w-3" /> URL
-              </div>
-              <a
-                href={bug.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-primary hover:underline flex items-center gap-1 break-all"
-              >
+            <MetadataField icon={Link2} label="URL">
+              <a href={bug.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 break-all">
                 {bug.url}
                 <ExternalLink className="h-3 w-3 shrink-0" />
               </a>
-            </div>
+            </MetadataField>
           </CardContent>
         </Card>
       </div>

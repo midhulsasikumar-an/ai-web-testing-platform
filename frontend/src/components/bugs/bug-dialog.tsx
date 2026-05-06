@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Bug, BugStatus } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import type { Bug, BugStatus } from "@/types";
+import { SeverityBadge } from "@/components/shared/severity-badge";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader,
   DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { severityColor, statusColor } from "./bug-utils";
+import { statusColor } from "@/lib/constants";
 import { useBugContext } from "@/context/bug-context";
 
 interface BugDialogProps {
@@ -44,7 +44,7 @@ export function BugDialog({ bug }: BugDialogProps) {
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium w-20">Severity:</span>
-              <Badge variant="outline" className={severityColor(bug.severity)}>{bug.severity}</Badge>
+              <SeverityBadge severity={bug.severity} />
             </div>
             <div className="space-y-2">
               <span className="text-sm font-medium">Status:</span>

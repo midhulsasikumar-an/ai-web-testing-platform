@@ -1,18 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Bug } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import type { Bug } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead,
+  TableHeader, TableRow,
 } from "@/components/ui/table";
-import { severityColor, statusColor, formatDate } from "@/components/bugs/bug-utils";
+import { SeverityBadge } from "@/components/shared/severity-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { AvatarCircle } from "@/components/shared/avatar-circle";
+import { formatDate } from "@/lib/formatters";
 import { Clock } from "lucide-react";
 
 interface RecentBugsProps {
@@ -65,21 +63,15 @@ export function RecentBugs({ bugs }: RecentBugsProps) {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={severityColor(bug.severity)}>
-                        {bug.severity}
-                      </Badge>
+                      <SeverityBadge severity={bug.severity} />
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={statusColor(bug.status)}>
-                        {bug.status}
-                      </Badge>
+                      <StatusBadge status={bug.status} />
                     </TableCell>
                     <TableCell>
                       {bug.assignedTo && (
                         <div className="flex items-center gap-1.5">
-                          <div className="h-5 w-5 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-[0.5rem] font-bold shrink-0">
-                            {bug.assignedTo.split(" ").map(n => n[0]).join("")}
-                          </div>
+                          <AvatarCircle name={bug.assignedTo} size="xs" />
                           <span className="text-xs text-muted-foreground truncate max-w-[70px]">
                             {bug.assignedTo.split(" ")[0]}
                           </span>
