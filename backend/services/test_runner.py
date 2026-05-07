@@ -1,3 +1,4 @@
+import os
 from playwright.sync_api import sync_playwright
 from backend.services.test_cases.error_page_test import test_error_page
 from backend.services.test_cases.page_load import test_page_load
@@ -9,10 +10,15 @@ from backend.services.test_cases.button_test import test_buttons
 from backend.services.test_cases.console_test import test_console_errors
 from backend.services.test_cases.content_check import test_content
 from backend.services.test_cases.performance_check import test_performance
+from backend.models.schema import TestRequest
 
 def run_test(url: str, test_id: str):
     results = []
-    screenshot_path = None
+    screenshots = {
+            "home": None,
+            "button_interactions": [],
+            "error": None
+        }
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -20,18 +26,19 @@ def run_test(url: str, test_id: str):
 
         page.goto(url, timeout=30000, wait_until="domcontentloaded")
 
+        folder_path = f"screenshots/{test_id}"
+        os.makedirs(folder_path, exist_ok=True)
         # ---- STEP 1: Initial viewport ----
-        test_result, screenshot_path = test_page_load( test_id, page)
-        results.append(test_result)
+        results.append(test_page_load(page, folder_path, test_id, screenshots))
 
         results.append(test_title(page))
 
         # ---- Check for error page before proceeding ----
-        error_result = test_error_page(page)
+        error_result = test_error_page(page, folder_path, test_id, screenshots)
         results.append(error_result)
 
         if error_result["status"] == "fail":
-            return results, screenshot_path
+            return results, screenshots
 
         # ---- STEP 2: Scroll in stages ----
         for i in range(3):
@@ -48,11 +55,11 @@ def run_test(url: str, test_id: str):
         results.append(test_critical_elements(page))
         results.append(test_links(page))
         results.append(test_input_fields(page))
-        results.append(test_buttons(page))
+        results.append(test_buttons(page,folder_path, test_id, screenshots))
         results.append(test_console_errors(page))
         results.append(test_content(page))
         results.append(test_performance(page))
 
         browser.close()
 
-    return results, screenshot_path
+    return results, screenshots
