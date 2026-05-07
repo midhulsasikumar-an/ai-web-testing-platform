@@ -12,13 +12,13 @@ def generate_report(score, summary, insights):
         condition = "facing significant issues that impact usability and reliability"
 
     report = f"""
-                Website Analysis Report
+Website Analysis Report
 
-                Overall Health Score: {score}/100
+Overall Health Score: {score}/100
 
-                The website is {condition}.
-                Out of {total} tests, {passed} passed and {failed} failed.
-                """
+The website is {condition}.
+Out of {total} tests, {passed} passed and {failed} failed.
+"""
 
     # --- Issues ---
     if insights["critical"]:

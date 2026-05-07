@@ -1,14 +1,16 @@
 import os
 
-def test_page_load(test_id: str, page):
+def test_page_load(page, folder_path, test_id: str,screenshots):
     try:
         page.wait_for_timeout(3000) #small buffer to ensure all resources are loaded
 
-        os.makedirs("screenshots", exist_ok=True)
-        screenshot_path = f"screenshots/{test_id}.png"
-        page.screenshot(path=screenshot_path)
+        home_path = f"{folder_path}/home.png"
 
-        return {"test": "Page Load", "status": "pass"}, screenshot_path
+        page.screenshot(path=home_path)
+
+        screenshots["home"] = f"/screenshots/{test_id}/home.png"
+
+        return {"test": "Page Load", "status": "pass"}
 
     except Exception as e:
         return {"test": "Page Load", "status": "fail", "error": str(e)}, None
