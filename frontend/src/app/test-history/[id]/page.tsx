@@ -7,22 +7,22 @@ import { useBugContext } from "@/context/bug-context";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { TerminalLog } from "@/components/shared/terminal-log";
-import { SeverityBadge } from "@/components/shared/severity-badge";
+import { formatDateLong, formatTime } from "@/lib/formatters";
 import { MetadataField } from "@/components/shared/metadata-field";
 import { EmptyState } from "@/components/shared/empty-state";
-import { formatDateLong, formatTime, formatDuration } from "@/lib/formatters";
 import { TEST_TYPE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, CheckCircle2, XCircle, Globe,
-  Clock, Terminal, Bug, ExternalLink, Play,
-  Calendar,
+  Clock, Terminal, ExternalLink, Play,
+  Calendar,AlertTriangle,
+  Sparkles,ShieldAlert,Lightbulb,
 } from "lucide-react";
+
 
 export default function TestDetailPage() {
   const params = useParams();
-  const { getTestById, getBugById } = useBugContext();
+  const { getTestById } = useBugContext();
   const test = getTestById(params.id as string);
 
   if (!test) {
@@ -38,9 +38,8 @@ export default function TestDetailPage() {
     );
   }
 
-  const typeConfig = TEST_TYPE_CONFIG[test.testType || "full"];
+  const typeConfig = TEST_TYPE_CONFIG[test.test_type || "full"];
   const TypeIcon = typeConfig.icon;
-  const linkedBug = test.bugId ? getBugById(test.bugId) : null;
 
   return (
     <>
@@ -60,16 +59,16 @@ export default function TestDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Result banner */}
           <Card className={
-            test.status === "passed"
+            test.overall_status === "pass"
               ? "border-green-500/30 bg-gradient-to-r from-green-50/50 to-transparent"
               : "border-red-500/30 bg-gradient-to-r from-red-50/50 to-transparent"
           }>
             <CardContent className="pt-6">
               <div className="flex items-start gap-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-xl shrink-0 ${
-                  test.status === "passed" ? "bg-green-100" : "bg-red-100"
+                  test.overall_status === "pass" ? "bg-green-100" : "bg-red-100"
                 }`}>
-                  {test.status === "passed" ? (
+                  {test.overall_status === "pass" ? (
                     <CheckCircle2 className="h-6 w-6 text-green-600" />
                   ) : (
                     <XCircle className="h-6 w-6 text-red-600" />
@@ -78,66 +77,123 @@ export default function TestDetailPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-xl font-bold">
-                      Test {test.status === "passed" ? "Passed" : "Failed"}
+                      Test {test.overall_status === "pass" ? "Passed" : "Failed"}
                     </h2>
-                    <Badge variant={test.status === "passed" ? "secondary" : "destructive"}>
-                      {test.status}
+                    <Badge variant={test.overall_status === "pass" ? "secondary" : "destructive"}>
+                      {test.overall_status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">{test.details}</p>
+                  <div className="mt-3 rounded-lg border border-border bg-background/60 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold">AI Executive Summary</p>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {test.ai_summary || "No AI summary available"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Stream Logs */}
           <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-primary" />
-                  Execution Log
-                </CardTitle>
-                <span className="text-[0.65rem] text-muted-foreground font-mono">
-                  {test.streamLogs?.length || 0} entries
-                </span>
-              </div>
+            <CardHeader>
+              <CardTitle>Test Results</CardTitle>
             </CardHeader>
-            <CardContent>
-              {test.streamLogs && test.streamLogs.length > 0 ? (
-                <TerminalLog entries={test.streamLogs} maxHeight="max-h-96" />
-              ) : (
-                <div className="rounded-lg bg-[#0d1117] p-8">
-                  <EmptyState icon={Terminal} title="No stream logs available for this test run." />
+
+            <CardContent className="space-y-3">
+              {test.results?.map((result, index) => (
+                <div
+                  key={index}
+                  className="flex items-start justify-between border rounded-lg p-3"
+                >
+                  <div>
+                    <p className="font-medium">{result.test}</p>
+
+                    {result.details && (
+                      <p className="text-sm text-muted-foreground">
+                        {typeof result.details === "string"
+                          ? result.details
+                          : JSON.stringify(result.details)}
+                      </p>
+                    )}
+                  </div>
+
+                  <Badge
+                    variant={
+                      result.status === "pass"
+                        ? "secondary"
+                        : result.status === "fail"
+                        ? "destructive"
+                        : "outline"
+                    }
+                  >
+                    {result.status}
+                  </Badge>
                 </div>
-              )}
+              ))}
             </CardContent>
           </Card>
-
-          {/* Linked Bug */}
-          {linkedBug && (
-            <Card className="border-red-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Bug className="h-4 w-4 text-red-500" />
-                  Bug Created from This Test
+          {/* Priority Issues */}
+          {test.priority_issues && test.priority_issues.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-red-500" />
+                  Priority Issues
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Link
-                  href={`/bugs/${linkedBug.id}`}
-                  className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors group"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-red-500 font-medium">{linkedBug.id}</span>
-                      <SeverityBadge severity={linkedBug.severity} />
+
+              <CardContent className="space-y-3">
+                {test.priority_issues.map((issue, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-border p-4 bg-muted/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium">{issue.issue}</p>
+
+                      <Badge
+                        variant={
+                          issue.level === "critical"
+                            ? "destructive"
+                            : issue.level === "moderate"
+                            ? "outline"
+                            : "secondary"
+                        }
+                      >
+                        {issue.level}
+                      </Badge>
                     </div>
-                    <p className="text-sm font-medium mt-1 group-hover:underline">{linkedBug.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{linkedBug.description}</p>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recommendations */}
+          {test.recommendations && test.recommendations.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                  AI Recommendations
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                {test.recommendations.map((recommendation, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-border p-4 bg-muted/20"
+                  >
+                    <p className="text-sm leading-relaxed">
+                      {recommendation}
+                    </p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}
@@ -151,7 +207,7 @@ export default function TestDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <MetadataField icon={Terminal} label="Test ID">
-                <p className="text-sm font-mono font-medium">{test.id}</p>
+                <p className="text-sm font-mono font-medium">{test.test_id}</p>
               </MetadataField>
 
               <MetadataField icon={Globe} label="Target URL">
@@ -168,32 +224,94 @@ export default function TestDetailPage() {
                 </div>
               </MetadataField>
 
-              <MetadataField icon={Clock} label="Duration">
-                <p className="text-sm font-mono font-medium">{formatDuration(test.duration)}</p>
+              <MetadataField icon={Clock} label="Health Score">
+                <p className="text-sm font-mono font-medium">
+                  {test.health_score || 0}/100
+                </p>
               </MetadataField>
 
               <MetadataField icon={Calendar} label="Timestamp">
                 <div className="text-sm">
-                  <p>{formatDateLong(test.timestamp)}</p>
-                  <p className="text-xs text-muted-foreground">{formatTime(test.timestamp)}</p>
+                  <p>{formatDateLong(test.created_at || "")}</p>
+                  <p className="text-xs text-muted-foreground">{formatTime(test.created_at || "")}</p>
                 </div>
               </MetadataField>
 
-              <MetadataField icon={test.status === "passed" ? CheckCircle2 : XCircle} label="Result">
-                <Badge variant={test.status === "passed" ? "secondary" : "destructive"}>
-                  {test.status}
+              <MetadataField icon={test.overall_status === "pass" ? CheckCircle2 : XCircle} label="Result">
+                <Badge variant={test.overall_status === "pass" ? "secondary" : "destructive"}>
+                  {test.overall_status}
                 </Badge>
               </MetadataField>
-
-              {test.bugId && (
-                <MetadataField icon={Bug} label="Linked Bug">
-                  <Link href={`/bugs/${test.bugId}`} className="text-sm text-red-500 font-mono font-medium hover:underline">
-                    {test.bugId}
-                  </Link>
-                </MetadataField>
-              )}
             </CardContent>
           </Card>
+          {/* AI Report */}
+          {test.report && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-primary" />
+                  AI Detailed Report
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent>
+                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                  <p className="text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                    {test.report}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {test.screenshot?.home && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">
+                Homepage Screenshot
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <a
+                href={`http://localhost:8000${test.screenshot.home}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={`http://localhost:8000${test.screenshot.home}`}
+                  alt="Homepage Screenshot"
+                  className="rounded-lg border border-border hover:opacity-90 transition"
+                />
+              </a>
+            </CardContent>
+          </Card>
+        )}
+        {test.screenshot?.button_interactions?.length && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">
+              Button Interaction Screenshots
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {test.screenshot.button_interactions.map((img, index) => (
+              <a
+                key={index}
+                href={`http://localhost:8000${img}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={`http://localhost:8000${img}`}
+                  alt={`Interaction ${index + 1}`}
+                  className="rounded-lg border border-border hover:opacity-90 transition"
+                />
+              </a>
+            ))}
+          </CardContent>
+        </Card>
+        )}
         </div>
       </div>
     </>

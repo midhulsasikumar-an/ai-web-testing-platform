@@ -13,14 +13,15 @@ export function TestRunner() {
   const {
     url,
     githubUrl,
+    projectName,
     testType,
     loading,
     result,
     streamLines,
-    aiFindings,
     streamRef,
     setUrl,
     setGithubUrl,
+    setProjectName,
     setTestType,
     runTest,
   } = useTestRunner();
@@ -34,6 +35,8 @@ export function TestRunner() {
           onUrlChange={setUrl}
           githubUrl={githubUrl}
           onGithubUrlChange={setGithubUrl}
+          projectName={projectName}
+          onProjectNameChange={setProjectName}
           testType={testType}
           onTestTypeChange={setTestType}
           loading={loading}
@@ -65,9 +68,9 @@ export function TestRunner() {
         {result && <TestResultCard result={result} />}
       </div>
 
-      {/* Right column: AI Findings */}
+      {/* Right column: Backend AI insights */}
       <div className="lg:col-span-2 space-y-4">
-        <AIFindingsPanel findings={aiFindings} />
+        <AIFindingsPanel result={result} />
       </div>
     </div>
   );

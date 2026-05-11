@@ -20,7 +20,7 @@ import {
   Play, Terminal, Filter,
 } from "lucide-react";
 
-type FilterStatus = "all" | "passed" | "failed";
+type FilterStatus = "all" | "passed" | "failed" | "warning";
 
 export default function TestHistoryPage() {
   const { testResults } = useBugContext();
@@ -32,7 +32,7 @@ export default function TestHistoryPage() {
     searchQuery,
     setSearchQuery,
   } = useFilteredList(testResults, {
-    getStatus: (t) => t.status,
+    getStatus: (t) => t.overall_status || "warning",
     getSearchText: (t) => t.url,
   });
 
@@ -45,8 +45,8 @@ export default function TestHistoryPage() {
     return acc;
   }, {});
 
-  const passedCount = testResults.filter((t) => t.status === "passed").length;
-  const failedCount = testResults.filter((t) => t.status === "failed").length;
+  const passedCount = testResults.filter((t) => t.overall_status === "pass").length;
+  const failedCount = testResults.filter((t) => t.overall_status === "fail").length;
 
   return (
     <>
@@ -75,7 +75,7 @@ export default function TestHistoryPage() {
               <Filter className="h-3.5 w-3.5" /> Filters
             </div>
             <div className="flex items-center gap-2">
-              {(["all", "passed", "failed"] as FilterStatus[]).map((s) => (
+              {(["all", "passed", "failed", "warning"] as FilterStatus[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
@@ -111,8 +111,8 @@ export default function TestHistoryPage() {
       ) : (
         <div className="space-y-4">
           {Object.entries(groupedByUrl).map(([url, tests]) => {
-            const urlPassed = tests.filter((t) => t.status === "passed").length;
-            const urlFailed = tests.filter((t) => t.status === "failed").length;
+            const urlPassed = tests.filter((t) => t.overall_status === "pass").length;
+            const urlFailed = tests.filter((t) => t.overall_status === "fail").length;
 
             return (
               <Card key={url}>
@@ -151,43 +151,48 @@ export default function TestHistoryPage() {
                       </TableHeader>
                       <TableBody>
                         {tests.map((test) => (
-                          <TableRow key={test.id} className="hover:bg-accent/50 transition-colors">
-                            <TableCell className="font-mono text-xs text-primary font-medium">{test.id}</TableCell>
+                          <TableRow key={test.test_id} className="hover:bg-accent/50 transition-colors">
+                            <TableCell className="font-mono text-xs text-primary font-medium">{test.test_id}</TableCell>
                             <TableCell>
                               <Badge
-                                variant={test.status === "passed" ? "secondary" : "destructive"}
+                                variant={
+                                  test.overall_status === "pass"
+                                    ? "secondary"
+                                    : "destructive"
+                                }
                                 className="text-xs"
                               >
                                 <span className="flex items-center gap-1">
-                                  {test.status === "passed" ? (
+                                  {test.overall_status === "pass" ? (
                                     <CheckCircle2 className="h-3 w-3" />
                                   ) : (
                                     <XCircle className="h-3 w-3" />
                                   )}
-                                  {test.status}
+
+                                  {test.overall_status || "warning"}
                                 </span>
                               </Badge>
                             </TableCell>
                             <TableCell>
                               <span className="text-xs text-muted-foreground capitalize">
-                                {test.testType || "full"}
+                                {test.test_type || "full"}
                               </span>
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground max-w-[250px] truncate">
-                              {test.details}
+                              {test.ai_summary || "No summary available"}
                             </TableCell>
                             <TableCell className="text-xs font-mono">
-                              {(test.duration / 1000).toFixed(1)}s
+                              NA
                             </TableCell>
                             <TableCell>
                               <div className="text-xs text-muted-foreground">
-                                <div>{formatDate(test.timestamp)}</div>
-                                <div className="text-[0.6rem]">{formatTime(test.timestamp)}</div>
+                                <div>{formatDate(test.created_at || "")}</div>
+                                <div className="text-[0.6rem]">{formatTime(test.created_at || "")}</div>
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
                               <Link
-                                href={`/test-history/${test.id}`}
+                                href={`/test-history/${test.test_id}`}
                                 className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "h-7 w-7")}
                                 title="View full test logs"
                               >

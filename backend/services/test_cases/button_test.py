@@ -28,7 +28,7 @@ def test_buttons(page, folder_path, test_id, screenshots):
                 tested_buttons.append(text)
 
                 # --- REAL INTERACTION ---
-                btn.click()
+                btn.click(force=True, timeout=3000)
 
                 # wait for UI update/navigation
                 page.wait_for_timeout(2000)

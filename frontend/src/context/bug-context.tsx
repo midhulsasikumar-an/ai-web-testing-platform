@@ -1,21 +1,24 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
-import type { Bug, TestResult, DashboardStats, AIFinding } from "@/types";
-import { sampleBugs, sampleTestResults, sampleAIFindings } from "@/lib/data";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import type { Bug, DashboardStats, AIFinding } from "@/types";
+import {sampleAIFindings } from "@/lib/data";
+import { getAllTests } from "@/services/test-api";
+import type { TestApiResponse } from "@/services/test-api";
+import { generateBugsFromTests } from "@/lib/bug-generators";
 
 // ── Context shape ──────────────────────────────────────────────────
 
 interface BugContextType {
   bugs: Bug[];
-  testResults: TestResult[];
+  testResults: TestApiResponse[];
   aiFindings: AIFinding[];
   stats: DashboardStats;
   addBug: (bug: Bug) => void;
   updateBugStatus: (id: string, status: Bug["status"]) => void;
-  addTestResult: (result: TestResult) => void;
+  addTestResult: (result: TestApiResponse) => void;
   getBugById: (id: string) => Bug | undefined;
-  getTestById: (id: string) => TestResult | undefined;
+  getTestById: (id: string) => TestApiResponse | undefined;
 }
 
 const BugContext = createContext<BugContextType | undefined>(undefined);
@@ -23,9 +26,28 @@ const BugContext = createContext<BugContextType | undefined>(undefined);
 // ── Provider ───────────────────────────────────────────────────────
 
 export function BugProvider({ children }: { children: React.ReactNode }) {
-  const [bugs, setBugs] = useState<Bug[]>(sampleBugs);
-  const [testResults, setTestResults] = useState<TestResult[]>(sampleTestResults);
+  const [bugs, setBugs] = useState<Bug[]>([]);
+  const [testResults, setTestResults] = useState<TestApiResponse[]>([]);
   const [aiFindings] = useState<AIFinding[]>(sampleAIFindings);
+  useEffect(() => {
+    async function loadTests() {
+      try {
+        const tests = await getAllTests();
+
+        setTestResults(tests);
+      } catch (error) {
+        console.error("Failed to load tests:", error);
+      }
+    }
+
+    loadTests();
+  }, []);
+
+  useEffect(() => {
+    const generatedBugs = generateBugsFromTests(testResults);
+
+    setBugs(generatedBugs);
+  }, [testResults]);
 
   const addBug = useCallback((bug: Bug) => {
     setBugs((prev) => [bug, ...prev]);
@@ -35,7 +57,7 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     setBugs((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
   }, []);
 
-  const addTestResult = useCallback((result: TestResult) => {
+  const addTestResult = useCallback((result: TestApiResponse) => {
     setTestResults((prev) => [result, ...prev]);
   }, []);
 
@@ -45,19 +67,24 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
   );
 
   const getTestById = useCallback(
-    (id: string) => testResults.find((t) => t.id === id),
+    (id: string) => testResults.find((t) => t.test_id === id),
     [testResults]
   );
 
-  const baseTotal = 1284;
-  const basePassed = 1150;
-  const baseFailed = 134;
+    const stats: DashboardStats = {
+    totalTests: testResults.length,
 
-  const stats: DashboardStats = {
-    totalTests: baseTotal + testResults.length,
-    passed: basePassed + testResults.filter((t) => t.status === "passed").length,
-    failed: baseFailed + testResults.filter((t) => t.status === "failed").length,
-    openBugs: bugs.filter((b) => b.status === "open" || b.status === "in-progress").length,
+    passed: testResults.filter(
+      (t) => t.overall_status === "pass"
+    ).length,
+
+    failed: testResults.filter(
+      (t) => t.overall_status === "fail"
+    ).length,
+
+    openBugs: bugs.filter(
+      (b) => b.status === "open" || b.status === "in-progress"
+    ).length,
   };
 
   return (

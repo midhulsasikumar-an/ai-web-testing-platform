@@ -1,68 +1,40 @@
-// ── Bug generation utilities ───────────────────────────────────────
-// Moved from context/bug-context.tsx to separate business logic from state.
+import type { Bug } from "@/types";
+import type { TestApiResponse } from "@/services/test-api";
 
-import type { Bug, BugSeverity } from "@/types";
-import { sampleBugs } from "@/lib/data";
+export function generateBugsFromTests(
+  tests: TestApiResponse[]
+): Bug[] {
+  return tests
+    .filter(
+      (test) =>
+        test.overall_status === "fail" ||
+        test.overall_status === "warning"
+    )
+    .map((test, index) => ({
+      id: `BUG-${index + 1}`,
 
-const bugTitles = [
-  "Broken layout on target page",
-  "JavaScript error detected in console",
-  "Missing alt text on images",
-  "Slow page load time (>5s)",
-  "Form submission returns 500 error",
-  "Navigation link leads to 404",
-  "CORS error on API request",
-  "Unhandled promise rejection detected",
-];
+      title:
+        test.ai_summary || "Website issue detected",
 
-const bugDescriptions = [
-  "The page layout breaks on certain viewport sizes causing elements to overlap.",
-  "Multiple JavaScript errors were detected in the browser console during page load.",
-  "Critical images on the page are missing alt attributes, affecting accessibility.",
-  "The page took over 5 seconds to fully load, exceeding performance thresholds.",
-  "Submitting the main form on the page results in a 500 Internal Server Error.",
-  "A primary navigation link points to a route that returns a 404 Not Found page.",
-  "API requests from the page are blocked by CORS policy, preventing data loading.",
-  "An unhandled promise rejection was detected, which may cause silent failures.",
-];
+      description:
+        test.report || "AI detected issues during testing.",
 
-const teamMembers = ["Sarah Chen", "Mike Johnson", "Alex Rivera", "Lisa Park"];
+      severity:
+        test.overall_status === "fail"
+          ? "high"
+          : "medium",
 
-export function generateBugFromUrl(url: string): Bug {
-  const idx = Math.floor(Math.random() * bugTitles.length);
-  const severities: BugSeverity[] = ["critical", "high", "medium", "low"];
-  const severity = severities[Math.floor(Math.random() * severities.length)];
-  const assignee = teamMembers[Math.floor(Math.random() * teamMembers.length)];
+      status: "open",
 
-  const count = sampleBugs.length + Math.floor(Math.random() * 900) + 100;
+      url: test.url,
 
-  return {
-    id: `BUG-${String(count).padStart(3, "0")}`,
-    title: bugTitles[idx],
-    description: bugDescriptions[idx],
-    severity,
-    status: "open",
-    url,
-    createdAt: new Date().toISOString(),
-    assignedTo: assignee,
-    environment: "Chrome 125, Auto-detected",
-    steps: [
-      `Navigate to ${url}`,
-      "Wait for full page load",
-      "Inspect page for visual/functional issues",
-      "Check browser console for errors",
-    ],
-    logs: [
-      {
-        timestamp: new Date().toISOString(),
-        level: "info",
-        message: `AI scan initiated for ${url}`,
-      },
-      {
-        timestamp: new Date().toISOString(),
-        level: "error",
-        message: `Issue detected: ${bugDescriptions[idx]}`,
-      },
-    ],
-  };
+      createdAt:
+        test.created_at || new Date().toISOString(),
+
+      steps: test.results?.map(
+        (r) => `${r.test}: ${r.details || r.status}`
+      ) || [],
+
+      assignedTo: "AI System",
+    }));
 }

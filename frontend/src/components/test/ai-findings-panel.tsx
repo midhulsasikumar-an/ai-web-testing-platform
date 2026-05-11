@@ -1,22 +1,18 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SeverityBadge } from "@/components/shared/severity-badge";
-import type { AIFinding } from "@/types";
-import { AlertTriangle, Code } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import type { TestApiResponse } from "@/services/test-api";
 
 // ── Types ──────────────────────────────────────────────────────────
 
 interface AIFindingsPanelProps {
-  findings: AIFinding[];
-  /** Maximum number of findings to display */
-  limit?: number;
+  result: TestApiResponse | null;
 }
 
 // ── Component ──────────────────────────────────────────────────────
 
-export function AIFindingsPanel({ findings, limit = 4 }: AIFindingsPanelProps) {
+export function AIFindingsPanel({ result }: AIFindingsPanelProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -26,33 +22,101 @@ export function AIFindingsPanel({ findings, limit = 4 }: AIFindingsPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {findings.slice(0, limit).map((finding) => (
-          <div
-            key={finding.id}
-            className="space-y-2 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="text-sm font-medium leading-tight">
-                {finding.title}
-              </h4>
-              <SeverityBadge severity={finding.severity} className="shrink-0" />
+        {!result ? (
+          <p className="text-sm text-muted-foreground">
+            Run a test to see AI-powered insights.
+          </p>
+        ) : (
+          <>
+            {/* AI Summary */}
+            <div>
+              <h3 className="text-sm font-semibold mb-1">AI Summary</h3>
+              <p className="text-sm text-muted-foreground">
+                {result.ai_summary}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {finding.description}
-            </p>
-            {finding.file && (
-              <div className="flex items-center gap-1.5 text-xs text-primary font-mono">
-                <Code className="h-3 w-3" />
-                {finding.file}
+
+            {/* Critical Issues */}
+            {result.insights?.critical?.length ? (
+              <div>
+                <h3 className="text-sm font-semibold text-red-500 mb-2">
+                  Critical Issues
+                </h3>
+
+                <ul className="space-y-2">
+                  {result.insights.critical.map((issue, index) => (
+                    <li
+                      key={index}
+                      className="text-sm border rounded-md p-2 bg-red-50/30"
+                    >
+                      {issue}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            )}
-            {finding.codeSnippet && (
-              <pre className="text-[0.65rem] bg-[#0d1117] text-green-400 p-3 rounded-md overflow-x-auto leading-relaxed">
-                {finding.codeSnippet}
-              </pre>
-            )}
-          </div>
-        ))}
+            ) : null}
+
+            {/* Moderate Issues */}
+            {result.insights?.moderate?.length ? (
+              <div>
+                <h3 className="text-sm font-semibold text-yellow-500 mb-2">
+                  Moderate Issues
+                </h3>
+
+                <ul className="space-y-2">
+                  {result.insights.moderate.map((issue, index) => (
+                    <li
+                      key={index}
+                      className="text-sm border rounded-md p-2 bg-yellow-50/30"
+                    >
+                      {issue}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {/* Minor Issues */}
+            {result.insights?.minor?.length ? (
+              <div>
+                <h3 className="text-sm font-semibold text-blue-500 mb-2">
+                  Minor Issues
+                </h3>
+
+                <ul className="space-y-2">
+                  {result.insights.minor.map((issue, index) => (
+                    <li
+                      key={index}
+                      className="text-sm border rounded-md p-2 bg-blue-50/30"
+                    >
+                      {issue}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {/* Recommendations */}
+            {result.recommendations?.length ? (
+              <div>
+                <h3 className="text-sm font-semibold mb-2">
+                  Recommendations
+                </h3>
+
+                <ul className="space-y-2">
+                  {result.recommendations.map((rec, index) => (
+                    <li
+                      key={index}
+                      className="text-sm border rounded-md p-2"
+                    >
+                      {rec}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </>
+        )}
       </CardContent>
     </Card>
   );

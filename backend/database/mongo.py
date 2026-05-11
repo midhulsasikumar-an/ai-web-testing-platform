@@ -9,3 +9,4 @@ db = client["ai-web-testing"]
 
 # Your collection name
 collection = db["test_runs"]
+bug_collection = db["bugs"]
