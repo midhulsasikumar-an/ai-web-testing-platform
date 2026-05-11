@@ -2,20 +2,19 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { TestResult } from "@/types";
+import type { TestApiResponse } from "@/services/test-api";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { formatDuration } from "@/lib/formatters";
 
 // ── Types ──────────────────────────────────────────────────────────
 
 interface TestResultCardProps {
-  result: TestResult;
+  result: TestApiResponse;
 }
 
 // ── Component ──────────────────────────────────────────────────────
 
 export function TestResultCard({ result }: TestResultCardProps) {
-  const isPassed = result.status === "passed";
+  const isPassed = result.overall_status === "pass";
 
   return (
     <Card
@@ -36,7 +35,7 @@ export function TestResultCard({ result }: TestResultCardProps) {
             Test Result
           </CardTitle>
           <Badge variant={isPassed ? "secondary" : "destructive"}>
-            {result.status}
+            {result.overall_status}
           </Badge>
         </div>
       </CardHeader>
@@ -44,18 +43,22 @@ export function TestResultCard({ result }: TestResultCardProps) {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground text-xs">Test ID</span>
-            <p className="font-mono text-xs font-medium">{result.id}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground text-xs">Duration</span>
-            <p className="font-medium">{formatDuration(result.duration)}</p>
+            <p className="font-mono text-xs font-medium">{result.test_id}</p>
           </div>
           <div className="col-span-2">
             <span className="text-muted-foreground text-xs">URL</span>
             <p className="text-xs truncate">{result.url}</p>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">{result.details}</p>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">
+            Health Score: {result.health_score}/100
+          </p>
+
+          <p className="text-sm text-muted-foreground">
+            {result.ai_summary}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

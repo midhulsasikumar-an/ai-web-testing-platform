@@ -11,7 +11,7 @@ import { useBugContext } from "@/context/bug-context";
 import { FlaskConical, CheckCircle2, XCircle, Bug } from "lucide-react";
 
 export default function DashboardPage() {
-  const { stats, bugs } = useBugContext();
+  const { testResults, stats } = useBugContext();
 
   return (
     <>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent bugs */}
-      <RecentBugs bugs={bugs} />
+      <RecentBugs tests={testResults} />
     </>
   );
 }

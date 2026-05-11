@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.models.schema import TestRequest
 
 from backend.services.test_services import create_test_run, run_test_and_update
-from backend.database.mongo import collection
+from backend.database.mongo import collection, bug_collection
 
 
 app = FastAPI()
@@ -43,14 +43,42 @@ def start_test(req: TestRequest, background_tasks: BackgroundTasks):
 
 @app.get("/api/tests")
 def get_tests():
-    tests = list(collection.find({}, {"_id": 0}))
+    tests = list(collection.find({"user_id": "demo-user"}, {"_id": 0}))
     return tests
 
 @app.get("/api/tests/{test_id}")
 def get_test_by_id(test_id: str):
-    test = collection.find_one({"test_id": test_id}, {"_id": 0})
+    test = collection.find_one({"test_id": test_id, "user_id": "demo-user"}, {"_id": 0})
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
     return test
 
-    raise HTTPException(status_code=404, detail="Test not found")
+@app.get("/api/bugs")
+def get_bugs():
+    bugs = list(
+        bug_collection.find(
+            {"user_id": "demo-user"},
+            {"_id": 0}
+        )
+    )
+
+    return bugs
+
+@app.get("/api/bugs/{bug_id}")
+def get_bug_by_id(bug_id: str):
+
+    bug = bug_collection.find_one(
+        {
+            "bug_id": bug_id,
+            "user_id": "demo-user"
+        },
+        {"_id": 0}
+    )
+
+    if not bug:
+        raise HTTPException(
+            status_code=404,
+            detail="Bug not found"
+        )
+
+    return bug

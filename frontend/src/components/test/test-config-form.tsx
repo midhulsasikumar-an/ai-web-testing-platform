@@ -15,6 +15,8 @@ interface TestConfigFormProps {
   onUrlChange: (value: string) => void;
   githubUrl: string;
   onGithubUrlChange: (value: string) => void;
+  projectName: string;
+  onProjectNameChange: (value: string) => void;
   testType: "full" | "ai" | "accessibility";
   onTestTypeChange: (value: "full" | "ai" | "accessibility") => void;
   loading: boolean;
@@ -36,6 +38,8 @@ export function TestConfigForm({
   onUrlChange,
   githubUrl,
   onGithubUrlChange,
+  projectName,
+  onProjectNameChange,
   testType,
   onTestTypeChange,
   loading,
@@ -84,6 +88,19 @@ export function TestConfigForm({
               placeholder="https://github.com/org/repo"
               value={githubUrl}
               onChange={(e) => onGithubUrlChange(e.target.value)}
+              disabled={loading}
+              className="h-11"
+            />
+          </div>
+                    <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Project Name
+            </label>
+
+            <Input
+              placeholder="My AI Testing Project"
+              value={projectName}
+              onChange={(e) => onProjectNameChange(e.target.value)}
               disabled={loading}
               className="h-11"
             />

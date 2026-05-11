@@ -14,6 +14,7 @@ export interface TestResult {
   id: string;
   url: string;
   status: TestStatus;
+  overall_status?: "pass" | "warning" | "fail";
   timestamp: string;
   duration: number; // ms
   bugId?: string;

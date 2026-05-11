@@ -3,29 +3,35 @@ from datetime import datetime
 from backend.database.mongo import collection
 from backend.server import TestRequest
 from backend.services.test_runner import run_test
-from backend.services.health_score import calculate_health_score
-from backend.services.insights import generate_insights
-from backend.services.recommendations import generate_recommendations
-from backend.services.report_generator import generate_report
-from backend.services.ai_summary import generate_summary_line
+from backend.services.scoring.health_score import calculate_health_score
+from backend.services.scoring.insights import generate_insights
+from backend.services.scoring.recommendations import generate_recommendations
+from backend.services.scoring.report_generator import generate_report
+from backend.services.scoring.ai_summary import generate_summary_line
+from backend.services.scoring.overall_status import calculate_overall_status
+from backend.services.bug_services import create_bugs_from_test
 
 def create_test_run(req: TestRequest):
     test_id = str(uuid.uuid4())
 
     test_data = {
+        "user_id": "demo-user",
         "test_id": test_id,
         "url": req.url,
         "project": req.project_name,
+        "test_type": req.test_type,
         "status": "running",
         "results": [],
         "screenshot": None,
         "summary": None,
         "health_score": None,
+        "overall_status": None,
         "insights": None,
         "priority_issues": [],
         "recommendations": [],
         "report": None,
         "ai_summary": None,
+        "bugs": [],
         "created_at": datetime.utcnow().isoformat()
     }
 
@@ -50,6 +56,9 @@ def run_test_and_update(test_data, url):
         # --- AI Layer ---
         insights = generate_insights(results)
         test_data["insights"] = insights
+
+        overall_status = calculate_overall_status(results, insights, score_data["score"])
+        test_data["overall_status"] = overall_status
 
         # Priority Issues (flattened)
         priority_issues = []
@@ -84,6 +93,11 @@ def run_test_and_update(test_data, url):
             insights
         )
         test_data["ai_summary"] = summary_line
+        created_bugs = create_bugs_from_test(test_data)
+
+        test_data["bugs"] = [
+            bug["bug_id"] for bug in created_bugs
+        ]
 
         #database update
         collection.update_one(

@@ -3,10 +3,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { TestResult, StreamLogLine } from "@/types";
 import { useBugContext } from "@/context/bug-context";
-import { generateBugFromUrl } from "@/lib/bug-generators";
-import { startTest as callStartTest } from "@/services/test-api";
+import type { TestApiResponse } from "@/services/test-api";
+import {
+  startTest as callStartTest,
+  getTestById,
+} from "@/services/test-api";
 
-// ── Stream messages for initial animation ──────────────────────────
+// ── Stream messages ──────────────────────────
 
 const INITIAL_STREAM: StreamLogLine[] = [
   { time: "00:00", level: "info", msg: "Initializing Automated Intelligence Probe..." },
@@ -23,17 +26,19 @@ const FALLBACK_STREAM: StreamLogLine[] = [
   { time: "00:08", level: "info", msg: "Phase 5: Performance metrics collection..." },
 ];
 
-// ── Hook ───────────────────────────────────────────────────────────
+// ── Hook ──────────────────────────────────────
 
 export function useTestRunner() {
-  const { addBug, addTestResult, aiFindings } = useBugContext();
+  const { addTestResult } = useBugContext();
 
   const [url, setUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [projectName, setProjectName] = useState("");
   const [testType, setTestType] = useState<"full" | "ai" | "accessibility">("full");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<TestResult | null>(null);
+  const [result, setResult] = useState<TestApiResponse | null>(null);
   const [streamLines, setStreamLines] = useState<StreamLogLine[]>([]);
+
   const streamLinesRef = useRef<StreamLogLine[]>([]);
   const streamRef = useRef<HTMLDivElement>(null);
 
@@ -54,68 +59,81 @@ export function useTestRunner() {
 
   const runTest = useCallback(async () => {
     if (!url.trim()) return;
+
     setLoading(true);
     setResult(null);
     setStreamLines([]);
     streamLinesRef.current = [];
 
-    // 1. Initial streaming animation
-    for (const line of INITIAL_STREAM) {
-      await new Promise((r) => setTimeout(r, 400));
-      appendStream(line);
-    }
-
     try {
-      // 2. Call backend
-      appendStream({ time: "00:03", level: "info", msg: `Dispatching AI probe to ${url}...` });
+      // 1. Initial stream
+      for (const line of INITIAL_STREAM) {
+        await new Promise((r) => setTimeout(r, 400));
+        appendStream(line);
+      }
 
-      const testData = await callStartTest(url, "Demo Project");
+      appendStream({
+        time: "00:03",
+        level: "info",
+        msg: `Dispatching AI probe to ${url}...`,
+      });
 
-      // 3. Stream backend results
-      for (const res of testData.results) {
-        await new Promise((r) => setTimeout(r, 600));
-        const level = res.status === "pass" ? "success" : "error";
+      // 2. Start backend test
+      const startResponse = await callStartTest(
+        url,
+        projectName || "Untitled Project",
+        testType
+      );
+
+      appendStream({
+        time: "00:04",
+        level: "info",
+        msg: `Test started with ID ${startResponse.test_id}`,
+      });
+
+      // 3. Poll backend
+      let testData: TestApiResponse ;
+
+      while (true) {
+        await new Promise((r) => setTimeout(r, 3000));
+
+        testData = await getTestById(startResponse.test_id);
+
         appendStream({
           time: "00:05",
-          level,
-          msg: `${res.test}: ${res.status.toUpperCase()} ${res.details ? `(${res.details})` : ""}`,
+          level: "info",
+          msg: `Current status: ${testData.status}`,
+        });
+
+        if (testData.status !== "running") break;
+      }
+
+      // 4. Stream results from backend (NO DECISION LOGIC)
+      for (const res of testData.results) {
+        await new Promise((r) => setTimeout(r, 600));
+
+        appendStream({
+          time: "00:06",
+          level: res.status === "pass" ? "success" : "error",
+          msg: `${res.test}: ${res.status.toUpperCase()} ${
+            res.details ? `(${res.details})` : ""
+          }`,
         });
       }
 
-      const passed = testData.results.every((r) => r.status === "pass");
-      const duration = 2000;
-      const testId = testData.test_id.substring(0, 8).toUpperCase();
-
-      let bugId: string | undefined;
-      if (!passed) {
-        appendStream({ time: "00:08", level: "error", msg: "Issues detected. Generating bug report..." });
-        const bug = generateBugFromUrl(url);
-        addBug(bug);
-        bugId = bug.id;
-        appendStream({ time: "00:09", level: "error", msg: `Bug ${bug.id} created: ${bug.title}` });
-      } else {
-        appendStream({ time: "00:08", level: "success", msg: "All backend checks passed." });
+      // 5. FINAL RESULT (backend is source of truth)
+      if (!testData) {
+        throw new Error("Test data not received from backend");
       }
-
-      const testResult: TestResult = {
-        id: testId,
-        url,
-        status: passed ? "passed" : "failed",
-        timestamp: new Date().toISOString(),
-        duration,
-        bugId,
-        details: passed
-          ? "The live AI probe verified the site is accessible and correctly configured."
-          : `Test failed — the AI probe identified issues and created bug ${bugId}.`,
-        testType,
-        streamLogs: [...streamLinesRef.current],
-      };
-
-      addTestResult(testResult);
-      setResult(testResult);
+      setResult(testData);
+      addTestResult(testData);
     } catch {
-      appendStream({ time: "00:04", level: "error", msg: "Failed to connect to AI backend. Falling back to simulation..." });
-      // Fallback simulation
+      appendStream({
+        time: "00:04",
+        level: "error",
+        msg: "Failed to connect to AI backend. Falling back to simulation...",
+      });
+
       for (const line of FALLBACK_STREAM) {
         await new Promise((r) => setTimeout(r, 400));
         appendStream(line);
@@ -123,21 +141,20 @@ export function useTestRunner() {
     } finally {
       setLoading(false);
     }
-  }, [url, testType, appendStream, addBug, addTestResult]);
+  }, [url, projectName, testType, appendStream, addTestResult]);
 
   return {
-    // State
     url,
     githubUrl,
+    projectName,
     testType,
     loading,
     result,
     streamLines,
-    aiFindings,
     streamRef,
-    // Actions
     setUrl,
     setGithubUrl,
+    setProjectName,
     setTestType,
     runTest,
   };

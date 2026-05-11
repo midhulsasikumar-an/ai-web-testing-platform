@@ -1,24 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import type { Bug } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead,
   TableHeader, TableRow,
 } from "@/components/ui/table";
-import { SeverityBadge } from "@/components/shared/severity-badge";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { AvatarCircle } from "@/components/shared/avatar-circle";
+import type { TestApiResponse } from "@/services/test-api";
 import { formatDate } from "@/lib/formatters";
 import { Clock } from "lucide-react";
 
 interface RecentBugsProps {
-  bugs: Bug[];
+  tests: TestApiResponse[];
 }
 
-export function RecentBugs({ bugs }: RecentBugsProps) {
-  const recent = bugs.slice(0, 5);
+export function RecentBugs({ tests }: RecentBugsProps) {
+  const recent = tests.slice(0, 5);
 
   return (
     <Card>
@@ -38,48 +35,78 @@ export function RecentBugs({ bugs }: RecentBugsProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="w-[80px] text-xs font-semibold">ID</TableHead>
-                <TableHead className="text-xs font-semibold">Title</TableHead>
-                <TableHead className="w-[90px] text-xs font-semibold">Severity</TableHead>
-                <TableHead className="w-[100px] text-xs font-semibold">Status</TableHead>
-                <TableHead className="w-[100px] text-xs font-semibold">Assigned</TableHead>
-                <TableHead className="w-[100px] text-right text-xs font-semibold">Date</TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Project
+                </TableHead>
+
+                <TableHead className="text-xs font-semibold">
+                  URL
+                </TableHead>
+
+                <TableHead className="w-[100px] text-xs font-semibold">
+                  Status
+                </TableHead>
+
+                <TableHead className="w-[100px] text-xs font-semibold">
+                  Health
+                </TableHead>
+
+                <TableHead className="w-[120px] text-xs font-semibold">
+                  Test Type
+                </TableHead>
+
+                <TableHead className="w-[140px] text-right text-xs font-semibold">
+                  Date
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {recent.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No bugs found. Run a test to get started.
+                    No tests found. Run a test to get started.
                   </TableCell>
                 </TableRow>
               ) : (
-                recent.map((bug) => (
-                  <TableRow key={bug.id} className="cursor-pointer hover:bg-accent/50 transition-colors">
-                    <TableCell className="font-mono text-xs text-primary font-medium">{bug.id}</TableCell>
-                    <TableCell>
-                      <Link href={`/bugs/${bug.id}`} className="hover:underline font-medium text-sm">
-                        {bug.title}
-                      </Link>
+                recent.map((test) => (
+                  <TableRow
+                    key={test.test_id}
+                    className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  >
+                    <TableCell className="font-medium">
+                      {test.project}
                     </TableCell>
-                    <TableCell>
-                      <SeverityBadge severity={bug.severity} />
+
+                    <TableCell className="max-w-[250px] truncate text-xs text-muted-foreground">
+                      {test.url}
                     </TableCell>
+
                     <TableCell>
-                      <StatusBadge status={bug.status} />
+                      <span
+                        className={`text-xs font-semibold px-2 py-1 rounded-md ${
+                          test.overall_status === "pass"
+                            ? "bg-green-100 text-green-700"
+                            : test.overall_status === "warning"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {test.overall_status}
+                      </span>
                     </TableCell>
+
                     <TableCell>
-                      {bug.assignedTo && (
-                        <div className="flex items-center gap-1.5">
-                          <AvatarCircle name={bug.assignedTo} size="xs" />
-                          <span className="text-xs text-muted-foreground truncate max-w-[70px]">
-                            {bug.assignedTo.split(" ")[0]}
-                          </span>
-                        </div>
-                      )}
+                      <span className="text-sm font-medium">
+                        {test.health_score ?? 0}/100
+                      </span>
                     </TableCell>
+
+                    <TableCell className="capitalize">
+                      {test.test_type ?? "full"}
+                    </TableCell>
+
                     <TableCell className="text-right text-xs text-muted-foreground">
-                      {formatDate(bug.createdAt)}
+                      {formatDate(test.created_at ?? "")}
                     </TableCell>
                   </TableRow>
                 ))
