@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.models.schema import TestRequest
 
 from backend.services.test_services import create_test_run, run_test_and_update
-from backend.database.mongo import collection, bug_collection
+from backend.database.mongo import collection, bug_collection, client
+from backend.routes.auth_routes import router as auth_router
 
 
 app = FastAPI()
@@ -17,6 +18,28 @@ app.add_middleware(
 )
 app.mount("/screenshots", StaticFiles(directory="screenshots"), name="screenshots")
 
+# ── Auth routes ─────────────────────────────────────────────────────
+app.include_router(auth_router)
+
+
+# ── Health check ────────────────────────────────────────────────────
+
+@app.get("/api/health")
+def health_check():
+    """Check MongoDB connection status."""
+    try:
+        client.admin.command("ping")
+        return {
+            "status": "healthy",
+            "mongodb": "connected",
+            "database": "ai-web-testing",
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "mongodb": "disconnected",
+            "error": str(e),
+        }
 
 
 @app.get("/")

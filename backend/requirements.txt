@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pymongo
+pydantic
+playwright
+requests
+passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv
+bcrypt==4.0.1

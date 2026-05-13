@@ -12,8 +12,11 @@ import {
   ChevronRight,
   Zap,
   History,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/context/auth-context";
+import { SystemStatus } from "@/components/dashboard/system-status";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -26,6 +29,16 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { user, logout } = useAuth();
+
+  const initials = user
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "??";
 
   return (
     <aside
@@ -79,20 +92,40 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* System Status */}
+      <div className="px-3 pb-1">
+        <SystemStatus collapsed={collapsed} />
+      </div>
+
       {/* User section */}
       <div className="border-t border-sidebar-border p-3">
-        <div className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2",
-          collapsed && "justify-center px-0"
-        )}>
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2",
+            collapsed && "justify-center px-0"
+          )}
+        >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            AR
+            {initials}
           </div>
           {!collapsed && (
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-white truncate">Alex Rivera</span>
-              <span className="text-[0.65rem] text-sidebar-foreground/50 truncate">QA Engineer</span>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-semibold text-white truncate">
+                {user?.name || "User"}
+              </span>
+              <span className="text-[0.65rem] text-sidebar-foreground/50 truncate">
+                {user?.email || ""}
+              </span>
             </div>
+          )}
+          {!collapsed && (
+            <button
+              onClick={logout}
+              className="p-1.5 rounded-md text-sidebar-foreground/40 hover:text-red-400 hover:bg-sidebar-accent transition-all duration-200"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           )}
         </div>
       </div>

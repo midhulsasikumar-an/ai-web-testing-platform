@@ -1,6 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import {
+  loginUser,
+  signupUser,
+  getCurrentUser,
+} from "@/services/auth-api";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -13,65 +24,112 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
-  signup: (name: string, email: string, password: string) => boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ── Dummy user store ───────────────────────────────────────────────
-
-interface StoredUser extends User {
-  password: string;
-}
-
-const defaultUsers: StoredUser[] = [
-  { id: "usr-001", name: "Demo User", email: "demo@bugtracker.io", password: "demo123" },
-];
+const TOKEN_KEY = "signaltrack_token";
 
 // ── Provider ───────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<StoredUser[]>(defaultUsers);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const login = useCallback(
-    (email: string, password: string): boolean => {
-      const found = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-      );
-      if (found) {
-        setUser({ id: found.id, name: found.name, email: found.email });
-        return true;
+  // Hydrate session from stored JWT on mount
+  useEffect(() => {
+    async function hydrate() {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        setIsLoading(false);
+        return;
       }
+
+      try {
+        const { user: userData } = await getCurrentUser(token);
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+        });
+      } catch {
+        // Token expired or invalid — clear it
+        localStorage.removeItem(TOKEN_KEY);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    hydrate();
+  }, []);
+
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setError(null);
+    try {
+      const { token, user: userData } = await loginUser(email, password);
+      localStorage.setItem(TOKEN_KEY, token);
+      setUser({
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+      });
+      return true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
       return false;
-    },
-    [users]
-  );
+    }
+  }, []);
 
   const signup = useCallback(
-    (name: string, email: string, password: string): boolean => {
-      const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (exists) return false;
-
-      const newUser: StoredUser = {
-        id: `usr-${Date.now().toString(36)}`,
-        name,
-        email,
-        password,
-      };
-      setUsers((prev) => [...prev, newUser]);
-      setUser({ id: newUser.id, name: newUser.name, email: newUser.email });
-      return true;
+    async (name: string, email: string, password: string): Promise<boolean> => {
+      setError(null);
+      try {
+        const { token, user: userData } = await signupUser(name, email, password);
+        localStorage.setItem(TOKEN_KEY, token);
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+        });
+        return true;
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Signup failed";
+        setError(message);
+        return false;
+      }
     },
-    [users]
+    []
   );
 
-  const logout = useCallback(() => setUser(null), []);
+  const logout = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY);
+    setUser(null);
+    setError(null);
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        error,
+        login,
+        signup,
+        logout,
+        clearError,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
