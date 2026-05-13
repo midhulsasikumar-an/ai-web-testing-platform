@@ -5,7 +5,8 @@ from backend.models.schema import TestRequest
 
 from backend.services.test_services import create_test_run, run_test_and_update
 from backend.database.mongo import collection, bug_collection
-
+from backend.routes.dashboard import router as dashboard_router
+from backend.routes.ai import router as ai_router
 
 app = FastAPI()
 app.add_middleware(
@@ -82,3 +83,7 @@ def get_bug_by_id(bug_id: str):
         )
 
     return bug
+
+app.include_router(dashboard_router,prefix="/api/dashboard",tags=["Dashboard"])
+
+app.include_router(ai_router, prefix="/ai", tags=["AI"])

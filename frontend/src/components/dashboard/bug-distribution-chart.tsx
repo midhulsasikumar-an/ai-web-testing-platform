@@ -2,21 +2,24 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart } from "lucide-react";
-import { useBugContext } from "@/context/bug-context";
+
 import { SEVERITY_CHART_COLORS, SEVERITY_LABELS } from "@/lib/constants";
 
-export function BugDistributionChart() {
-  const { bugs } = useBugContext();
+export function BugDistributionChart({
+  data,
+}: {
+  data: {
+    critical: number;
+    moderate: number;
+    minor: number;
+  };
+}) {
 
-  const distribution = Object.entries(
-    bugs.reduce<Record<string, number>>((acc, bug) => {
-      acc[bug.severity] = (acc[bug.severity] || 0) + 1;
-      return acc;
-    }, {})
-  ).sort(([a], [b]) => {
-    const order = ["critical", "high", "medium", "low"];
-    return order.indexOf(a) - order.indexOf(b);
-  });
+  const distribution:[string, number][] = [
+    ["critical", data.critical],
+    ["moderate", data.moderate],
+    ["minor", data.minor],
+  ];
 
   const total = distribution.reduce((sum, [, count]) => sum + count, 0);
 

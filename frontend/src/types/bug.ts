@@ -12,6 +12,7 @@ export interface Bug {
   url: string;
   createdAt: string;
   steps: string[];
+  test_id?: string;
   assignedTo?: string;
   environment?: string;
   logs?: LogEntry[];

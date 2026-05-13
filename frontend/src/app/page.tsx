@@ -9,12 +9,40 @@ import { SystemHealth } from "@/components/dashboard/system-health";
 import { RecentBugs } from "@/components/dashboard/recent-bugs";
 import { useBugContext } from "@/context/bug-context";
 import { FlaskConical, CheckCircle2, XCircle, Bug } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getDashboardStats, DashboardStatsResponse } from "@/services/dashboard-api";
+
 
 export default function DashboardPage() {
-  const { testResults, stats } = useBugContext();
+  const { testResults } = useBugContext();
 
+  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        setLoading(true);
+
+        const data = await getDashboardStats();
+        setStats(data);
+
+      } catch (err) {
+        console.error("Failed to load dashboard stats", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+  }, []);
+
+  if (loading || !stats) {
+    return <div>Loading dashboard...</div>;
+  }
   return (
     <>
+      
       <Header
         title="Dashboard"
         description="Overview of your testing activity, bug reports, and system health."
@@ -24,7 +52,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Tests"
-          value={stats.totalTests}
+          value={stats?.total_tests ?? 0}
           icon={FlaskConical}
           trend="+12% from last week"
           trendUp={true}
@@ -32,23 +60,32 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Passed"
-          value={stats.passed}
+          value={stats?.passed ?? 0}
           icon={CheckCircle2}
-          trend={`${stats.totalTests > 0 ? Math.round((stats.passed / stats.totalTests) * 100) : 0}% pass rate`}
+          trend={`${
+            stats?.total_tests
+              ? Math.round(((stats?.passed ?? 0) / stats.total_tests) * 100)
+              : 0
+          }% pass rate`}
           trendUp={true}
           accentColor="bg-green-500"
         />
+
         <StatCard
           title="Failed"
-          value={stats.failed}
+          value={stats?.failed ?? 0}
           icon={XCircle}
-          trend={`${stats.totalTests > 0 ? Math.round((stats.failed / stats.totalTests) * 100) : 0}% fail rate`}
+          trend={`${
+            stats?.total_tests
+              ? Math.round(((stats?.failed ?? 0) / stats.total_tests) * 100)
+              : 0
+          }% fail rate`}
           trendUp={false}
           accentColor="bg-red-500"
         />
         <StatCard
           title="Active Bugs"
-          value={stats.openBugs}
+          value={stats?.open_bugs ?? 0}
           icon={Bug}
           trend="Needs attention"
           accentColor="bg-amber-500"
@@ -57,14 +94,19 @@ export default function DashboardPage() {
 
       {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <TestActivityChart />
-        <BugDistributionChart />
+        <TestActivityChart data={stats.test_activity} />
+
+        <BugDistributionChart
+          data={stats.bug_distribution}
+        />
       </div>
 
       {/* AI Log + System Health */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <AILogSummary />
-        <SystemHealth />
+        <AILogSummary aiLogs={stats?.ai_logs} />
+        <SystemHealth
+          averageHealth={stats.average_health}
+        />
       </div>
 
       {/* Recent bugs */}

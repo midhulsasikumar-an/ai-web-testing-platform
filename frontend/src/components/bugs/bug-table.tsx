@@ -69,8 +69,12 @@ export function BugTable({ bugs }: BugTableProps) {
               bugs.map((bug) => (
                 <TableRow key={bug.id} className="hover:bg-accent/50 transition-colors">
                   <TableCell className="font-mono text-xs text-primary font-medium">{bug.id}</TableCell>
-                  <TableCell className="font-medium max-w-[300px]">
-                    <Link href={`/bugs/${bug.id}`} className="hover:underline text-sm">
+                  <TableCell className="max-w-[300px]">
+                    <Link
+                      href={`/bugs/${bug.id}`}
+                      className="block truncate hover:underline text-sm font-medium"
+                      title={bug.title}
+                    >
                       {bug.title}
                     </Link>
                   </TableCell>

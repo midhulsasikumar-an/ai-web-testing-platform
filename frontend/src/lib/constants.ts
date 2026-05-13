@@ -31,6 +31,8 @@ export const SEVERITY_BADGE_COLORS: Record<BugSeverity, string> = {
 
 export const SEVERITY_CHART_COLORS: Record<string, string> = {
   critical: "#ef4444",
+  moderate: "#eab308",
+  minor: "#3b82f6",
   high: "#f97316",
   medium: "#eab308",
   low: "#3b82f6",
@@ -38,6 +40,8 @@ export const SEVERITY_CHART_COLORS: Record<string, string> = {
 
 export const SEVERITY_LABELS: Record<string, string> = {
   critical: "Critical",
+  moderate: "Moderate",
+  minor: "Minor",
   high: "High",
   medium: "Medium",
   low: "Low",

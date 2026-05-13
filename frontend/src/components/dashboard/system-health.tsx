@@ -3,15 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 
-interface SystemHealthProps {
-  score?: number;
-}
 
-export function SystemHealth({ score = 92 }: SystemHealthProps) {
+export function SystemHealth({
+  averageHealth,
+}: {
+  averageHealth: number;
+}) {
   const r = 52;
   const strokeWidth = 10;
   const circumference = 2 * Math.PI * r;
-  const fillLength = (score / 100) * circumference;
+  const fillLength = (averageHealth / 100) * circumference;
   const gapLength = circumference - fillLength;
 
   const getColor = (s: number) => {
@@ -20,7 +21,7 @@ export function SystemHealth({ score = 92 }: SystemHealthProps) {
     return { stroke: "#ef4444", bg: "rgba(239,68,68,0.1)", label: "Critical" };
   };
 
-  const color = getColor(score);
+  const color = getColor(averageHealth);
 
   return (
     <Card>
@@ -62,7 +63,7 @@ export function SystemHealth({ score = 92 }: SystemHealthProps) {
           {/* Center */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-3xl font-bold" style={{ color: color.stroke }}>
-              {score}%
+              {averageHealth}%
             </span>
             <span className="text-[0.65rem] text-muted-foreground font-medium">
               {color.label}

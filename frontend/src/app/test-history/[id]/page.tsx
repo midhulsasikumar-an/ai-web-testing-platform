@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateLong, formatTime } from "@/lib/formatters";
 import { MetadataField } from "@/components/shared/metadata-field";
-import { EmptyState } from "@/components/shared/empty-state";
 import { TEST_TYPE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
@@ -61,6 +60,8 @@ export default function TestDetailPage() {
           <Card className={
             test.overall_status === "pass"
               ? "border-green-500/30 bg-gradient-to-r from-green-50/50 to-transparent"
+              : test.overall_status === "warning"
+              ? "border-yellow-500/30 bg-gradient-to-r from-yellow-50/50 to-transparent"
               : "border-red-500/30 bg-gradient-to-r from-red-50/50 to-transparent"
           }>
             <CardContent className="pt-6">
@@ -70,6 +71,8 @@ export default function TestDetailPage() {
                 }`}>
                   {test.overall_status === "pass" ? (
                     <CheckCircle2 className="h-6 w-6 text-green-600" />
+                  ) : test.overall_status === "warning" ? (
+                    <AlertTriangle className="h-6 w-6 text-yellow-500" />
                   ) : (
                     <XCircle className="h-6 w-6 text-red-600" />
                   )}
@@ -77,7 +80,11 @@ export default function TestDetailPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-xl font-bold">
-                      Test {test.overall_status === "pass" ? "Passed" : "Failed"}
+                      {test.overall_status === "pass"
+                        ? "Test Passed"
+                        : test.overall_status === "warning"
+                        ? "Test Warning"
+                        : "Test Failed"}
                     </h2>
                     <Badge variant={test.overall_status === "pass" ? "secondary" : "destructive"}>
                       {test.overall_status}

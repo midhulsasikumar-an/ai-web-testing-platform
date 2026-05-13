@@ -9,11 +9,15 @@ import { useBugContext } from "@/context/bug-context";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function BugDetailPage() {
   const params = useParams();
-  const { getBugById } = useBugContext();
+  const { getBugById, getTestById } = useBugContext();
   const bug = getBugById(params.id as string);
+  const linkedTest = bug?.test_id
+    ? getTestById(bug.test_id)
+    : null;
 
   if (!bug) {
     return (
@@ -37,6 +41,25 @@ export default function BugDetailPage() {
         <BugDialog bug={bug} />
       </Header>
       <BugDetailCard bug={bug} />
+
+      {linkedTest && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">
+            Linked Test Run
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <Link
+            href={`/test-history/${linkedTest.test_id}`}
+            className="text-sm text-primary hover:underline"
+          >
+            View Original Test Run →
+          </Link>
+        </CardContent>
+      </Card>
+    )}
     </>
   );
 }
