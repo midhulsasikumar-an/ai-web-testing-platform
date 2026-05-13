@@ -13,6 +13,7 @@ import {
   Zap,
   History,
   LogOut,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
@@ -21,9 +22,13 @@ import { SystemStatus } from "@/components/dashboard/system-status";
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/run-test", label: "Run Test", icon: Play },
-  { href: "/test-history", label: "Test History", icon: History },
+  { href: "/test-history", label: "History", icon: History },
   { href: "/bugs", label: "Bugs", icon: Bug },
-  { href: "#", label: "Settings", icon: Settings },
+];
+
+const bottomNavItems = [
+  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/profile", label: "Profile", icon: User },
 ];
 
 export function Sidebar() {
@@ -39,6 +44,28 @@ export function Sidebar() {
         .toUpperCase()
         .slice(0, 2)
     : "??";
+
+  const renderNavLink = (
+    { href, label, icon: Icon }: (typeof navItems)[0],
+  ) => {
+    const active =
+      href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return (
+      <Link
+        key={href}
+        href={href}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          active
+            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25"
+            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        )}
+      >
+        <Icon className="h-[18px] w-[18px] shrink-0" />
+        {!collapsed && <span>{label}</span>}
+      </Link>
+    );
+  };
 
   return (
     <aside
@@ -64,32 +91,24 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      {/* Main Navigation */}
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {!collapsed && (
           <p className="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
-            Navigation
+            Main
           </p>
         )}
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                active
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <Icon className="h-[18px] w-[18px] shrink-0" />
-              {!collapsed && <span>{label}</span>}
-            </Link>
-          );
-        })}
+        {navItems.map(renderNavLink)}
+
+        {/* Separator + Bottom Nav */}
+        <div className="pt-4 mt-4 border-t border-sidebar-border/50 space-y-1">
+          {!collapsed && (
+            <p className="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+              Account
+            </p>
+          )}
+          {bottomNavItems.map(renderNavLink)}
+        </div>
       </nav>
 
       {/* System Status */}

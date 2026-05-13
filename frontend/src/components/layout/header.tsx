@@ -1,6 +1,8 @@
 "use client";
 
+import { useAuth } from "@/context/auth-context";
 import { Bell, Search } from "lucide-react";
+import Link from "next/link";
 
 interface HeaderProps {
   title: string;
@@ -9,6 +11,17 @@ interface HeaderProps {
 }
 
 export function Header({ title, description, children }: HeaderProps) {
+  const { user } = useAuth();
+
+  const initials = user
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "??";
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
       <div>
@@ -34,12 +47,15 @@ export function Header({ title, description, children }: HeaderProps) {
             3
           </span>
         </button>
-        <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-border">
+        <Link
+          href="/settings"
+          className="hidden sm:flex items-center gap-2 pl-2 border-l border-border hover:opacity-80 transition-opacity"
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            AR
+            {initials}
           </div>
-          <span className="text-sm font-medium">Alex Rivera</span>
-        </div>
+          <span className="text-sm font-medium">{user?.name || "User"}</span>
+        </Link>
       </div>
     </div>
   );

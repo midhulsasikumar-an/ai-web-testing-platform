@@ -71,7 +71,7 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     [testResults]
   );
 
-    const stats: DashboardStats = {
+  const stats: DashboardStats = React.useMemo(() => ({
     totalTests: testResults.length,
 
     passed: testResults.filter(
@@ -85,11 +85,15 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     openBugs: bugs.filter(
       (b) => b.status === "open" || b.status === "in-progress"
     ).length,
-  };
+  }), [testResults, bugs]);
+
+  const contextValue = React.useMemo(() => ({
+    bugs, testResults, aiFindings, stats, addBug, updateBugStatus, addTestResult, getBugById, getTestById
+  }), [bugs, testResults, aiFindings, stats, addBug, updateBugStatus, addTestResult, getBugById, getTestById]);
 
   return (
     <BugContext.Provider
-      value={{ bugs, testResults, aiFindings, stats, addBug, updateBugStatus, addTestResult, getBugById, getTestById }}
+      value={contextValue}
     >
       {children}
     </BugContext.Provider>

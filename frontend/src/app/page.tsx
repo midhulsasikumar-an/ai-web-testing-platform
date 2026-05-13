@@ -28,7 +28,7 @@ export default function DashboardPage() {
           icon={FlaskConical}
           trend="+12% from last week"
           trendUp={true}
-          accentColor="bg-blue-500"
+          colorType="blue"
         />
         <StatCard
           title="Passed"
@@ -36,7 +36,7 @@ export default function DashboardPage() {
           icon={CheckCircle2}
           trend={`${stats.totalTests > 0 ? Math.round((stats.passed / stats.totalTests) * 100) : 0}% pass rate`}
           trendUp={true}
-          accentColor="bg-green-500"
+          colorType="green"
         />
         <StatCard
           title="Failed"
@@ -44,14 +44,14 @@ export default function DashboardPage() {
           icon={XCircle}
           trend={`${stats.totalTests > 0 ? Math.round((stats.failed / stats.totalTests) * 100) : 0}% fail rate`}
           trendUp={false}
-          accentColor="bg-red-500"
+          colorType="red"
         />
         <StatCard
           title="Active Bugs"
           value={stats.openBugs}
           icon={Bug}
           trend="Needs attention"
-          accentColor="bg-amber-500"
+          colorType="amber"
         />
       </div>
 
