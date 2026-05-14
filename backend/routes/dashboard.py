@@ -98,6 +98,25 @@ async def get_dashboard_stats():
         average_health=average_health
     )
 
+    recent_tests = []
+
+    sorted_tests = sorted(
+        tests,
+        key=lambda x: str(x.get("created_at", "")),
+        reverse=True
+    )
+
+    for test in sorted_tests[:5]:
+        recent_tests.append({
+            "test_id": str(test.get("_id", "")),
+            "project": test.get("project", "Unknown"),
+            "url": test.get("url", ""),
+            "overall_status": test.get("overall_status", "unknown"),
+            "health_score": test.get("health_score", 0),
+            "test_type": test.get("test_type", "full"),
+            "date": str(test.get("created_at", ""))[:10]
+        })
+
     return {
         "total_tests": total_tests,
         "passed": passed,
@@ -111,4 +130,5 @@ async def get_dashboard_stats():
             "minor": minor_count
         },
         "ai_logs": ai_logs,
+        "recent_tests": recent_tests,
     }

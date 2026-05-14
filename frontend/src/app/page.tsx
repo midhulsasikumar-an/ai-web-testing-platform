@@ -14,7 +14,6 @@ import { getDashboardStats, DashboardStatsResponse } from "@/services/dashboard-
 
 
 export default function DashboardPage() {
-  const { testResults } = useBugContext();
 
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,7 +109,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent bugs */}
-      <RecentBugs tests={testResults} />
+      <RecentBugs tests={stats.recent_tests} />
     </>
   );
 }

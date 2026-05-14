@@ -12,6 +12,16 @@ export interface AISummary {
   risk_level: "low" | "medium" | "high";
 }
 
+export interface RecentTest {
+  test_id: string;
+  project: string;
+  url: string;
+  overall_status: string;
+  health_score: number;
+  test_type: string;
+  date: string;
+}
+
 export interface DashboardStatsResponse {
   total_tests: number;
   passed: number;
@@ -31,6 +41,7 @@ export interface DashboardStatsResponse {
     moderate: number;
     minor: number;
   };
+  recent_tests: RecentTest[];
 }
 
 export async function getDashboardStats(): Promise<DashboardStatsResponse> {

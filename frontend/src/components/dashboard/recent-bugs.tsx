@@ -6,12 +6,12 @@ import {
   Table, TableBody, TableCell, TableHead,
   TableHeader, TableRow,
 } from "@/components/ui/table";
-import type { TestApiResponse } from "@/services/test-api";
 import { formatDate } from "@/lib/formatters";
 import { Clock } from "lucide-react";
+import { RecentTest } from "@/services/dashboard-api";
 
 interface RecentBugsProps {
-  tests: TestApiResponse[];
+  tests: RecentTest[];
 }
 
 export function RecentBugs({ tests }: RecentBugsProps) {
@@ -106,7 +106,7 @@ export function RecentBugs({ tests }: RecentBugsProps) {
                     </TableCell>
 
                     <TableCell className="text-right text-xs text-muted-foreground">
-                      {formatDate(test.created_at ?? "")}
+                      {formatDate(test.date ?? "")}
                     </TableCell>
                   </TableRow>
                 ))
