@@ -42,6 +42,26 @@ async def extract_page_elements(url: str):
             """
         )
 
+        # INPUT BUTTONS / SUBMITS
+        submit_buttons = await page.locator(
+            "input[type='submit'], input[type='button']"
+        ).evaluate_all(
+            """
+            elements => elements.map(el => ({
+                text: el.value || "",
+                aria_label: el.getAttribute("aria-label") || "",
+                id: el.id || "",
+                class: el.className || "",
+                type: el.type || "",
+                name: el.name || "",
+                role: el.getAttribute("role") || "",
+                data_testid: el.getAttribute("data-testid") || ""
+            }))
+            """
+        )
+
+        button_elements.extend(submit_buttons)
+
         # HEADINGS
         headings = await page.locator("h1, h2, h3").all_inner_texts()
 

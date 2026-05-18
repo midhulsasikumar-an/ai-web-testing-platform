@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 if sys.platform == "win32":
@@ -15,16 +16,24 @@ from backend.services.test_services import create_test_run, run_test_and_update
 from backend.database.mongo import collection, bug_collection
 from backend.routes.dashboard import router as dashboard_router
 from backend.routes.ai import router as ai_router
+from backend.routes.autonomous_agent_route import router as autonomous_agent_router
+from backend.routes.live_execution import router as live_execution_router
 
 app = FastAPI()
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later replace with frontend URL
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 app.mount("/screenshots", StaticFiles(directory="screenshots"), name="screenshots")
+app.mount("/artifacts", StaticFiles(directory="artifacts"), name="artifacts")
 
 
 
@@ -95,3 +104,29 @@ def get_bug_by_id(bug_id: str):
 app.include_router(dashboard_router,prefix="/api/dashboard",tags=["Dashboard"])
 
 app.include_router(ai_router, prefix="/ai", tags=["AI"])
+
+app.include_router(autonomous_agent_router, prefix="/api/agent", tags=["Autonomous Agent"])
+app.include_router(live_execution_router, prefix="/api/agent", tags=["Autonomous Agent Live"])
+
+
+@app.on_event("startup")
+async def startup_event():
+    # Warm up Playwright browser for faster first request and ensure clean shutdown later
+    from backend.agent.browser_session import BrowserSessionManager
+
+    manager = BrowserSessionManager(headless=True)
+    try:
+        await manager.start()
+    except Exception:
+        pass
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    from backend.agent.browser_session import BrowserSessionManager
+
+    manager = BrowserSessionManager(headless=True)
+    try:
+        await manager.shutdown()
+    except Exception:
+        pass

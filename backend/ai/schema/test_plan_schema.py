@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 class Step(BaseModel):
@@ -10,9 +10,16 @@ class Step(BaseModel):
 
 
 class TestCase(BaseModel):
+    title: Optional[str] = None
+    expected: Optional[str] = None
     steps: List[Step]
 
 
 class ExecuteRequest(BaseModel):
     url: str
     test_case: TestCase
+
+class AutonomousRequest(BaseModel):
+    url: str
+    prompt: Optional[str] = None
+    credentials: Optional[Dict[str, str]] = None

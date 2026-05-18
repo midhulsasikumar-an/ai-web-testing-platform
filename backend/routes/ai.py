@@ -5,7 +5,7 @@ from backend.services.ai_service import get_ai_response
 from backend.services.dom_service import extract_page_elements
 from backend.services.execution_service import run_test_steps
 from backend.services.judgement_service import analyze_test_results
-from backend.services.planning_service import generate_test_plan
+# Legacy planning_service has been archived. Planning endpoints are deprecated.
 from backend.ai.schema.test_plan_schema import ExecuteRequest
 
 router = APIRouter()
@@ -28,12 +28,7 @@ async def analyze(url: str):
 
 @router.get("/plan")
 async def plan(url: str):
-
-    dom = await extract_page_elements(url)
-
-    test_plan = await generate_test_plan(url, dom)
-
-    return test_plan
+    return {"error": "legacy planning endpoint deprecated; use /api/agent for autonomous runs"}
 
 @router.post("/execute")
 async def execute_test(payload: ExecuteRequest):

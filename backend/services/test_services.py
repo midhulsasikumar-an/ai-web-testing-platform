@@ -1,4 +1,5 @@
 import uuid
+import os
 from datetime import datetime
 from backend.database.mongo import collection
 from backend.server import TestRequest
@@ -41,63 +42,70 @@ def create_test_run(req: TestRequest):
 
 def run_test_and_update(test_data, url):
     try:
-        results, screenshot = run_test(url, test_data["test_id"])
+        results, artifacts = run_test(url, test_data["test_id"])
 
-        # --- Basic Results ---
+        # attach results
         test_data["results"] = results
-        test_data["screenshot"] = screenshot if screenshot else None
+        test_data["artifacts"] = artifacts
         test_data["status"] = "completed"
 
-        # --- Score Calculation ---
-        score_data = calculate_health_score(results)
-        test_data["summary"] = score_data["summary"]
-        test_data["health_score"] = score_data["score"]
+        # integrate existing scoring/reporting pipeline but prefer WebsiteHealthService output if present
+        # generate legacy score as fallback
+        try:
+            score_data = calculate_health_score(results)
+            test_data["summary"] = score_data["summary"]
+            test_data["health_score"] = score_data["score"]
+        except Exception:
+            test_data["summary"] = None
+            test_data["health_score"] = 0
 
-        # --- AI Layer ---
+        # Run AI layer insights and report generation (existing helpers)
         insights = generate_insights(results)
         test_data["insights"] = insights
 
-        overall_status = calculate_overall_status(results, insights, score_data["score"])
+        overall_status = calculate_overall_status(results, insights, test_data.get("health_score", 0))
         test_data["overall_status"] = overall_status
 
-        # Priority Issues (flattened)
-        priority_issues = []
-
-        for issue in insights.get("critical", []):
-            priority_issues.append({"level": "critical", "issue": issue})
-
-        for issue in insights.get("moderate", []):
-            priority_issues.append({"level": "moderate", "issue": issue})
-
-        for issue in insights.get("minor", []):
-            priority_issues.append({"level": "minor", "issue": issue})
-
-        test_data["priority_issues"] = priority_issues
-
-        # --- Recommendations ---
+        # --- Recommendations, report, summary line ---
         recommendations = generate_recommendations(insights)
         test_data["recommendations"] = recommendations
 
-        # --- Report ---
         report = generate_report(
-            test_data["health_score"],
-            test_data["summary"],
+            test_data.get("health_score", 0),
+            test_data.get("summary"),
             insights
         )
         test_data["report"] = report
 
-        # --- AI Summary Line ---
         summary_line = generate_summary_line(
-            test_data["health_score"],
-            test_data["summary"],
+            test_data.get("health_score", 0),
+            test_data.get("summary"),
             insights
         )
         test_data["ai_summary"] = summary_line
-        created_bugs = create_bugs_from_test(test_data)
 
-        test_data["bugs"] = [
-            bug["bug_id"] for bug in created_bugs
-        ]
+        # Create bug documents from insights
+        created_bugs = create_bugs_from_test(test_data)
+        test_data["bugs"] = [bug["bug_id"] for bug in created_bugs]
+
+        # Build a frontend-friendly ai_report (ensure screenshots are accessible via /artifacts)
+        artifacts_folder = f"artifacts/{test_data['test_id']}"
+        screenshot_urls = []
+        for path in (artifacts.get("screenshots") or []):
+            filename = os.path.basename(path)
+            screenshot_urls.append(f"/artifacts/{test_data['test_id']}/{filename}")
+
+        ai_report = {
+            "website_health_score": test_data.get("health_score", 0),
+            "workflow_completion": overall_status,
+            "critical_issues": len(insights.get("critical", [])),
+            "warnings": len(insights.get("moderate", [])) + len(insights.get("minor", [])),
+            "screenshots": screenshot_urls,
+            "report": report,
+            "insights": insights,
+        }
+
+        test_data["ai_report"] = ai_report
 
         #database update
         collection.update_one(
@@ -111,6 +119,10 @@ def run_test_and_update(test_data, url):
         test_data["summary"] = None
         test_data["health_score"] = 0
         test_data["ai_summary"] = "Test execution failed."
+        collection.update_one(
+            {"test_id": test_data["test_id"]},
+            {"$set": test_data}
+        )
         collection.update_one(
             {"test_id": test_data["test_id"]},
             {"$set": test_data}

@@ -10,11 +10,15 @@ from backend.services.validation_service import (
 
 
 async def safe_click(page, selector):
-    locator = page.locator(selector)
 
-    await locator.wait_for(timeout=5000)
+    await page.wait_for_timeout(500)
+    locator = page.locator(selector).first
+    await locator.wait_for(
+        state="visible",
+        timeout=10000
+    )
     await locator.scroll_into_view_if_needed()
-    await locator.click()
+    await locator.click(force=True)
 
 
 async def safe_fill(page, selector, value):
@@ -25,7 +29,7 @@ async def safe_fill(page, selector, value):
     await locator.fill(value)
 
 
-async def run_test_steps(url: str, test_case, dom: dict = None):
+async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict = None):
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -42,13 +46,27 @@ async def run_test_steps(url: str, test_case, dom: dict = None):
             target = step.target
             value = step.value
 
-            selector = step.selector or resolve_selector(target, dom or {}) or f"text={target}"
+            # DYNAMIC CREDENTIAL INJECTION
+            if (
+                value
+                and isinstance(value, str)
+                and value.startswith("{")
+                and value.endswith("}")
+            ):
+
+                key = value.replace("{", "").replace("}", "").strip()
+
+                if credentials and key in credentials:
+                    value = credentials[key]
+
+            selector = step.selector or resolve_selector(target, dom or {}) or f'text="{target}"'
 
             try:
                 if action == "click":
                     await safe_click(page, selector)
 
-                elif action in ["type", "enter", "fill"]:
+                elif action in ["type", "enter", "fill", "input","enter_text","input_text"]:
+
                     await safe_fill(page, selector, value or "")
 
                 elif action == "press":
@@ -60,12 +78,30 @@ async def run_test_steps(url: str, test_case, dom: dict = None):
                 snapshot = await get_page_snapshot(page)
 
                 previous_url = page.url
-                if error_detected:
-                    status = "failed"
-                elif action == "click" and not url_changed:
-                    status = "warning"
-                else:                   
-                    status = "passed"
+                is_negative_test = any(
+                    keyword in (test_case.expected or "").lower()
+                    for keyword in [
+                        "error",
+                        "invalid",
+                        "failed",
+                        "required"
+                    ]
+                )
+                if is_negative_test:
+
+                    if error_detected:
+                        status = "passed"
+
+                    else:
+                        status = "failed"
+
+                else:
+
+                    if error_detected:
+                        status = "failed"
+
+                    else:
+                        status = "passed"
 
                 expected_match = False
 
