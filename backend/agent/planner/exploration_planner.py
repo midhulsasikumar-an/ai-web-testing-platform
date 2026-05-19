@@ -15,6 +15,9 @@ class ExplorationPlanner(BasePlanner):
         goal_terms = [term for term in context.goal.value.split("_") if len(term) > 3]
         context.frontier.update(context.observation, goal_terms)
         candidate = context.frontier.next(context.memory.visited_urls)
+        while candidate and context.memory.is_locked_target(candidate.url, candidate.text, ""):
+            context.memory.mark_frontier_visited(candidate.url)
+            candidate = context.frontier.next(context.memory.visited_urls)
         reasoning = [
             f"Workflow state is {context.workflow_state.value}",
             "Using graph frontier instead of ambiguous explore action",

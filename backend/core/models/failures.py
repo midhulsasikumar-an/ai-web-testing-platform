@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Failure taxonomy — structured failure types with severity,
 recoverability, retry policies, and root cause tracking.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional

@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Advanced episodic memory — execution history, observations, failures,
 and recoveries with vector embedding support.
 """
-
-from __future__ import annotations
 
 import uuid
 import logging

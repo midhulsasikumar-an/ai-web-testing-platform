@@ -17,3 +17,6 @@ db = client[os.getenv("MONGO_DB_NAME", "ai-web-testing")]
 
 collection = db["test_runs"]
 bug_collection = db["bugs"]
+bug_lifecycle_collection = db["bug_lifecycle"]
+run_comparison_collection = db["run_comparisons"]
+report_export_collection = db["report_exports"]

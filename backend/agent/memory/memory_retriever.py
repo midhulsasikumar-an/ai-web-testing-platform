@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Memory retriever and ranker — unified retrieval across all memory subsystems.
 """
-
-from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional

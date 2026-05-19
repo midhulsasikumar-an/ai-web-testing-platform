@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Skill context — shared context object passed to all skills during evaluation.
 """
-
-from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 

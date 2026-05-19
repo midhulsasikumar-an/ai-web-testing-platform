@@ -54,6 +54,12 @@ class BrowserObserver:
         forms = await self._extract_forms(page)
         page_text = await self._safe_body_text(page)
         semantic_labels = self._semantic_labels(headings, elements, forms, active_element="")
+        breadcrumbs = await self._breadcrumbs(page)
+        active_sidebar_item = await self._active_sidebar_item(page)
+        loading_indicators = await self._loading_indicators(page)
+        visible_tables = await self._visible_tables(page)
+        visible_cards = await self._visible_cards(page)
+        dashboard_widgets = await self._dashboard_widgets(page)
         viewport = await self._viewport(page)
         scroll = await self._scroll(page)
         iframe_urls = await self._iframe_urls(page)
@@ -81,6 +87,12 @@ class BrowserObserver:
             fingerprint=fingerprint,
             screenshot=screenshot,
             semantic_labels=semantic_labels,
+            breadcrumbs=breadcrumbs,
+            active_sidebar_item=active_sidebar_item,
+            loading_indicators=loading_indicators,
+            visible_tables=visible_tables,
+            visible_cards=visible_cards,
+            dashboard_widgets=dashboard_widgets,
         )
 
     async def _extract_interactive_elements(self, page: Page) -> List[dict]:
@@ -255,6 +267,139 @@ class BrowserObserver:
         except Exception:
             return ""
 
+        async def _breadcrumbs(self, page: Page) -> List[str]:
+                script = """
+                () => {
+                    const selectors = [
+                        '[aria-label*="breadcrumb" i] a, [aria-label*="breadcrumb" i] span',
+                        '.breadcrumb a, .breadcrumb span, nav.breadcrumb a, nav.breadcrumb span',
+                        '[data-testid*="breadcrumb" i] a, [data-testid*="breadcrumb" i] span'
+                    ];
+                    const items = [];
+                    for (const selector of selectors) {
+                        document.querySelectorAll(selector).forEach(el => {
+                            const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ');
+                            if (text && !items.includes(text)) items.push(text);
+                        });
+                    }
+                    return items.slice(0, 12);
+                }
+                """
+                try:
+                        return await page.evaluate(script)
+                except Exception:
+                        return []
+
+        async def _active_sidebar_item(self, page: Page) -> str:
+                script = """
+                () => {
+                    const selectors = [
+                        '[aria-current="page"]',
+                        '[aria-selected="true"]',
+                        '.sidebar .active',
+                        '.sidenav .active',
+                        '.menu .active',
+                        '.nav .active',
+                        '.active[role="link"]',
+                        '.active[role="menuitem"]'
+                    ];
+                    for (const selector of selectors) {
+                        const el = document.querySelector(selector);
+                        if (!el) continue;
+                        const text = (el.innerText || el.textContent || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim().replace(/\s+/g, ' ');
+                        if (text) return text;
+                    }
+                    return '';
+                }
+                """
+                try:
+                        return " ".join((await page.evaluate(script)).split())
+                except Exception:
+                        return ""
+
+        async def _loading_indicators(self, page: Page) -> List[str]:
+                script = """
+                () => {
+                    const selectors = [
+                        '[aria-busy="true"]',
+                        '[role="progressbar"]',
+                        '.spinner', '.loading', '.loader', '.progress',
+                        '[data-loading="true"]',
+                        '[aria-live="polite"]'
+                    ];
+                    const results = [];
+                    selectors.forEach(selector => {
+                        document.querySelectorAll(selector).forEach(el => {
+                            const text = (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ');
+                            if (text && !results.includes(text)) results.push(text);
+                        });
+                    });
+                    return results.slice(0, 12);
+                }
+                """
+                try:
+                        return await page.evaluate(script)
+                except Exception:
+                        return []
+
+        async def _visible_tables(self, page: Page) -> List[Dict]:
+                script = """
+                () => Array.from(document.querySelectorAll('table')).slice(0, 20).map((table, index) => {
+                    const rect = table.getBoundingClientRect();
+                    const style = window.getComputedStyle(table);
+                    return {
+                        index,
+                        visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+                        rows: table.querySelectorAll('tr').length,
+                        headers: Array.from(table.querySelectorAll('th')).map(el => (el.innerText || el.textContent || '').trim()).filter(Boolean).slice(0, 12),
+                        caption: (table.querySelector('caption')?.innerText || '').trim(),
+                        bbox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+                    };
+                })
+                """
+                try:
+                        return await page.evaluate(script)
+                except Exception:
+                        return []
+
+        async def _visible_cards(self, page: Page) -> List[Dict]:
+                script = """
+                () => Array.from(document.querySelectorAll('[class*="card" i], [data-card], [role="region"]')).slice(0, 25).map((el, index) => {
+                    const rect = el.getBoundingClientRect();
+                    const style = window.getComputedStyle(el);
+                    const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ');
+                    return {
+                        index,
+                        text: text.slice(0, 220),
+                        visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+                        bbox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+                    };
+                })
+                """
+                try:
+                        return await page.evaluate(script)
+                except Exception:
+                        return []
+
+        async def _dashboard_widgets(self, page: Page) -> List[Dict]:
+                script = """
+                () => Array.from(document.querySelectorAll('[data-widget], [class*="widget" i], [class*="stat" i], [class*="metric" i]')).slice(0, 25).map((el, index) => {
+                    const rect = el.getBoundingClientRect();
+                    const style = window.getComputedStyle(el);
+                    const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ');
+                    return {
+                        index,
+                        text: text.slice(0, 220),
+                        visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+                        bbox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+                    };
+                })
+                """
+                try:
+                        return await page.evaluate(script)
+                except Exception:
+                        return []
+
     @staticmethod
     def _semantic_labels(headings: List[str], elements: List[ObservedElement], forms: List[Dict], active_element: str = "") -> List[str]:
         labels = []
@@ -355,3 +500,150 @@ class BrowserObserver:
             ],
         }
         return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+async def _observer_breadcrumbs(self: BrowserObserver, page: Page) -> List[str]:
+        script = """
+        () => {
+            const selectors = [
+                '[aria-label*="breadcrumb" i] a, [aria-label*="breadcrumb" i] span',
+                '.breadcrumb a, .breadcrumb span, nav.breadcrumb a, nav.breadcrumb span',
+                '[data-testid*="breadcrumb" i] a, [data-testid*="breadcrumb" i] span'
+            ];
+            const items = [];
+            for (const selector of selectors) {
+                document.querySelectorAll(selector).forEach(el => {
+                    const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ');
+                    if (text && !items.includes(text)) items.push(text);
+                });
+            }
+            return items.slice(0, 12);
+        }
+        """
+        try:
+                return await page.evaluate(script)
+        except Exception:
+                return []
+
+
+async def _observer_active_sidebar_item(self: BrowserObserver, page: Page) -> str:
+        script = """
+        () => {
+            const selectors = [
+                '[aria-current="page"]',
+                '[aria-selected="true"]',
+                '.sidebar .active',
+                '.sidenav .active',
+                '.menu .active',
+                '.nav .active',
+                '.active[role="link"]',
+                '.active[role="menuitem"]'
+            ];
+            for (const selector of selectors) {
+                const el = document.querySelector(selector);
+                if (!el) continue;
+                const text = (el.innerText || el.textContent || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim().replace(/\s+/g, ' ');
+                if (text) return text;
+            }
+            return '';
+        }
+        """
+        try:
+                return " ".join((await page.evaluate(script)).split())
+        except Exception:
+                return ""
+
+
+async def _observer_loading_indicators(self: BrowserObserver, page: Page) -> List[str]:
+        script = """
+        () => {
+            const selectors = [
+                '[aria-busy="true"]',
+                '[role="progressbar"]',
+                '.spinner', '.loading', '.loader', '.progress',
+                '[data-loading="true"]',
+                '[aria-live="polite"]'
+            ];
+            const results = [];
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(el => {
+                    const text = (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ');
+                    if (text && !results.includes(text)) results.push(text);
+                });
+            });
+            return results.slice(0, 12);
+        }
+        """
+        try:
+                return await page.evaluate(script)
+        except Exception:
+                return []
+
+
+async def _observer_visible_tables(self: BrowserObserver, page: Page) -> List[Dict]:
+        script = """
+        () => Array.from(document.querySelectorAll('table')).slice(0, 20).map((table, index) => {
+            const rect = table.getBoundingClientRect();
+            const style = window.getComputedStyle(table);
+            return {
+                index,
+                visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+                rows: table.querySelectorAll('tr').length,
+                headers: Array.from(table.querySelectorAll('th')).map(el => (el.innerText || el.textContent || '').trim()).filter(Boolean).slice(0, 12),
+                caption: (table.querySelector('caption')?.innerText || '').trim(),
+                bbox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+            };
+        })
+        """
+        try:
+                return await page.evaluate(script)
+        except Exception:
+                return []
+
+
+async def _observer_visible_cards(self: BrowserObserver, page: Page) -> List[Dict]:
+        script = """
+        () => Array.from(document.querySelectorAll('[class*="card" i], [data-card], [role="region"]')).slice(0, 25).map((el, index) => {
+            const rect = el.getBoundingClientRect();
+            const style = window.getComputedStyle(el);
+            const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ');
+            return {
+                index,
+                text: text.slice(0, 220),
+                visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+                bbox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+            };
+        })
+        """
+        try:
+                return await page.evaluate(script)
+        except Exception:
+                return []
+
+
+async def _observer_dashboard_widgets(self: BrowserObserver, page: Page) -> List[Dict]:
+        script = """
+        () => Array.from(document.querySelectorAll('[data-widget], [class*="widget" i], [class*="stat" i], [class*="metric" i]')).slice(0, 25).map((el, index) => {
+            const rect = el.getBoundingClientRect();
+            const style = window.getComputedStyle(el);
+            const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ');
+            return {
+                index,
+                text: text.slice(0, 220),
+                visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+                bbox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+            };
+        })
+        """
+        try:
+                return await page.evaluate(script)
+        except Exception:
+                return []
+
+
+BrowserObserver._breadcrumbs = _observer_breadcrumbs
+BrowserObserver._active_sidebar_item = _observer_active_sidebar_item
+BrowserObserver._loading_indicators = _observer_loading_indicators
+BrowserObserver._visible_tables = _observer_visible_tables
+BrowserObserver._visible_cards = _observer_visible_cards
+BrowserObserver._dashboard_widgets = _observer_dashboard_widgets

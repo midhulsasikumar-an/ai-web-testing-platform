@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Objective-driven execution system — hierarchical task decomposition,
 subtask management, dependency graphs, and completion scoring.
 """
-
-from __future__ import annotations
 
 import uuid
 from datetime import datetime

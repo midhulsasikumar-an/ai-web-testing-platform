@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Resolve overlay skill — handles cookie banners, notification popups,
 and other overlays that partially block the page.
 """
-
-from __future__ import annotations
 from typing import List
 from backend.agent.skill_engine.skill_context import SkillContext
 from backend.agent.skill_engine.skill_registry import BaseSkill, SkillResult

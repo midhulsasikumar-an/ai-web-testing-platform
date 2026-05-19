@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Navigate sidebar skill — discovers and navigates sidebar/menu navigation elements.
 """
-
-from __future__ import annotations
 
 from typing import List, Optional
 from urllib.parse import urljoin

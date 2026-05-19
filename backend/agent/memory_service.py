@@ -49,6 +49,8 @@ class AgentMemory:
         self.session_cookies: List[Dict] = []
         self.failed_auth_attempts: int = 0
         self.logout_successes: int = 0
+        self.completed_modules: Dict[str, Dict[str, Any]] = {}
+        self.locked_routes: set[str] = set()
 
     def remember_observation(self, observation: Observation, step: int) -> None:
         self.observations.append(observation)
@@ -60,7 +62,7 @@ class AgentMemory:
             self.semantic_state_history.append(observation.page_type)
             self.workflow_state_history.append(observation.page_type)
             self.visited_semantic_states.add(observation.page_type)
-        if observation.page_type in {"dashboard", "dashboard_home", "dashboard_page"}:
+        if observation.page_type in {"dashboard", "dashboard_home", "dashboard_page", "admin_module", "user_management", "settings_page"}:
             self.authenticated = True
         self._last_observed_state = observation.page_type
         self.add_event(
@@ -237,6 +239,8 @@ class AgentMemory:
                 "failed_auth_attempts": self.failed_auth_attempts,
                 "logout_successes": self.logout_successes,
             },
+            "completed_modules": list(self.completed_modules.values())[-20:],
+            "locked_routes": sorted(self.locked_routes)[-50:],
         }
 
     # Authentication tracking helpers
@@ -265,6 +269,48 @@ class AgentMemory:
             self.logout_successes += 1
         self.add_event("auth", f"logout {'succeeded' if success else 'failed'}", step, {"success": success})
 
+    def mark_module_completed(self, module: str, *, url: str = "", heading: str = "", breadcrumb: str = "", workflow_state: str = "", semantic_state: str = "", reason: str = "") -> None:
+        if not module:
+            return
+        key = self._normalize_module_key(module)
+        self.completed_modules[key] = {
+            "module": key,
+            "url": url,
+            "heading": heading,
+            "breadcrumb": breadcrumb,
+            "workflow_state": workflow_state,
+            "semantic_state": semantic_state,
+            "reason": reason,
+            "completed": True,
+            "locked": True,
+        }
+        if url:
+            self.locked_routes.add(self._normalize_url(url))
+
+    def module_locked(self, module: str) -> bool:
+        return self._normalize_module_key(module) in self.completed_modules
+
+    def route_locked(self, url: str) -> bool:
+        return self._normalize_url(url) in self.locked_routes
+
+    def is_locked_target(self, url: str = "", target: str = "", selector: str = "") -> bool:
+        normalized = " ".join(part for part in [url, target, selector] if part).lower()
+        if not normalized:
+            return False
+        if url and self.route_locked(url):
+            return True
+        for module in self.completed_modules.values():
+            module_name = str(module.get("module", "")).lower()
+            if module_name and module_name in normalized:
+                return True
+            heading = str(module.get("heading") or "").lower()
+            breadcrumb = str(module.get("breadcrumb") or "").lower()
+            if heading and heading in normalized:
+                return True
+            if breadcrumb and breadcrumb in normalized:
+                return True
+        return False
+
     def add_event(self, event_type: str, message: str, step: int, metadata: Optional[Dict] = None) -> None:
         self.events.append(
             MemoryEvent(
@@ -291,3 +337,16 @@ class AgentMemory:
     def url_depth(url: str) -> int:
         parsed = urlparse(url)
         return len([part for part in parsed.path.split("/") if part])
+
+    @staticmethod
+    def _normalize_module_key(value: str) -> str:
+        normalized = (value or "").strip().lower().replace("/", " ")
+        for token in ["module", "page", "section", "screen", "route"]:
+            normalized = normalized.replace(token, "")
+        return " ".join(normalized.split())
+
+    @staticmethod
+    def _normalize_url(url: str) -> str:
+        parsed = urlparse(url or "")
+        path = "/".join(part for part in parsed.path.lower().split("/") if part)
+        return f"{parsed.netloc.lower()}/{path}" if parsed.netloc else path

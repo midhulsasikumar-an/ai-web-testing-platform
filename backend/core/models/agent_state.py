@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Agent run state, step, request/response models.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional

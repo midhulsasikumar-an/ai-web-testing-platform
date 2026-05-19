@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 AI-agent style planner output models with reasoning traces,
 candidate evaluation, skill selection, and risk assessment.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional

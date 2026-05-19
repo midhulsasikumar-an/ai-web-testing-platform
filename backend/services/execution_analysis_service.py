@@ -61,6 +61,13 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
     performance_summary = dict(summary_data.get("performance_summary", {}) or {})
     bug_clusters = list(summary_data.get("bug_clusters", []) or [])
     timeline_events = list(summary_data.get("timeline_events", []) or [])
+    completed_modules = list(summary_data.get("completed_modules", []) or [])
+    locked_routes = list(summary_data.get("locked_routes", []) or [])
+    coverage_summary = dict(summary_data.get("coverage_summary", {}) or {})
+    repeated_action_prevention_summary = dict(summary_data.get("repeated_action_prevention_summary", {}) or {})
+    visual_bug_summary = list(summary_data.get("visual_bug_summary", []) or [])
+    workflow_stability_summary = dict(summary_data.get("workflow_stability_summary", {}) or {})
+    success_scoring = dict(summary_data.get("success_scoring", {}) or {})
 
     # failure analysis
     failure_types = {}
@@ -83,7 +90,10 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
     visual_findings = _collect_visual_findings(steps)
     bug_cards = _build_bug_cards(grouped_failures, console_findings, network_findings, visual_findings, steps)
     authentication_analysis = _build_authentication_analysis(run, steps, bug_cards)
-    coverage_summary = _build_coverage_summary(run, steps)
+    base_coverage_summary = _build_coverage_summary(run, steps)
+    if coverage_summary:
+        base_coverage_summary.update(coverage_summary)
+    coverage_summary = base_coverage_summary
     workflow_analysis = _build_workflow_analysis(run, steps, grouped_failures)
     business_impact = _build_business_impact(bug_cards, workflow_analysis, authentication_analysis)
     recommendations = _build_recommendations(bug_cards, coverage_summary, workflow_analysis)
@@ -200,6 +210,13 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
         "performance_summary": performance_summary,
         "bug_clusters": bug_clusters,
         "timeline_events": timeline_events,
+        "completed_modules": completed_modules,
+        "locked_routes": locked_routes,
+        "coverage_summary": coverage_summary,
+        "repeated_action_prevention_summary": repeated_action_prevention_summary,
+        "visual_bug_summary": visual_bug_summary,
+        "workflow_stability_summary": workflow_stability_summary,
+        "success_scoring": success_scoring,
     }
     analysis_payload["timeline"] = timeline
     analysis_payload["issues"] = issues

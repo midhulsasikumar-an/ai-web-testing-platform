@@ -102,12 +102,19 @@ class ObservationDiffService:
             if any(term in label.lower() for term in ["nav", "menu", "sidebar", "dashboard", "admin", "settings", "users", "profile", "reports", "analytics"])
         ]
         text_blocks = ObservationDiffService._text_blocks(observation.page_text)
+        breadcrumb_signature = tuple(item.strip().lower() for item in observation.breadcrumbs if item.strip())
+        active_sidebar_item = observation.active_sidebar_item.strip().lower()
+        loading_signature = tuple(item.strip().lower() for item in observation.loading_indicators if item.strip())
+        table_like_blocks = [
+            f"{table.get('caption', '')} {' '.join(table.get('headers', []))} {table.get('rows', 0)}".strip()
+            for table in observation.visible_tables
+        ] + [str(widget.get('text', '')).strip() for widget in observation.dashboard_widgets]
         table_signature = ObservationDiffService._section_signature(
-            text_blocks,
-            include_terms=("table", "row", "column", "search", "filter", "page", "record", "users", "system"),
+            table_like_blocks or text_blocks,
+            include_terms=("table", "row", "column", "search", "filter", "page", "record", "users", "system", "dashboard", "widget"),
         )
         modal_signature = ObservationDiffService._section_signature(
-            [*observation.dialogs, *interactive_labels],
+            [*observation.dialogs, *interactive_labels, *observation.loading_indicators],
             include_terms=("modal", "dialog", "popup", "overlay", "drawer"),
         )
         form_signature = ObservationDiffService._section_signature(
@@ -118,6 +125,9 @@ class ObservationDiffService:
         return {
             "headings": headings,
             "navigation_labels": tuple(sorted(set(navigation_labels))),
+            "breadcrumbs": breadcrumb_signature,
+            "active_sidebar_item": active_sidebar_item,
+            "loading_signature": loading_signature,
             "table_signature": table_signature,
             "modal_signature": modal_signature,
             "form_signature": form_signature,

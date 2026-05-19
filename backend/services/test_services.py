@@ -2,7 +2,7 @@ import uuid
 import os
 from datetime import datetime
 from backend.database.mongo import collection
-from backend.server import TestRequest
+from backend.models.schema import TestRequest
 from backend.services.test_runner import run_test
 from backend.services.scoring.health_score import calculate_health_score
 from backend.services.scoring.insights import generate_insights

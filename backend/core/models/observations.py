@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Unified observation models — page observations, elements, artifacts.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -73,6 +73,12 @@ class Observation(BaseModel):
     semantic_labels: List[str] = Field(default_factory=list)
     visual_regions: List[Dict[str, Any]] = Field(default_factory=list)
     accessibility_tree_summary: Optional[str] = None
+    breadcrumbs: List[str] = Field(default_factory=list)
+    active_sidebar_item: str = ""
+    loading_indicators: List[str] = Field(default_factory=list)
+    visible_tables: List[Dict[str, Any]] = Field(default_factory=list)
+    visible_cards: List[Dict[str, Any]] = Field(default_factory=list)
+    dashboard_widgets: List[Dict[str, Any]] = Field(default_factory=list)
     observed_at: datetime = Field(default_factory=datetime.utcnow)
 
     @property

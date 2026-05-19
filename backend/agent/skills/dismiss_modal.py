@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Dismiss modal skill — detects and dismisses modals, overlays,
 cookie banners, and dialog boxes blocking interaction.
 """
-
-from __future__ import annotations
 
 from typing import List, Optional
 

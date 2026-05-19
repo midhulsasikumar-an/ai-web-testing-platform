@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Authenticate skill — handles login flows including credential filling,
 form submission, MFA detection, and post-login validation.
 """
-
-from __future__ import annotations
 
 from typing import List, Optional
 

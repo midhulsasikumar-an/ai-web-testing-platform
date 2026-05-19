@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from backend.agent.memory_service import AgentMemory
 from backend.agent.safety import SafetyPolicy
+from backend.services.action_prevention_service import ActionPreventionService
 from backend.core.models.workflow import ActionType
 from backend.core.models.actions import AgentAction
 from backend.core.models.workflow import FailureType
@@ -23,6 +24,7 @@ class ActionValidationEngine:
 
     def __init__(self, safety_policy: SafetyPolicy):
         self.safety_policy = safety_policy
+        self.action_prevention = ActionPreventionService()
 
     def validate(self, action: AgentAction, observation: Observation, memory: AgentMemory) -> ActionValidationResult:
         policy = self.safety_policy.validate_action(action, observation.url)
@@ -47,20 +49,13 @@ class ActionValidationEngine:
         if action.confidence < self.LOW_CONFIDENCE_REPLAN:
             risk_score += 0.35
 
-        if memory.repeated_action_count(action) >= 2:
+        retry_guard = self.action_prevention.semantic_retry_guard(action, observation, memory)
+        if retry_guard["blocked"]:
             return ActionValidationResult(
                 valid=False,
-                reason="Action repeated excessively",
-                failure_type=FailureType.INVALID_ACTION,
-                risk_score=0.9,
-            )
-
-        if memory.repeated_failure_count(action) >= 2:
-            return ActionValidationResult(
-                valid=False,
-                reason="Previous failures for this action exceed limit",
-                failure_type=FailureType.INVALID_ACTION,
-                risk_score=0.95,
+                reason=retry_guard["reason"],
+                failure_type=retry_guard["failure_type"],
+                risk_score=retry_guard["risk_score"],
             )
 
         if action.action == ActionType.WAIT:

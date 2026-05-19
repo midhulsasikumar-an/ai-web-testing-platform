@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Memory event models for episodic, semantic, and procedural memory.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional

@@ -14,6 +14,8 @@ class NavigationStateService:
         page_classification: PageClassification,
         authenticated: bool = False,
     ) -> str:
+        sidebar = (observation.active_sidebar_item or "").lower()
+        breadcrumbs = " ".join(observation.breadcrumbs).lower()
         if page_classification.semantic_state:
             return page_classification.semantic_state
         page_type = page_classification.page_type
@@ -36,7 +38,17 @@ class NavigationStateService:
             return "landing_page"
         if authenticated:
             return "dashboard_home"
-        text = f"{observation.title} {' '.join(observation.headings)} {observation.page_text}".lower()
+        text = f"{observation.title} {' '.join(observation.headings)} {observation.page_text} {sidebar} {breadcrumbs}".lower()
+        if any(term in sidebar for term in ["admin", "user management", "users"]):
+            return "admin_module"
+        if any(term in sidebar for term in ["settings", "preferences", "configuration"]):
+            return "settings_page"
+        if "admin" in breadcrumbs:
+            return "admin_module"
+        if "users" in breadcrumbs:
+            return "user_management"
+        if "settings" in breadcrumbs:
+            return "settings_page"
         if any(term in text for term in ["admin", "user management", "system users"]):
             return "admin_module"
         if any(term in text for term in ["settings", "preferences", "configuration"]):

@@ -1,5 +1,15 @@
 # Final Backend Architecture
 
+Overview of the simplified, production-ready backend architecture for the AI testing platform.
+
+- Single runtime execution path: `backend/agent/agent_loop_v2.py`.
+- Canonical models: `backend/core/models/*`.
+- Eventing: `backend/events/bus.py` (`event_bus`) with JSONL persistence under `artifacts/timeline/{run_id}/events.jsonl`.
+- Runtime session manager: `backend/runtime/session_manager.py`.
+- Runtime routes: `backend/routes/runtime.py` exposing websocket and control APIs.
+- Static artifacts served at `/screenshots` and `/artifacts` via FastAPI mounts.
+# Final Backend Architecture
+
 This document describes the canonical runtime architecture for the autonomous AI website testing platform.
 
 - Agent components live under `backend/agent/`.

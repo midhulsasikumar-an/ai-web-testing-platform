@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 """
 Unified workflow states, goal types, and failure taxonomy enums.
 
 These are the canonical definitions — all other modules import from here.
 """
-
-from __future__ import annotations
 
 from enum import Enum
 

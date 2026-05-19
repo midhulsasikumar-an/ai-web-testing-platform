@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Screenshot analyzer — analyzes screenshots for visual understanding,
 UI element detection, and visual state comparison.
 """
-
-from __future__ import annotations
 
 import hashlib
 import logging

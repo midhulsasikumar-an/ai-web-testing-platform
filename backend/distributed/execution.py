@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Distributed execution architecture — browser pool, task queue,
 worker management, session orchestration, and heartbeat monitoring.
 """
-
-from __future__ import annotations
 
 import asyncio
 import logging

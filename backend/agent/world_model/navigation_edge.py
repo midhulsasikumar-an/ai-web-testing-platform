@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Navigation edge — a directed edge in the world-state graph representing
 an action-based transition between two semantic states.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional

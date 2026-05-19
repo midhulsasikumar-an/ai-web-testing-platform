@@ -7,8 +7,10 @@ from fastapi.encoders import jsonable_encoder
 
 from backend.services.execution_analysis_service import analyze_execution
 from backend.core.models.report_models import AIReadableReport
+from backend.services.bug_lifecycle_service import ingest_bug_lifecycle, summarize_bug_lifecycle
 from backend.services.report_llm_service import enhance_narrative
 from backend.database.report_repository import save_report
+from backend.database.mongo import db
 
 logger = logging.getLogger("services.ai_report")
 
@@ -47,11 +49,18 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str,
         failed_goals = analysis.get("failed_goals", [])
         detected_modules = analysis.get("detected_modules", [])
         user_journey = analysis.get("user_journey", [])
+        completed_modules = analysis.get("completed_modules", [])
+        locked_routes = analysis.get("locked_routes", [])
         authentication_strategy = analysis.get("authentication_strategy", "")
         authentication_result = analysis.get("authentication_result", "")
         authentication_confidence = analysis.get("authentication_confidence", 0.0)
         authentication_reasoning = analysis.get("authentication_reasoning", [])
         severity_breakdown = analysis.get("severity_breakdown", {})
+        coverage_summary = analysis.get("coverage_summary", {})
+        repeated_action_prevention_summary = analysis.get("repeated_action_prevention_summary", {})
+        visual_bug_summary = analysis.get("visual_bug_summary", [])
+        workflow_stability_summary = analysis.get("workflow_stability_summary", {})
+        success_scoring = analysis.get("success_scoring", {})
 
         base_narrative = _build_narrative(
             run_data,
@@ -67,6 +76,12 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str,
             workflow_analysis=workflow_analysis,
             authentication_analysis=authentication_analysis,
             coverage_summary=coverage_summary,
+            completed_modules=completed_modules,
+            locked_routes=locked_routes,
+            repeated_action_prevention_summary=repeated_action_prevention_summary,
+            visual_bug_summary=visual_bug_summary,
+            workflow_stability_summary=workflow_stability_summary,
+            success_scoring=success_scoring,
         )
 
         enhanced = None
@@ -107,6 +122,12 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str,
             "coverage_summary": coverage_summary,
             "coverage": coverage_summary,
             "semantic_navigation_summary": semantic_navigation_summary,
+            "completed_modules": completed_modules,
+            "locked_routes": locked_routes,
+            "repeated_action_prevention_summary": repeated_action_prevention_summary,
+            "visual_bug_summary": visual_bug_summary,
+            "workflow_stability_summary": workflow_stability_summary,
+            "success_scoring": success_scoring,
             "authentication_summary": _build_authentication_summary(run_data, authentication_strategy, authentication_result, authentication_confidence),
             "interaction_narrative": narrative,
             "execution_timeline": timeline,
@@ -177,12 +198,28 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str,
                 "business_impact": business_impact,
                 "recommendations": recommendations,
                 "coverage_summary": coverage_summary,
+                "completed_modules": completed_modules,
+                "locked_routes": locked_routes,
+                "repeated_action_prevention_summary": repeated_action_prevention_summary,
+                "visual_bug_summary": visual_bug_summary,
+                "workflow_stability_summary": workflow_stability_summary,
+                "success_scoring": success_scoring,
             },
         }
 
         saved_id = save_report(jsonable_encoder(final_report))
-        logger.info("report persisted", extra={"report_id": saved_id, "run_id": run_data.get("run_id")})
         final_report["report_id"] = saved_id
+        try:
+            lifecycle_records = ingest_bug_lifecycle(run_data, final_report)
+            final_report["bug_lifecycle"] = {
+                "summary": summarize_bug_lifecycle(),
+                "ingested": len(lifecycle_records),
+                "records": lifecycle_records,
+            }
+            db["reports"].update_one({"report_id": saved_id}, {"$set": {"bug_lifecycle": final_report["bug_lifecycle"]}})
+        except Exception:
+            logger.exception("bug lifecycle ingestion failed", extra={"report_id": saved_id, "run_id": run_data.get("run_id")})
+        logger.info("report persisted", extra={"report_id": saved_id, "run_id": run_data.get("run_id")})
         return final_report
     except Exception as e:
         logger.exception("report generation failed: %s", e)
@@ -231,6 +268,12 @@ def _build_narrative(
     workflow_analysis: Dict[str, Any] | None = None,
     authentication_analysis: Dict[str, Any] | None = None,
     coverage_summary: Dict[str, Any] | None = None,
+    completed_modules: list[dict] | None = None,
+    locked_routes: list[str] | None = None,
+    repeated_action_prevention_summary: Dict[str, Any] | None = None,
+    visual_bug_summary: list[dict] | None = None,
+    workflow_stability_summary: Dict[str, Any] | None = None,
+    success_scoring: Dict[str, Any] | None = None,
 ) -> str:
     parts = []
     if executive_summary:
@@ -272,6 +315,23 @@ def _build_narrative(
     if coverage_summary:
         parts.append(
             f"Coverage reached {coverage_summary.get('coverage_score', 0):.0f}/100 with exploration depth {coverage_summary.get('exploration_depth', 0)}."
+        )
+    if completed_modules:
+        module_names = [str(item.get("module", "")).replace("_", " ") for item in completed_modules if item.get("module")]
+        if module_names:
+            parts.append(f"Completed modules: {', '.join(dict.fromkeys(module_names[:6]))}.")
+    if locked_routes:
+        parts.append(f"Locked routes: {', '.join(str(route) for route in locked_routes[:4] if route)}.")
+    if repeated_action_prevention_summary:
+        if repeated_action_prevention_summary.get("locked_route_blocks"):
+            parts.append("Repeated navigation was prevented once routes were confirmed complete.")
+    if visual_bug_summary:
+        parts.append(f"Visual review flagged {len(visual_bug_summary)} layout issue(s).")
+    if workflow_stability_summary and workflow_stability_summary.get("stable") is not None:
+        parts.append("Workflow stability was confirmed before and after key interactions." if workflow_stability_summary.get("stable") else "Workflow stability required extra waiting before state transitions.")
+    if success_scoring:
+        parts.append(
+            f"Final success score: {success_scoring.get('overall_score', 0):.2f} ({success_scoring.get('confidence', 'low')} confidence)."
         )
     if issues:
         parts.append(f"Detected {len(issues)} issues during execution, including {', '.join({i.issue_type for i in issues})}.")

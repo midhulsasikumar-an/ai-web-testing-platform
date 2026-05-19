@@ -24,6 +24,7 @@ class ExecutionEventType(str, Enum):
 class ExecutionEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: str(uuid4()))
     run_id: str
+    agent: Optional[str] = None
     type: ExecutionEventType
     message: str = ""
     timestamp: datetime = Field(default_factory=datetime.utcnow)

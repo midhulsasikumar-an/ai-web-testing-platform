@@ -1,0 +1,11 @@
+{
+  "execution_id": "orangehrm-smoke-trace4",
+  "status": "COMPLETED",
+  "current_step": 0,
+  "current_goal": "full_authentication",
+  "workflow_state": "INIT",
+  "started_at": "2026-05-19T19:20:14.742680",
+  "updated_at": "2026-05-19T19:20:30.306839",
+  "completed_at": "2026-05-19T19:20:30.306839",
+  "cancelled": false
+}

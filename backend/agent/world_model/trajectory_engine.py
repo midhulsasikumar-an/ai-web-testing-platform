@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Trajectory engine — scores, optimizes, and analyzes agent execution
 trajectories through the world graph for RL-ready data generation.
 """
-
-from __future__ import annotations
 
 import uuid
 from datetime import datetime

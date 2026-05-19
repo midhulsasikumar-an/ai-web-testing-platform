@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Advanced loop prevention — stagnation detection, cyclic navigation
 detection, trajectory entropy analysis, and recovery escalation.
 """
-
-from __future__ import annotations
 
 import math
 import logging

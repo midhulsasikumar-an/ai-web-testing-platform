@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Search site skill — performs search operations on web applications.
 """
-
-from __future__ import annotations
 
 from typing import List
 

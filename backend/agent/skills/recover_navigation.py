@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 """
 Recover navigation skill — handles navigation failures, dead ends,
 and returns the agent to a known-good state.
 """
 
-from __future__ import annotations
 from typing import List
 from backend.agent.skill_engine.skill_context import SkillContext
 from backend.agent.skill_engine.skill_registry import BaseSkill, SkillResult

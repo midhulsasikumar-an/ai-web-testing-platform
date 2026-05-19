@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Enterprise observability — structured logging, metrics collection,
 execution telemetry, and distributed tracing for the agent platform.
 """
-
-from __future__ import annotations
 
 import json
 import logging

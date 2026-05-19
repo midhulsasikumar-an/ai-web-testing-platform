@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Semantic memory — learned patterns, reusable workflows,
 and semantic page understanding with confidence tracking.
 """
-
-from __future__ import annotations
 
 import uuid
 import logging

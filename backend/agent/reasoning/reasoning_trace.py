@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 """
 Reasoning trace engine — stores candidate actions, rejected actions,
 planner rationale, confidence evolution, and reasoning chains.
 Supports debugging, replay analysis, and future RL fine-tuning.
 """
-
-from __future__ import annotations
 
 import uuid
 from datetime import datetime

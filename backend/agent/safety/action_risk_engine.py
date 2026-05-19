@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 """
 Action risk engine — comprehensive risk assessment for every action,
 with destructive action detection, domain policy enforcement,
 and permission-based execution control.
 """
-
-from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional

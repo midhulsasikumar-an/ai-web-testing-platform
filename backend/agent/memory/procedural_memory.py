@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Procedural memory — reusable action chains learned from successful executions.
 """
-
-from __future__ import annotations
 
 import uuid
 import logging

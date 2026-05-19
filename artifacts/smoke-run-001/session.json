@@ -1,0 +1,11 @@
+{
+  "execution_id": "smoke-run-001",
+  "status": "RUNNING",
+  "current_step": 0,
+  "current_goal": "smoke-test",
+  "workflow_state": null,
+  "started_at": "2026-05-19T11:55:18.079901",
+  "updated_at": "2026-05-19T11:55:18.085428",
+  "completed_at": null,
+  "cancelled": false
+}

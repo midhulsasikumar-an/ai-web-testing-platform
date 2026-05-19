@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Skill selector — selects the best skill for the current context,
 evaluates candidates, and composes skill chains.
 """
-
-from __future__ import annotations
 
 import logging
 from typing import List, Optional

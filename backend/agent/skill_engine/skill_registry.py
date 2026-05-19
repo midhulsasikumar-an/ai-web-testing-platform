@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Skill registry — central registry for all agent skills with
 metadata, versioning, and dynamic discovery.
 """
-
-from __future__ import annotations
 
 import logging
 from typing import Dict, List, Optional, Type

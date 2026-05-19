@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Navigation node — a vertex in the world-state graph representing a
 unique semantic application state the agent has observed.
 """
-
-from __future__ import annotations
 
 import hashlib
 import json

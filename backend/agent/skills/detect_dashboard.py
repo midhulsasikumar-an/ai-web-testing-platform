@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 """
 Detect dashboard skill — validates successful navigation to dashboards.
 Validate page skill — performs visual and structural page validation.
 Pagination skill — handles paginated content navigation.
 """
 
-from __future__ import annotations
 from typing import List
 from backend.agent.skill_engine.skill_context import SkillContext
 from backend.agent.skill_engine.skill_registry import BaseSkill, SkillResult

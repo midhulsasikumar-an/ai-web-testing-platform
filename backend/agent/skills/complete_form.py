@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Complete form skill — intelligently fills and submits multi-field forms.
 """
-
-from __future__ import annotations
 
 from typing import List, Optional
 

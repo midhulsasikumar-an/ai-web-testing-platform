@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Visual grounding — maps visual elements to DOM elements,
 performs coordinate mapping, and viewport prioritization.
 """
-
-from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional, Tuple

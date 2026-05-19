@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Agent orchestrator — multi-agent coordination, task delegation,
 workflow supervision, and agent lifecycle management.
 """
-
-from __future__ import annotations
 
 import asyncio
 import logging

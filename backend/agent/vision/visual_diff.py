@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Visual diff engine — compares screenshots to detect meaningful
 visual changes between states.
 """
-
-from __future__ import annotations
 
 import hashlib
 import logging

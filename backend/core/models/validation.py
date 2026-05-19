@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Validation result models.
 """
-
-from __future__ import annotations
 
 from typing import List
 

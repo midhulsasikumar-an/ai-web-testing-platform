@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Graph memory — persistence and retrieval layer for the world graph.
 """
-
-from __future__ import annotations
 
 import json
 import logging

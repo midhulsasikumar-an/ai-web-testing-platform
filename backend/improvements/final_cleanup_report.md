@@ -1,3 +1,21 @@
+# Final Cleanup Report
+
+This document records the cleanup and finalization performed to stabilize the backend for demo/internship readiness.
+
+Deleted files and folders:
+- `legacy/` (archived loops and legacy adapters)
+
+Merged files:
+- Consolidated canonical models under `backend/core/models/`.
+
+Deprecated components:
+- Any `backend.agent.schemas` mirrors and re-export files were removed.
+
+Active runtime architecture:
+- `backend/runtime/session_manager.py` — lightweight in-memory session manager with JSON persistence to `artifacts/{execution_id}/session.json`.
+- `backend/events/bus.py` — singleton `event_bus` for live streaming and replay.
+- `backend/routes/runtime.py` — websocket `/ws/runtime/{execution_id}` and cancel API.
+- `backend/agent/agent_loop_v2.py` — single runtime execution path.
 **Final Cleanup Report**
 
 - **Deleted files:**

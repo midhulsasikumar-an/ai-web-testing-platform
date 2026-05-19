@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Context window manager — intelligent DOM compression, token budget
 management, observation prioritization, and reasoning context building.
 """
-
-from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional

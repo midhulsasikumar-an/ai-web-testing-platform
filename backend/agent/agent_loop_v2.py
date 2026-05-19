@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Upgraded Autonomous Agent Loop — Production-grade, goal-driven,
 skill-based, multimodal intelligent agent execution engine.
@@ -18,8 +20,6 @@ This is the core orchestration loop that integrates:
 It preserves full backward compatibility with the existing agent loop
 while adding all enterprise-grade capabilities.
 """
-
-from __future__ import annotations
 
 import logging
 import time
@@ -57,6 +57,12 @@ from backend.events.schemas import ExecutionEvent, ExecutionEventType
 from backend.agent.live_reasoning.engine import LiveReasoningEngine
 from backend.services.performance_analysis_service import analyze_performance
 from backend.services.bug_clustering_service import cluster_bugs
+from backend.runtime.session_manager import session_manager
+from backend.services.semantic_stability_service import SemanticStabilityService
+from backend.services.navigation_completion_service import NavigationCompletionService
+from backend.services.success_scoring_service import SuccessScoringService
+from backend.services.coverage_expansion_service import CoverageExpansionService
+from backend.agent.services.visual_issue_service import VisualIssueService
 
 # New subsystems
 from backend.agent.world_model.world_graph import WorldGraph
@@ -130,7 +136,12 @@ class AutonomousAgentLoopV2:
         self.navigation_state = NavigationStateService()
         self.goal_evaluator = GoalEvaluator()
         self.stability_service = StabilityService()
+        self.semantic_stability_service = SemanticStabilityService()
+        self.navigation_completion_service = NavigationCompletionService()
+        self.success_scoring_service = SuccessScoringService()
+        self.coverage_expansion_service = CoverageExpansionService()
         self.accessibility_audit = AccessibilityAuditService()
+        self.visual_issue_service = VisualIssueService()
         self.live_reasoning = LiveReasoningEngine()
         self.frontier = FrontierService(safety_policy)
 
@@ -195,6 +206,7 @@ class AutonomousAgentLoopV2:
         signals: Optional[BrowserSignals] = None,
         run_id: Optional[str] = None,
         event_bus: Optional[ExecutionEventBus] = None,
+        agent_name: str = "AutonomousAgent",
     ) -> AgentRunState:
         """Execute the full autonomous agent loop."""
         run_id = run_id or str(uuid.uuid4())
@@ -230,6 +242,16 @@ class AutonomousAgentLoopV2:
         detected_semantic_states: list[str] = []
         accessibility_findings: list[dict] = []
         performance_findings: list[dict] = []
+        visual_findings: list[dict] = []
+        navigation_completion_entries: list[dict] = []
+        semantic_stability_entries: list[dict] = []
+        coverage_extension_remaining = 2 if goal_type in {
+            GoalType.AUTHENTICATE_USER,
+            GoalType.NAVIGATE_DASHBOARD,
+            GoalType.VALIDATE_UI,
+            GoalType.EXPLORE_NAVIGATION,
+            GoalType.MULTI_STEP_WORKFLOW,
+        } else 0
         timeline_events: list[dict] = []
         event_sequence = 0
 
@@ -241,6 +263,7 @@ class AutonomousAgentLoopV2:
             await event_bus.publish(
                 ExecutionEvent(
                     run_id=run_id,
+                    agent=agent_name,
                     type=event_type,
                     message=message,
                     sequence=event_sequence,
@@ -250,11 +273,26 @@ class AutonomousAgentLoopV2:
                 )
             )
 
+        # create a session and mark running
+        try:
+            await session_manager.create(run_id, goal=goal, workflow_state=workflow_state.value)
+            await session_manager.update(run_id, status="RUNNING")
+        except Exception:
+            pass
         await publish_event(ExecutionEventType.RUN_STATUS, "Agent run started", goal=goal, start_url=start_url)
 
         for step_number in range(max_steps):
             step_start = time.perf_counter()
             run.current_step = step_number
+
+            # Check for cancellation request
+            try:
+                if await session_manager.is_cancelled(run_id):
+                    run.status = "cancelled"
+                    await publish_event(ExecutionEventType.RUN_STATUS, "Agent run cancelled by user", status=run.status)
+                    break
+            except Exception:
+                pass
 
             await self.stability_service.wait_for_stable(page)
 
@@ -267,6 +305,19 @@ class AutonomousAgentLoopV2:
                 dialogs=signal_snapshot.get("dialogs"),
                 popups=signal_snapshot.get("popups"),
             )
+            semantic_stability = await self.semantic_stability_service.wait_for_semantic_stability(
+                page,
+                baseline={
+                    "url": observation.url,
+                    "title": observation.title,
+                    "headings": observation.headings,
+                    "breadcrumbs": observation.breadcrumbs,
+                    "sidebar": observation.active_sidebar_item,
+                    "text_length": len(observation.page_text),
+                    "loading_indicators": observation.loading_indicators,
+                },
+            )
+            semantic_stability_entries.append(semantic_stability)
 
             # Classify page
             page_classification = self.page_classifier.classify(observation)
@@ -282,13 +333,31 @@ class AutonomousAgentLoopV2:
             )
             semantic_state = self.navigation_state.classify_state(observation, page_classification, auth_result.authenticated)
             detected_semantic_states.append(semantic_state)
+            navigation_completion = self.navigation_completion_service.update(
+                run_id,
+                memory,
+                observation,
+                workflow_state,
+                semantic_state,
+                reason="Confirmed semantic page state before planning",
+            )
             accessibility_snapshot = self.accessibility_audit.audit(observation)
             accessibility_findings.extend(accessibility_snapshot.get("findings", []))
+            visual_snapshot = self.visual_issue_service.analyze_observation(observation)
+            current_visual_findings = visual_snapshot.get("issues", [])
+            visual_findings.extend(current_visual_findings)
             if event_bus:
                 for finding in accessibility_snapshot.get("findings", []):
                     await publish_event(
                         ExecutionEventType.ACCESSIBILITY_FINDING,
                         finding.get("description", "Accessibility finding detected"),
+                        severity=finding.get("severity"),
+                        finding=finding,
+                    )
+                for finding in current_visual_findings:
+                    await publish_event(
+                        ExecutionEventType.BUG_DETECTED,
+                        finding.get("description", "Visual issue detected"),
                         severity=finding.get("severity"),
                         finding=finding,
                     )
@@ -523,10 +592,34 @@ class AutonomousAgentLoopV2:
             )
 
             # Post-execution observation
+            post_semantic_stability = await self.semantic_stability_service.wait_for_semantic_stability(
+                page,
+                baseline={
+                    "url": observation.url,
+                    "title": observation.title,
+                    "headings": observation.headings,
+                    "breadcrumbs": observation.breadcrumbs,
+                    "sidebar": observation.active_sidebar_item,
+                    "text_length": len(observation.page_text),
+                    "loading_indicators": observation.loading_indicators,
+                },
+            )
+            semantic_stability_entries.append(post_semantic_stability)
             await self.stability_service.wait_for_stable(page)
             refreshed = await self.observer.observe(page, run_id, step_number)
             refreshed_classification = self.page_classifier.classify(refreshed)
             refreshed.page_type = refreshed_classification.page_type
+            post_visual_snapshot = self.visual_issue_service.analyze_observation(refreshed)
+            post_visual_findings = post_visual_snapshot.get("issues", [])
+            visual_findings.extend(post_visual_findings)
+            if event_bus:
+                for finding in post_visual_findings:
+                    await publish_event(
+                        ExecutionEventType.BUG_DETECTED,
+                        finding.get("description", "Visual issue detected"),
+                        severity=finding.get("severity"),
+                        finding=finding,
+                    )
             refreshed_semantic_state = self.navigation_state.classify_state(
                 refreshed, refreshed_classification, auth_result.authenticated,
             )
@@ -554,6 +647,17 @@ class AutonomousAgentLoopV2:
             )
             workflow_state = post_workflow_state
             run.workflow_state = workflow_state
+            if workflow_state in {WorkflowState.AUTHENTICATED, WorkflowState.DASHBOARD, WorkflowState.DASHBOARD_HOME, WorkflowState.ADMIN_MODULE, WorkflowState.USER_MANAGEMENT, WorkflowState.SETTINGS_PAGE} or refreshed_semantic_state in {"dashboard_home", "admin_module", "user_management", "settings_page"}:
+                memory.authenticated = True
+            completion_snapshot = self.navigation_completion_service.update(
+                run_id,
+                memory,
+                refreshed,
+                workflow_state,
+                refreshed_semantic_state,
+                reason=transition.summary,
+            )
+            navigation_completion_entries.append(completion_snapshot)
             memory.remember_transition(transition)
             result = self.outcome_validator.validate(action.expected_outcome, refreshed, result)
             memory.remember_result(result, step_number)
@@ -717,9 +821,13 @@ class AutonomousAgentLoopV2:
                 if active_obj:
                     active_obj.evaluate_completion(obs_data)
             if goal_evaluation.goal_completed:
-                run.status = "completed"
                 step.goal_evaluation = goal_evaluation.model_dump(mode="json")
                 run.steps[-1] = step
+                if coverage_extension_remaining > 0 and memory.authenticated:
+                    coverage_extension_remaining -= 1
+                    run.summary["primary_goal_completed"] = True
+                    continue
+                run.status = "completed"
                 break
             step.goal_evaluation = goal_evaluation.model_dump(mode="json")
 
@@ -755,6 +863,22 @@ class AutonomousAgentLoopV2:
         performance_findings.extend(performance_summary.get("findings", []))
         runtime_bug_cards = _runtime_bug_cards(runtime_steps)
         bug_clusters = cluster_bugs(runtime_bug_cards)
+        final_observation = run.steps[-1].observation if run.steps else previous_observation
+        navigation_summary = self.navigation_completion_service.summary(run_id)
+        coverage_summary = self.coverage_expansion_service.summarize(memory, final_observation) if final_observation else {"coverage_score": 0.0, "visited_modules": [], "explored_routes": [], "explored_forms": 0, "explored_tables": 0, "explored_cards": 0, "explored_dialogs": 0, "unexplored_visible_routes": [], "exploration_hint": ""}
+        stability_summary = semantic_stability_entries[-1] if semantic_stability_entries else {"stable": False, "snapshot": {}, "signals": []}
+        success_score = self.success_scoring_service.score(
+            goal=goal,
+            memory=memory,
+            workflow_state=run.workflow_state,
+            observation=final_observation or observation,
+            coverage_summary=coverage_summary,
+            navigation_completion=navigation_summary,
+            stability_summary=stability_summary,
+        )
+
+        if success_score.get("success") and run.status in {"max_steps_reached", "running"}:
+            run.status = "completed"
 
         run.summary |= {
             "visited_urls": len(memory.visited_urls),
@@ -796,6 +920,21 @@ class AutonomousAgentLoopV2:
             "performance_summary": performance_summary,
             "bug_clusters": bug_clusters,
             "timeline_events": timeline_events,
+            "completed_modules": navigation_summary.get("completed_modules", []),
+            "locked_routes": navigation_summary.get("locked_routes", []),
+            "semantic_stability": stability_summary,
+            "coverage_summary": coverage_summary,
+            "repeated_action_prevention_summary": {
+                "recent_repeated_actions": len(set(memory.recent_action_keys)) < len(memory.recent_action_keys),
+                "stagnation_failures": len([r for r in memory.results if not r.success and r.failure_type in {FailureType.STAGNATION, FailureType.LOOP_DETECTED}]),
+                "locked_route_blocks": len([module for module in navigation_summary.get("completed_modules", []) if module.get("locked")]),
+            },
+            "visual_bug_summary": visual_findings,
+            "success_scoring": success_score,
+            "workflow_stability_summary": {
+                "stable": stability_summary.get("stable", False),
+                "signals": stability_summary.get("signals", []),
+            },
         }
 
         if event_bus:
@@ -806,6 +945,11 @@ class AutonomousAgentLoopV2:
                 workflow_state=run.workflow_state.value,
                 performance_score=performance_summary.get("performance_score"),
             )
+
+        try:
+            await session_manager.mark_completed(run_id, status=run.status.upper())
+        except Exception:
+            pass
 
         run.current_url = page.url
         self.slogger.info(
@@ -919,6 +1063,7 @@ async def run_agent_loop_v2(
     signals: Optional[BrowserSignals] = None,
     event_bus: Optional[ExecutionEventBus] = None,
     run_id: Optional[str] = None,
+    agent_name: str = "AutonomousAgent",
 ) -> dict:
     """
     Entry point for the upgraded agent loop.
@@ -930,5 +1075,6 @@ async def run_agent_loop_v2(
     run = await loop.run(
         page=page, start_url=start, goal=goal,
         credentials=credentials, max_steps=max_steps, signals=signals, event_bus=event_bus, run_id=run_id,
+        agent_name=agent_name,
     )
     return run.model_dump(mode="json")

@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Benchmark framework — tracks success rates, recovery rates, latency,
 token usage, navigation efficiency, planner accuracy, and failure categories.
 """
-
-from __future__ import annotations
 
 import json
 import time

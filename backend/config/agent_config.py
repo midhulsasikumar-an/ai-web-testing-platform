@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 """
 Enterprise configuration layer with environment-based config,
 feature flags, and tuning parameters for all agent subsystems.
 """
-
-from __future__ import annotations
 
 import os
 from typing import Any, Dict, List, Optional

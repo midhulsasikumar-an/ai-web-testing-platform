@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 """
 Unified action models — agent actions, results, selector candidates.
 """
-
-from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional

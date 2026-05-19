@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 """
 World graph — the core navigation graph data structure that maintains
 the full world-state graph with nodes (states) and edges (transitions).
 Supports graph search, path optimization, and stagnation analysis.
 """
-
-from __future__ import annotations
 
 import heapq
 from collections import defaultdict, deque
