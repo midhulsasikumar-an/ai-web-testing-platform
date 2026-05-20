@@ -21,6 +21,7 @@ from backend.routes.multi_agent import router as multi_agent_router
 from backend.routes.live_execution import router as live_execution_router
 from backend.routes.runtime import router as runtime_router
 from backend.routes.intelligence import router as intelligence_router
+from backend.ai_workspace.routes import router as ai_workspace_router
 
 app = FastAPI()
 allowed_origins = [
@@ -113,7 +114,7 @@ app.include_router(live_execution_router, prefix="/api/agent", tags=["Autonomous
 app.include_router(multi_agent_router, prefix="/api/agent", tags=["Multi-Agent Runtime"])
 app.include_router(runtime_router)
 app.include_router(intelligence_router, prefix="/api/intelligence", tags=["Historical Intelligence"])
-
+app.include_router(ai_workspace_router, prefix="/ai", tags=["AI Workspace"])
 
 @app.on_event("startup")
 async def startup_event():
