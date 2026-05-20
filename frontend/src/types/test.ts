@@ -2,8 +2,14 @@
 
 import type { BugSeverity } from "./bug";
 
-export type TestStatus = "passed" | "failed";
-
+export type WorkflowState = 
+  | "queued"
+  | "running"
+  | "generating_steps"
+  | "executing"
+  | "analyzing"
+  | "completed"
+  | "failed";
 export interface StreamLogLine {
   time: string;
   level: "info" | "warn" | "error" | "success";
@@ -13,7 +19,7 @@ export interface StreamLogLine {
 export interface TestResult {
   id: string;
   url: string;
-  status: TestStatus;
+  status: WorkflowState;
   timestamp: string;
   duration: number; // ms
   bugId?: string;

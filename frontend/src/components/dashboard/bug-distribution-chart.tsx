@@ -2,11 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart } from "lucide-react";
-import { useBugContext } from "@/context/bug-context";
+import { useBugsStore } from "@/store/bugs-store";
 import { SEVERITY_CHART_COLORS, SEVERITY_LABELS } from "@/lib/constants";
 
 export function BugDistributionChart() {
-  const { bugs } = useBugContext();
+  const { bugs } = useBugsStore();
 
   const distribution = Object.entries(
     bugs.reduce<Record<string, number>>((acc, bug) => {

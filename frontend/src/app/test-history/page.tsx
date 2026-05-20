@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
-import { useBugContext } from "@/context/bug-context";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,11 +18,17 @@ import {
   CheckCircle2, XCircle, Globe, Eye,
   Play, Terminal, Filter,
 } from "lucide-react";
+import { useTestHistoryStore } from "@/store/test-history-store";
+import { useEffect } from "react";
 
-type FilterStatus = "all" | "passed" | "failed";
+type FilterStatus = "all" | "completed" | "failed";
 
 export default function TestHistoryPage() {
-  const { testResults } = useBugContext();
+  const { testResults, fetchHistory } = useTestHistoryStore();
+
+  useEffect(() => {
+    if (testResults.length === 0) fetchHistory();
+  }, [testResults.length, fetchHistory]);
 
   const {
     filtered,
@@ -45,7 +50,7 @@ export default function TestHistoryPage() {
     return acc;
   }, {});
 
-  const passedCount = testResults.filter((t) => t.status === "passed").length;
+  const completedCount = testResults.filter((t) => t.status === "completed").length;
   const failedCount = testResults.filter((t) => t.status === "failed").length;
 
   return (
@@ -63,7 +68,7 @@ export default function TestHistoryPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
         <MiniStatCard icon={Terminal} value={testResults.length} label="Total Runs" color="blue" />
-        <MiniStatCard icon={CheckCircle2} value={passedCount} label="Passed" color="green" borderColor="border-green-500/20" />
+        <MiniStatCard icon={CheckCircle2} value={completedCount} label="completed" color="green" borderColor="border-green-500/20" />
         <MiniStatCard icon={XCircle} value={failedCount} label="Failed" color="red" borderColor="border-red-500/20" />
       </div>
 
@@ -75,7 +80,7 @@ export default function TestHistoryPage() {
               <Filter className="h-3.5 w-3.5" /> Filters
             </div>
             <div className="flex items-center gap-2">
-              {(["all", "passed", "failed"] as FilterStatus[]).map((s) => (
+              {(["all", "completed", "failed"] as FilterStatus[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
@@ -111,7 +116,7 @@ export default function TestHistoryPage() {
       ) : (
         <div className="space-y-4">
           {Object.entries(groupedByUrl).map(([url, tests]) => {
-            const urlPassed = tests.filter((t) => t.status === "passed").length;
+            const urlPassed = tests.filter((t) => t.status === "completed").length;
             const urlFailed = tests.filter((t) => t.status === "failed").length;
 
             return (
@@ -155,11 +160,11 @@ export default function TestHistoryPage() {
                             <TableCell className="font-mono text-xs text-primary font-medium">{test.id}</TableCell>
                             <TableCell>
                               <Badge
-                                variant={test.status === "passed" ? "secondary" : "destructive"}
+                                variant={test.status === "completed" ? "secondary" : "destructive"}
                                 className="text-xs"
                               >
                                 <span className="flex items-center gap-1">
-                                  {test.status === "passed" ? (
+                                  {test.status === "completed" ? (
                                     <CheckCircle2 className="h-3 w-3" />
                                   ) : (
                                     <XCircle className="h-3 w-3" />

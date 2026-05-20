@@ -5,15 +5,20 @@ import Link from "next/link";
 import { Header } from "@/components/layout/header";
 import { BugDetailCard } from "@/components/bugs/bug-detail-card";
 import { BugDialog } from "@/components/bugs/bug-dialog";
-import { useBugContext } from "@/context/bug-context";
+import { useBugsStore } from "@/store/bugs-store";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 export default function BugDetailPage() {
   const params = useParams();
-  const { getBugById } = useBugContext();
-  const bug = getBugById(params.id as string);
+  const { bugs, fetchBugs } = useBugsStore();
+  const bug = bugs.find(b => b.id === (params.id as string));
+
+  useEffect(() => {
+    if (bugs.length === 0) fetchBugs();
+  }, [bugs.length, fetchBugs]);
 
   if (!bug) {
     return (

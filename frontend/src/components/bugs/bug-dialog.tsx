@@ -8,7 +8,7 @@ import {
   DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { statusColor } from "@/lib/constants";
-import { useBugContext } from "@/context/bug-context";
+import { useBugsStore } from "@/store/bugs-store";
 
 interface BugDialogProps {
   bug: Bug;
@@ -17,7 +17,7 @@ interface BugDialogProps {
 const allStatuses: BugStatus[] = ["open", "in-progress", "resolved", "closed"];
 
 export function BugDialog({ bug }: BugDialogProps) {
-  const { updateBugStatus } = useBugContext();
+  const { updateBugStatus } = useBugsStore();
   const [open, setOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<BugStatus>(bug.status);
 

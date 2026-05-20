@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
-import { useBugContext } from "@/context/bug-context";
+import { useBugsStore } from "@/store/bugs-store";
+import { useTestHistoryStore } from "@/store/test-history-store";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -19,11 +20,20 @@ import {
   Clock, Terminal, Bug, ExternalLink, Play,
   Calendar,
 } from "lucide-react";
+import { useEffect } from "react";
 
 export default function TestDetailPage() {
   const params = useParams();
-  const { getTestById, getBugById } = useBugContext();
-  const test = getTestById(params.id as string);
+  const { testResults, fetchHistory } = useTestHistoryStore();
+  const { bugs, fetchBugs } = useBugsStore();
+  
+  const test = testResults.find(t => t.id === (params.id as string));
+  const linkedBug = test?.bugId ? bugs.find(b => b.id === test.bugId) : null;
+
+  useEffect(() => {
+    if (testResults.length === 0) fetchHistory();
+    if (bugs.length === 0) fetchBugs();
+  }, [testResults.length, fetchHistory, bugs.length, fetchBugs]);
 
   if (!test) {
     return (
@@ -40,8 +50,6 @@ export default function TestDetailPage() {
 
   const typeConfig = TEST_TYPE_CONFIG[test.testType || "full"];
   const TypeIcon = typeConfig.icon;
-  const linkedBug = test.bugId ? getBugById(test.bugId) : null;
-
   return (
     <>
       <Header title="Test Log Details">
@@ -60,16 +68,16 @@ export default function TestDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Result banner */}
           <Card className={
-            test.status === "passed"
+            test.status === "completed"
               ? "border-green-500/30 bg-gradient-to-r from-green-50/50 to-transparent"
               : "border-red-500/30 bg-gradient-to-r from-red-50/50 to-transparent"
           }>
             <CardContent className="pt-6">
               <div className="flex items-start gap-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-xl shrink-0 ${
-                  test.status === "passed" ? "bg-green-100" : "bg-red-100"
+                  test.status === "completed" ? "bg-green-100" : "bg-red-100"
                 }`}>
-                  {test.status === "passed" ? (
+                  {test.status === "completed" ? (
                     <CheckCircle2 className="h-6 w-6 text-green-600" />
                   ) : (
                     <XCircle className="h-6 w-6 text-red-600" />
@@ -78,9 +86,9 @@ export default function TestDetailPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-xl font-bold">
-                      Test {test.status === "passed" ? "Passed" : "Failed"}
+                      Test {test.status === "completed" ? "Passed" : "Failed"}
                     </h2>
-                    <Badge variant={test.status === "passed" ? "secondary" : "destructive"}>
+                    <Badge variant={test.status === "completed" ? "secondary" : "destructive"}>
                       {test.status}
                     </Badge>
                   </div>
@@ -179,8 +187,8 @@ export default function TestDetailPage() {
                 </div>
               </MetadataField>
 
-              <MetadataField icon={test.status === "passed" ? CheckCircle2 : XCircle} label="Result">
-                <Badge variant={test.status === "passed" ? "secondary" : "destructive"}>
+              <MetadataField icon={test.status === "completed" ? CheckCircle2 : XCircle} label="Result">
+                <Badge variant={test.status === "completed" ? "secondary" : "destructive"}>
                   {test.status}
                 </Badge>
               </MetadataField>

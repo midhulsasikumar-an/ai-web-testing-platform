@@ -13,7 +13,7 @@ import {
   Zap,
   History,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -26,6 +26,24 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [userName, setUserName] = useState("Alex Rivera");
+  const [userInitials, setUserInitials] = useState("AR");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.name) {
+          setUserName(payload.name);
+          const initials = payload.name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+          setUserInitials(initials);
+        }
+      } catch (e) {
+        console.error("Failed to decode token", e);
+      }
+    }
+  }, []);
 
   return (
     <aside
@@ -86,11 +104,11 @@ export function Sidebar() {
           collapsed && "justify-center px-0"
         )}>
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            AR
+            {userInitials}
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-white truncate">Alex Rivera</span>
+              <span className="text-xs font-semibold text-white truncate">{userName}</span>
               <span className="text-[0.65rem] text-sidebar-foreground/50 truncate">QA Engineer</span>
             </div>
           )}

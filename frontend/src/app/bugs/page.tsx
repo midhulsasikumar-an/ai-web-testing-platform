@@ -2,14 +2,19 @@
 
 import { Header } from "@/components/layout/header";
 import { BugTable } from "@/components/bugs/bug-table";
-import { useBugContext } from "@/context/bug-context";
+import { useBugsStore } from "@/store/bugs-store";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 export default function BugsPage() {
-  const { bugs } = useBugContext();
+  const { bugs, fetchBugs } = useBugsStore();
+
+  useEffect(() => {
+    fetchBugs();
+  }, [fetchBugs]);
 
   return (
     <>
