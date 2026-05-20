@@ -5,17 +5,18 @@ from backend.ai_workspace.models import ChatRequest, WorkflowGenerationRequest
 from backend.ai_workspace.memory import memory_engine
 from backend.ai_workspace.service import workspace_service
 from backend.ai_workspace.retrieval import retrieval_system
+from backend.services.auth import get_current_user
 
 router = APIRouter()
 
 @router.post("/chat")
-async def ai_chat(req: ChatRequest):
+async def ai_chat(req: ChatRequest, current_user: dict = Depends(get_current_user)):
     # Retrieve or create session
-    session = memory_engine.get_or_create_session(req.session_id, req.user_id, req.context)
+    session = memory_engine.get_or_create_session(req.session_id, current_user["user_id"], req.context)
     
     # Generate response
     result = await workspace_service.generate_response(
-        user_id=req.user_id,
+        user_id=current_user["user_id"],
         session_id=session.session_id,
         query=req.message,
         active_context=session.active_context
@@ -24,35 +25,35 @@ async def ai_chat(req: ChatRequest):
     return result
 
 @router.get("/session/{session_id}")
-def get_session(session_id: str, user_id: str = "demo-user"):
-    history = memory_engine.get_session_history(session_id, limit=50)
-    session = memory_engine.get_or_create_session(session_id, user_id)
+def get_session(session_id: str, current_user: dict = Depends(get_current_user)):
+    history = memory_engine.get_session_history(session_id, current_user["user_id"], limit=50)
+    session = memory_engine.get_or_create_session(session_id, current_user["user_id"])
     return {
         "session": session.dict(),
         "history": history
     }
 
 @router.post("/retrieve-report")
-def retrieve_report(query: str, user_id: str = "demo-user"):
-    reports = retrieval_system.retrieve_reports(user_id, query)
+def retrieve_report(query: str, current_user: dict = Depends(get_current_user)):
+    reports = retrieval_system.retrieve_reports(current_user["user_id"], query)
     return {"reports": reports}
 
 @router.post("/compare-runs")
-def compare_runs(query: str, user_id: str = "demo-user"):
-    runs = retrieval_system.retrieve_reports(user_id, query, limit=2)
+def compare_runs(query: str, current_user: dict = Depends(get_current_user)):
+    runs = retrieval_system.retrieve_reports(current_user["user_id"], query, limit=2)
     return {"comparisons": runs}
 
 @router.post("/generate-workflow")
-async def generate_workflow(req: WorkflowGenerationRequest):
-    result = await workspace_service.generate_workflow(req.user_id, req.prompt)
+async def generate_workflow(req: WorkflowGenerationRequest, current_user: dict = Depends(get_current_user)):
+    result = await workspace_service.generate_workflow(current_user["user_id"], req.prompt)
     return result
 
 @router.get("/history")
-def get_history(user_id: str = "demo-user"):
+def get_history(current_user: dict = Depends(get_current_user)):
     # Return user's long-term memory topics
-    return memory_engine.get_user_memory(user_id)
+    return memory_engine.get_user_memory(current_user["user_id"])
 
 @router.get("/recommendations")
-async def get_recommendations(user_id: str = "demo-user"):
-    recs = await workspace_service.get_recommendations(user_id)
+async def get_recommendations(current_user: dict = Depends(get_current_user)):
+    recs = await workspace_service.get_recommendations(current_user["user_id"])
     return {"recommendations": recs}

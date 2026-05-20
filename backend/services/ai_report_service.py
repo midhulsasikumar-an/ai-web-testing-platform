@@ -15,7 +15,7 @@ from backend.database.mongo import db
 logger = logging.getLogger("services.ai_report")
 
 
-def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str, Any]:
+def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str | None = None, execution_id: str | None = None) -> Dict[str, Any]:
     """Generate an AI-readable report from raw autonomous agent run data.
 
     This function is deterministic and will gracefully fall back if LLMs are not available.
@@ -207,6 +207,9 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str,
             },
         }
 
+        final_report["user_id"] = user_id or run_data.get("user_id") or run_data.get("owner_id") or ""
+        final_report["execution_id"] = execution_id or run_data.get("execution_id") or run_data.get("run_id") or ""
+        final_report["created_by"] = final_report["user_id"]
         saved_id = save_report(jsonable_encoder(final_report))
         final_report["report_id"] = saved_id
         try:
@@ -241,6 +244,9 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True) -> Dict[str,
             "coverage": {},
             "execution_summary": {"pages_visited": len(run_data.get("steps", []))},
             "debug_data": run_data,
+            "user_id": user_id or run_data.get("user_id") or "",
+            "execution_id": execution_id or run_data.get("execution_id") or run_data.get("run_id") or "",
+            "created_by": user_id or run_data.get("user_id") or "",
         }
         try:
             save_report(jsonable_encoder(fallback))

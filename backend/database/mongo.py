@@ -20,9 +20,3 @@ bug_collection = db["bugs"]
 bug_lifecycle_collection = db["bug_lifecycle"]
 run_comparison_collection = db["run_comparisons"]
 report_export_collection = db["report_exports"]
-
-# AI Workspace Collections
-ai_chat_sessions = db["ai_chat_sessions"]
-ai_chat_messages = db["ai_chat_messages"]
-ai_memory_collection = db["ai_memory"]
-ai_knowledge_index = db["ai_knowledge_index"]

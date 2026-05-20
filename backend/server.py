@@ -7,13 +7,14 @@ if sys.platform == "win32":
         asyncio.WindowsProactorEventLoopPolicy()
     )
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from backend.models.schema import TestRequest
 
 from backend.services.test_services import create_test_run, run_test_and_update
 from backend.database.mongo import collection, bug_collection
+from backend.services.auth import get_current_user
 from backend.routes.dashboard import router as dashboard_router
 from backend.routes.ai import router as ai_router
 from backend.routes.autonomous_agent_route import router as autonomous_agent_router
@@ -21,7 +22,6 @@ from backend.routes.multi_agent import router as multi_agent_router
 from backend.routes.live_execution import router as live_execution_router
 from backend.routes.runtime import router as runtime_router
 from backend.routes.intelligence import router as intelligence_router
-from backend.ai_workspace.routes import router as ai_workspace_router
 
 app = FastAPI()
 allowed_origins = [
@@ -47,13 +47,14 @@ def home():
 
 
 @app.post("/api/tests/start")
-def start_test(req: TestRequest, background_tasks: BackgroundTasks):
-    test_data = create_test_run(req)
+def start_test(req: TestRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    test_data = create_test_run(req, current_user["user_id"])
 
     background_tasks.add_task(
         run_test_and_update,
         test_data.copy(),   # to prevent mutation issues
-        req.url
+        req.url,
+        current_user["user_id"]
     )
 
     return {
@@ -64,22 +65,22 @@ def start_test(req: TestRequest, background_tasks: BackgroundTasks):
 
 
 @app.get("/api/tests")
-def get_tests():
-    tests = list(collection.find({"user_id": "demo-user"}, {"_id": 0}))
+def get_tests(current_user: dict = Depends(get_current_user)):
+    tests = list(collection.find({"user_id": current_user["user_id"]}, {"_id": 0}))
     return tests
 
 @app.get("/api/tests/{test_id}")
-def get_test_by_id(test_id: str):
-    test = collection.find_one({"test_id": test_id, "user_id": "demo-user"}, {"_id": 0})
+def get_test_by_id(test_id: str, current_user: dict = Depends(get_current_user)):
+    test = collection.find_one({"test_id": test_id, "user_id": current_user["user_id"]}, {"_id": 0})
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
     return test
 
 @app.get("/api/bugs")
-def get_bugs():
+def get_bugs(current_user: dict = Depends(get_current_user)):
     bugs = list(
         bug_collection.find(
-            {"user_id": "demo-user"},
+            {"user_id": current_user["user_id"]},
             {"_id": 0}
         )
     )
@@ -87,12 +88,12 @@ def get_bugs():
     return bugs
 
 @app.get("/api/bugs/{bug_id}")
-def get_bug_by_id(bug_id: str):
+def get_bug_by_id(bug_id: str, current_user: dict = Depends(get_current_user)):
 
     bug = bug_collection.find_one(
         {
             "bug_id": bug_id,
-            "user_id": "demo-user"
+            "user_id": current_user["user_id"]
         },
         {"_id": 0}
     )
@@ -114,7 +115,7 @@ app.include_router(live_execution_router, prefix="/api/agent", tags=["Autonomous
 app.include_router(multi_agent_router, prefix="/api/agent", tags=["Multi-Agent Runtime"])
 app.include_router(runtime_router)
 app.include_router(intelligence_router, prefix="/api/intelligence", tags=["Historical Intelligence"])
-app.include_router(ai_workspace_router, prefix="/ai", tags=["AI Workspace"])
+
 
 @app.on_event("startup")
 async def startup_event():

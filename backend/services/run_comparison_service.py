@@ -17,10 +17,11 @@ def compare_runs(
     baseline_run_id: str,
     comparison_run_id: str,
     *,
+    user_id: Optional[str] = None,
     persist: bool = True,
 ) -> Dict[str, Any]:
-    baseline_report = _load_report(baseline_run_id)
-    comparison_report = _load_report(comparison_run_id)
+    baseline_report = _load_report(baseline_run_id, user_id=user_id)
+    comparison_report = _load_report(comparison_run_id, user_id=user_id)
     comparison_id = str(uuid.uuid4())
 
     baseline_metrics = _extract_metrics(baseline_report)
@@ -67,24 +68,33 @@ def compare_runs(
 
     if persist:
         payload = dict(result)
+        payload["user_id"] = user_id or baseline_report.get("user_id") or comparison_report.get("user_id") or ""
         payload["created_at"] = datetime.utcnow()
         run_comparison_collection.insert_one(payload)
 
     return result
 
 
-def list_run_comparisons(run_id: Optional[str] = None) -> List[Dict[str, Any]]:
+def list_run_comparisons(run_id: Optional[str] = None, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
     query: Dict[str, Any] = {}
+    if user_id:
+        query["user_id"] = user_id
     if run_id:
         query["$or"] = [{"baseline_run_id": run_id}, {"comparison_run_id": run_id}]
     return list(run_comparison_collection.find(query, {"_id": 0}).sort("created_at", -1))
 
 
-def _load_report(identifier: str) -> Dict[str, Any]:
-    report = REPORT_COLLECTION.find_one({"report_id": identifier}, {"_id": 0})
+def _load_report(identifier: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    query: Dict[str, Any] = {"report_id": identifier}
+    if user_id:
+        query["user_id"] = user_id
+    report = REPORT_COLLECTION.find_one(query, {"_id": 0})
     if report:
         return report
-    report = REPORT_COLLECTION.find_one({"debug_data.run_id": identifier}, {"_id": 0})
+    query = {"debug_data.run_id": identifier}
+    if user_id:
+        query["user_id"] = user_id
+    report = REPORT_COLLECTION.find_one(query, {"_id": 0})
     if report:
         return report
     raise ValueError(f"Report not found for identifier: {identifier}")

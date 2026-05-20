@@ -47,11 +47,14 @@ def ingest_bug_lifecycle(
 
 def list_bug_lifecycle(
     *,
+    user_id: Optional[str] = None,
     status: Optional[str] = None,
     website: Optional[str] = None,
     workflow_stage: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     query: Dict[str, Any] = {}
+    if user_id:
+        query["user_id"] = user_id
     if status:
         query["status"] = status
     if website:
@@ -61,8 +64,11 @@ def list_bug_lifecycle(
     return list(BUG_LIFECYCLE_COLLECTION.find(query, {"_id": 0}).sort("updated_at", -1))
 
 
-def summarize_bug_lifecycle() -> Dict[str, Any]:
-    records = list(BUG_LIFECYCLE_COLLECTION.find({}, {"_id": 0}))
+def summarize_bug_lifecycle(user_id: Optional[str] = None) -> Dict[str, Any]:
+    query: Dict[str, Any] = {}
+    if user_id:
+        query["user_id"] = user_id
+    records = list(BUG_LIFECYCLE_COLLECTION.find(query, {"_id": 0}))
     by_status = Counter(str(record.get("status", "Monitoring")) for record in records)
     by_website = Counter(str(record.get("website", "unknown")) for record in records)
     by_workflow = Counter(str(record.get("workflow_stage", "unknown")) for record in records)
@@ -82,6 +88,7 @@ def summarize_bug_lifecycle() -> Dict[str, Any]:
 def _extract_bug_events(run_data: Dict[str, Any], report_data: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     run_id = str(run_data.get("run_id") or report_data.get("debug_data", {}).get("run_id") if report_data else "")
     report_id = str(report_data.get("report_id") if report_data else "")
+    user_id = str((report_data or {}).get("user_id") or run_data.get("user_id") or "")
     goal = str(run_data.get("goal") or report_data.get("goal") or "")
     start_url = str(run_data.get("start_url") or run_data.get("url") or report_data.get("start_url") or "")
     screenshots = _collect_screenshot_map(run_data, report_data)
@@ -99,7 +106,15 @@ def _extract_bug_events(run_data: Dict[str, Any], report_data: Optional[Dict[str
     for index, bug in enumerate(raw_bugs):
         if not isinstance(bug, dict):
             continue
-        normalized = _normalize_bug(bug, index=index, goal=goal, start_url=start_url, run_id=run_id, report_id=report_id)
+            normalized = _normalize_bug(
+                bug,
+                index=index,
+                goal=goal,
+                start_url=start_url,
+                run_id=run_id,
+                report_id=report_id,
+                user_id=user_id,
+            )
         if not normalized:
             continue
         if not normalized.get("screenshot_path") and normalized.get("workflow_stage") in screenshots:
@@ -116,6 +131,7 @@ def _normalize_bug(
     start_url: str,
     run_id: str,
     report_id: str,
+    user_id: str,
 ) -> Optional[Dict[str, Any]]:
     title = str(
         bug.get("title")
@@ -165,7 +181,7 @@ def _normalize_bug(
         url=url,
         screenshot_path=screenshot_path,
         screenshot_hash=screenshot_hash,
-        evidence=evidence,
+        evidence={**evidence, "user_id": user_id},
     ).model_dump(mode="json")
 
 
@@ -228,6 +244,8 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
     record = {
         "bug_id": event["bug_id"],
         "fingerprint": fingerprint,
+    "user_id": str(event.get("evidence", {}).get("user_id") or ""),
+        "user_id": str(event.get("evidence", {}).get("user_id") or ""),
         "title": event.get("title", ""),
         "description": event.get("description", ""),
         "severity": event.get("severity", "medium"),
@@ -236,7 +254,7 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
         "workflow_stage": event.get("workflow_stage", "unknown"),
         "first_seen_run_id": event.get("run_id", ""),
         "last_seen_run_id": event.get("run_id", ""),
-        "occurrences": 1,
+                "user_id": str(event.get("evidence", {}).get("user_id") or ""),
         "regression_count": 0,
         "resolved_count": 0,
         "flaky_count": 0,

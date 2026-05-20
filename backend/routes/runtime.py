@@ -3,17 +3,24 @@ from __future__ import annotations
 import asyncio
 from typing import Optional
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends
 
 from backend.events.bus import event_bus
 from backend.events.schemas import ExecutionEvent, ExecutionEventType
 from backend.runtime.session_manager import session_manager
+from backend.services.auth import get_current_user, get_current_user_from_token
 
 router = APIRouter()
 
 
 @router.websocket("/ws/runtime/{execution_id}")
 async def runtime_ws(websocket: WebSocket, execution_id: str, last_sequence: Optional[int] = 0):
+    auth_header = websocket.headers.get("authorization") or websocket.headers.get("Authorization")
+    if not auth_header or not auth_header.lower().startswith("bearer "):
+        await websocket.close(code=4401)
+        return
+    get_current_user_from_token(auth_header.split(" ", 1)[1])
+
     await websocket.accept()
     queue = await event_bus.subscribe(execution_id)
     try:
@@ -73,7 +80,7 @@ async def runtime_ws(websocket: WebSocket, execution_id: str, last_sequence: Opt
 
 
 @router.post("/api/runtime/{execution_id}/cancel")
-async def cancel_execution(execution_id: str):
+async def cancel_execution(execution_id: str, current_user: dict = Depends(get_current_user)):
     ok = await session_manager.cancel(execution_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Execution not found")

@@ -9,7 +9,7 @@ class ActiveContext(BaseModel):
     report: Optional[str] = None
 
 class ChatSessionCreate(BaseModel):
-    user_id: str = "demo-user"
+    user_id: Optional[str] = None
     active_context: Optional[ActiveContext] = Field(default_factory=ActiveContext)
 
 class ChatSession(BaseModel):
@@ -29,10 +29,10 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     session_id: Optional[str] = None
-    user_id: str = "demo-user"
+    user_id: Optional[str] = None
     message: str
     context: Optional[ActiveContext] = None
 
 class WorkflowGenerationRequest(BaseModel):
-    user_id: str = "demo-user"
+    user_id: Optional[str] = None
     prompt: str

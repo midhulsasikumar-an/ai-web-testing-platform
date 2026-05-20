@@ -24,7 +24,7 @@ Format responses with bullet points where appropriate and give executive summari
         retrieved_context = retrieval_system.get_context(user_id, query)
         
         # 2. Get Memory / Conversation History
-        history = memory_engine.get_session_history(session_id, limit=6)
+        history = memory_engine.get_session_history(session_id, user_id=user_id, limit=6)
         
         # 3. Assemble Prompt
         messages = [{"role": "system", "content": self.system_prompt}]
@@ -55,13 +55,15 @@ Format responses with bullet points where appropriate and give executive summari
         memory_engine.save_message(
             session_id=session_id,
             role="user",
-            message=query
+            message=query,
+            user_id=user_id,
         )
         
         memory_engine.save_message(
             session_id=session_id,
             role="assistant",
             message=ai_message,
+            user_id=user_id,
             retrieved_data=retrieved_context["data"]
         )
 

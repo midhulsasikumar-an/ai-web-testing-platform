@@ -1,7 +1,7 @@
 import uuid
 import os
 from datetime import datetime
-from backend.database.mongo import collection
+from backend.database.mongo import collection, db
 from backend.models.schema import TestRequest
 from backend.services.test_runner import run_test
 from backend.services.scoring.health_score import calculate_health_score
@@ -12,11 +12,12 @@ from backend.services.scoring.ai_summary import generate_summary_line
 from backend.services.scoring.overall_status import calculate_overall_status
 from backend.services.bug_services import create_bugs_from_test
 
-def create_test_run(req: TestRequest):
+def create_test_run(req: TestRequest, user_id: str):
     test_id = str(uuid.uuid4())
 
     test_data = {
-        "user_id": "demo-user",
+        "user_id": user_id,
+        "execution_id": test_id,
         "test_id": test_id,
         "url": req.url,
         "project": req.project_name,
@@ -37,12 +38,19 @@ def create_test_run(req: TestRequest):
     }
 
     collection.insert_one(test_data)
+    db["artifacts"].insert_one({
+        "user_id": user_id,
+        "execution_id": test_id,
+        "test_id": test_id,
+        "kind": "test_run",
+        "created_at": datetime.utcnow().isoformat(),
+    })
 
     return test_data
 
-def run_test_and_update(test_data, url):
+def run_test_and_update(test_data, url, user_id: str):
     try:
-        results, artifacts = run_test(url, test_data["test_id"])
+        results, artifacts = run_test(url, test_data["test_id"], user_id=user_id)
 
         # attach results
         test_data["results"] = results
@@ -96,6 +104,8 @@ def run_test_and_update(test_data, url):
             screenshot_urls.append(f"/artifacts/{test_data['test_id']}/{filename}")
 
         ai_report = {
+            "user_id": user_id,
+            "execution_id": test_data["test_id"],
             "website_health_score": test_data.get("health_score", 0),
             "workflow_completion": overall_status,
             "critical_issues": len(insights.get("critical", [])),
@@ -109,7 +119,7 @@ def run_test_and_update(test_data, url):
 
         #database update
         collection.update_one(
-            {"test_id": test_data["test_id"]},
+            {"test_id": test_data["test_id"], "user_id": user_id},
             {"$set": test_data}
         )
 
@@ -120,10 +130,10 @@ def run_test_and_update(test_data, url):
         test_data["health_score"] = 0
         test_data["ai_summary"] = "Test execution failed."
         collection.update_one(
-            {"test_id": test_data["test_id"]},
+            {"test_id": test_data["test_id"], "user_id": user_id},
             {"$set": test_data}
         )
         collection.update_one(
-            {"test_id": test_data["test_id"]},
+            {"test_id": test_data["test_id"], "user_id": user_id},
             {"$set": test_data}
         )

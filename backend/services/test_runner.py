@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+from datetime import datetime
 from playwright.sync_api import sync_playwright
 from backend.services.test_cases.error_page_test import test_error_page
 from backend.services.test_cases.page_load import test_page_load
@@ -15,12 +16,14 @@ from backend.services.test_cases.performance_check import test_performance
 from backend.models.schema import TestRequest
 from backend.agent.services.website_health_service import WebsiteHealthService
 from backend.agent.services.form_fuzzing_service import FormFuzzingService
+from backend.database.mongo import db
 
-def run_test(url: str, test_id: str):
+def run_test(url: str, test_id: str, user_id: str | None = None):
     results = []
     screenshots = []
     artifacts = {
         "execution_id": test_id,
+        "user_id": user_id,
         "screenshots": [],
         "console_logs": [],
         "network_logs": [],
@@ -139,6 +142,17 @@ def run_test(url: str, test_id: str):
     try:
         with open(meta_path, "w", encoding="utf-8") as fh:
             json.dump(artifacts, fh, default=str, indent=2)
+        db["artifacts"].update_one(
+            {"execution_id": test_id, "user_id": user_id},
+            {"$set": {
+                "user_id": user_id,
+                "execution_id": test_id,
+                "artifact_path": meta_path,
+                "screenshot_paths": list(artifacts.get("screenshots", [])),
+                "created_at": datetime.utcnow().isoformat(),
+            }},
+            upsert=True,
+        )
     except Exception:
         pass
 

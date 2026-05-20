@@ -25,15 +25,16 @@ REPORT_COLLECTION = db["reports"]
 def export_report_to_pdf(
     report_id: str,
     *,
+    user_id: Optional[str] = None,
     include_screenshots: bool = True,
     include_comparison: bool = False,
     comparison_run_id: Optional[str] = None,
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
-    report = _load_report(report_id)
+    report = _load_report(report_id, user_id=user_id)
     comparison = None
     if include_comparison and comparison_run_id:
-        comparison = compare_runs(_report_run_id(report, report_id), comparison_run_id, persist=False)
+        comparison = compare_runs(_report_run_id(report, report_id), comparison_run_id, user_id=user_id, persist=False)
 
     export_id = str(uuid.uuid4())
     export_title = title or f"Report {report.get('report_id') or report_id}"
@@ -46,6 +47,7 @@ def export_report_to_pdf(
     record = {
         "export_id": export_id,
         "report_id": report.get("report_id") or report_id,
+        "user_id": user_id or report.get("user_id") or "",
         "format": "pdf",
         "file_path": str(pdf_path),
         "title": export_title,
@@ -60,8 +62,11 @@ def export_report_to_pdf(
     return record
 
 
-def list_report_exports(report_id: str) -> List[Dict[str, Any]]:
-    return list(report_export_collection.find({"report_id": report_id}, {"_id": 0}).sort("created_at", -1))
+def list_report_exports(report_id: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    query: Dict[str, Any] = {"report_id": report_id}
+    if user_id:
+        query["user_id"] = user_id
+    return list(report_export_collection.find(query, {"_id": 0}).sort("created_at", -1))
 
 
 def _build_pdf(path: Path, report: Dict[str, Any], *, title: str, include_screenshots: bool, comparison: Optional[Dict[str, Any]]) -> None:
@@ -90,7 +95,7 @@ def _build_pdf(path: Path, report: Dict[str, Any], *, title: str, include_screen
     story.append(Paragraph("Key Metrics", styles["SectionHeading"]))
     story.extend(_metric_paragraphs(report, styles))
 
-    lifecycle = summarize_bug_lifecycle()
+    lifecycle = summarize_bug_lifecycle(report.get("user_id"))
     story.append(Paragraph("Bug Lifecycle Snapshot", styles["SectionHeading"]))
     story.extend(_lifecycle_paragraphs(lifecycle, styles))
 
@@ -286,11 +291,17 @@ def _report_run_id(report: Dict[str, Any], fallback: str) -> str:
     return str(fallback)
 
 
-def _load_report(report_id: str) -> Dict[str, Any]:
-    report = REPORT_COLLECTION.find_one({"report_id": report_id}, {"_id": 0})
+def _load_report(report_id: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    query: Dict[str, Any] = {"report_id": report_id}
+    if user_id:
+        query["user_id"] = user_id
+    report = REPORT_COLLECTION.find_one(query, {"_id": 0})
     if report:
         return report
-    report = REPORT_COLLECTION.find_one({"debug_data.run_id": report_id}, {"_id": 0})
+    query = {"debug_data.run_id": report_id}
+    if user_id:
+        query["user_id"] = user_id
+    report = REPORT_COLLECTION.find_one(query, {"_id": 0})
     if report:
         return report
     raise ValueError(f"Report not found: {report_id}")

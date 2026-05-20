@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from backend.agent.agent_loop_v2 import run_agent_loop_v2
 from backend.agent.browser_session import BrowserSessionManager
 from backend.core.models.agent_state import AgentRunRequest
 from backend.services.ai_report_service import generate_report
 from backend.agent.services.stability_service import StabilityService
+from backend.services.auth import get_current_user
 
 router = APIRouter()
 
 
 @router.post("/autonomous-test")
-async def autonomous_test(data: AgentRunRequest):
+async def autonomous_test(data: AgentRunRequest, current_user: dict = Depends(get_current_user)):
     start_url = str(data.url)
 
     manager = BrowserSessionManager(headless=True)
@@ -32,7 +33,7 @@ async def autonomous_test(data: AgentRunRequest):
         )
         # Post-process run into a human-readable AI report (best-effort)
         try:
-            report = generate_report(run_data, use_llm=True)
+            report = generate_report(run_data, use_llm=True, user_id=current_user["user_id"], execution_id=run_data.get("run_id"))
         except Exception:
             report = {"error": "report_generation_failed"}
 

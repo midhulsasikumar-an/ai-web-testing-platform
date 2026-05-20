@@ -1,17 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from backend.database.mongo import collection
 from backend.services.ai_log_service import generate_ai_logs
 from collections import defaultdict
+from backend.services.auth import get_current_user
 
 
 router = APIRouter()
 
 
 @router.get("/stats")
-async def get_dashboard_stats():
+async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
     tests = list(collection.find({
-        "user_id": "demo-user"
+        "user_id": current_user["user_id"]
     }))
 
     total_tests = len(tests)

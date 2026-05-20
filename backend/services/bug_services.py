@@ -15,6 +15,8 @@ def create_bugs_from_test(test_data):
 
                 "test_id": test_data["test_id"],
 
+                "execution_id": test_data.get("execution_id") or test_data["test_id"],
+
                 "user_id": test_data["user_id"],
 
                 "title": result["test"],
