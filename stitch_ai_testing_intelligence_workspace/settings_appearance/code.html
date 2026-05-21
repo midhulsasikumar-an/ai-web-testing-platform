@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Appearance Settings | TestPilot AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#004ac6",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "primary-container": "#2563eb",
+                    "tertiary-fixed": "#d3e4fe",
+                    "on-secondary-fixed": "#001e2f",
+                    "surface-container-highest": "#dae2fd",
+                    "surface-bright": "#faf8ff",
+                    "surface-tint": "#0053db",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-background": "#131b2e",
+                    "on-primary-container": "#eeefff",
+                    "tertiary-container": "#5e6e85",
+                    "surface-container-low": "#f2f3ff",
+                    "surface-variant": "#dae2fd",
+                    "on-secondary-container": "#004666",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#89ceff",
+                    "on-surface": "#131b2e",
+                    "surface-container": "#eaedff",
+                    "on-surface-variant": "#434655",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#e9f0ff",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#283044",
+                    "secondary-container": "#39b8fd",
+                    "on-primary-fixed": "#00174b",
+                    "surface": "#faf8ff",
+                    "secondary-fixed": "#c9e6ff",
+                    "inverse-primary": "#b4c5ff",
+                    "background": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#dbe1ff",
+                    "surface-container-high": "#e2e7ff",
+                    "on-secondary-fixed-variant": "#004c6e",
+                    "secondary": "#006591",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "outline": "#737686",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "outline-variant": "#c3c6d7",
+                    "tertiary": "#46566c",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-dim": "#d2d9f4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "xl": "32px",
+                    "max-width": "1440px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "sm": "12px",
+                    "md": "16px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E2E8F0;
+            box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05);
+        }
+        .theme-card-selected {
+            border-color: #004ac6;
+            outline: 2px solid #004ac6;
+            outline-offset: 2px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .switch-toggle:checked + .switch-bg { background-color: #004ac6; }
+        .switch-toggle:checked + .switch-bg .switch-dot { transform: translateX(1.25rem); }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- TopNavBar for mobile responsive pivot -->
+<header class="md:hidden sticky top-0 z-50 flex justify-between items-center px-margin-mobile py-base bg-surface-container-lowest/80 backdrop-blur-md w-full border-b border-outline-variant">
+<span class="font-headline-md text-headline-md font-bold text-primary">TestPilot AI</span>
+<button class="p-xs text-on-surface-variant"><span class="material-symbols-outlined" data-icon="menu">menu</span></button>
+</header>
+<div class="flex min-h-screen">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant p-md gap-sm z-40">
+<div class="mb-xl px-xs">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">TestPilot AI</h1>
+</div>
+<div class="mb-base px-xs">
+<h2 class="font-label-md text-label-md font-semibold text-on-surface-variant opacity-70">Settings</h2>
+<p class="text-label-sm text-on-surface-variant/60">Manage your workspace</p>
+</div>
+<nav class="space-y-xs">
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+                    Profile
+                </a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+                    Security
+                </a>
+<!-- Active Tab -->
+<a class="flex items-center gap-md p-sm bg-secondary-container/10 text-primary font-semibold rounded-lg font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="palette" style="font-variation-settings: 'FILL' 1;">palette</span>
+                    Appearance
+                </a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                    Notifications
+                </a>
+</nav>
+<div class="mt-8 px-xs">
+<button class="w-full bg-primary text-on-primary py-sm rounded-xl font-label-md text-label-md transition-all active:scale-95 shadow-lg shadow-primary/10">Upgrade Plan</button>
+</div>
+<div class="mt-auto space-y-xs">
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                    Support
+                </a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Sign Out
+                </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-margin-mobile md:p-margin-desktop pb-32">
+<div class="max-w-[800px] mx-auto space-y-xl">
+<!-- Header Section -->
+<header class="space-y-xs">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Appearance</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Customize how TestPilot AI looks and feels in your browser.</p>
+</header>
+<!-- Theme Selector Section -->
+<section class="space-y-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface">Interface Theme</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Light Theme -->
+<div class="group cursor-pointer">
+<div class="aspect-video glass-card rounded-xl overflow-hidden mb-sm transition-all group-hover:shadow-lg theme-card-selected relative border-2 border-primary">
+<div class="absolute inset-0 p-sm space-y-xs bg-white">
+<div class="w-1/2 h-2 bg-primary/20 rounded"></div>
+<div class="w-full h-12 bg-surface-container rounded-lg"></div>
+<div class="flex gap-xs">
+<div class="w-8 h-8 bg-surface-container-high rounded-full"></div>
+<div class="w-8 h-8 bg-surface-container-high rounded-full"></div>
+</div>
+</div>
+<div class="absolute top-2 right-2 bg-primary text-white p-xs rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface block text-center">Light</span>
+</div>
+<!-- Dark Theme -->
+<div class="group cursor-pointer">
+<div class="aspect-video rounded-xl overflow-hidden mb-sm transition-all group-hover:shadow-lg border-2 border-outline-variant bg-[#0F172A] relative">
+<div class="absolute inset-0 p-sm space-y-xs">
+<div class="w-1/2 h-2 bg-primary/40 rounded"></div>
+<div class="w-full h-12 bg-white/5 rounded-lg"></div>
+<div class="flex gap-xs">
+<div class="w-8 h-8 bg-white/10 rounded-full"></div>
+<div class="w-8 h-8 bg-white/10 rounded-full"></div>
+</div>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant block text-center">Dark</span>
+</div>
+<!-- System Theme -->
+<div class="group cursor-pointer">
+<div class="aspect-video rounded-xl overflow-hidden mb-sm transition-all group-hover:shadow-lg border-2 border-outline-variant relative">
+<div class="absolute inset-0 flex">
+<div class="w-1/2 h-full bg-white p-sm space-y-xs">
+<div class="w-3/4 h-2 bg-primary/20 rounded"></div>
+<div class="w-full h-12 bg-surface-container rounded-lg"></div>
+</div>
+<div class="w-1/2 h-full bg-[#0F172A] p-sm space-y-xs">
+<div class="w-3/4 h-2 bg-primary/40 rounded"></div>
+<div class="w-full h-12 bg-white/5 rounded-lg"></div>
+</div>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant block text-center">System</span>
+</div>
+</div>
+</section>
+<!-- Preferences Card -->
+<section class="glass-card rounded-xl p-xl space-y-xl">
+<div class="flex items-center gap-md border-b border-outline-variant pb-lg">
+<span class="material-symbols-outlined text-primary" data-icon="settings_suggest">settings_suggest</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Interface Preferences</h2>
+</div>
+<div class="space-y-xl">
+<!-- Compact Mode Toggle -->
+<div class="flex items-center justify-between">
+<div class="space-y-xs max-w-[70%]">
+<label class="font-label-md text-label-md text-on-surface font-semibold cursor-pointer" for="compact-mode">Compact Mode</label>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Reduce padding and font sizes across the dashboard for maximum information density.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer switch-toggle" id="compact-mode" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer transition-all switch-bg relative">
+<div class="absolute left-[2px] top-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all switch-dot"></div>
+</div>
+</label>
+</div>
+<!-- UI Density Segmented Control -->
+<div class="space-y-md">
+<div class="space-y-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">UI Density</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Choose how much white space you prefer between elements.</p>
+</div>
+<div class="flex bg-surface-container-low p-xs rounded-xl w-full max-w-sm">
+<button class="flex-1 py-base px-md rounded-lg font-label-md text-label-md transition-all bg-white shadow-sm text-primary font-bold">Comfortable</button>
+<button class="flex-1 py-base px-md rounded-lg font-label-md text-label-md transition-all text-on-surface-variant hover:bg-surface-container">Compact</button>
+</div>
+</div>
+<!-- Reduced Motion Toggle -->
+<div class="flex items-center justify-between">
+<div class="space-y-xs max-w-[70%]">
+<label class="font-label-md text-label-md text-on-surface font-semibold cursor-pointer" for="reduced-motion">Reduced Motion</label>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Disable interface animations and transitions for a faster feel.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer switch-toggle" id="reduced-motion" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer transition-all switch-bg relative">
+<div class="absolute left-[2px] top-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all switch-dot translate-x-5"></div>
+</div>
+</label>
+</div>
+</div>
+</section>
+<!-- AI Insights Section (Signature Style) -->
+<div class="p-[1px] bg-gradient-to-r from-primary to-secondary-container rounded-xl">
+<div class="bg-white/95 backdrop-blur-md rounded-[11px] p-lg flex gap-lg items-start">
+<div class="bg-primary-container/10 p-sm rounded-lg">
+<span class="material-symbols-outlined text-primary-container" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div class="space-y-xs">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">AI Suggestion</span>
+<p class="font-body-md text-body-md text-on-surface">Users with your workflow typically prefer <strong>Compact Mode</strong> on 13" displays to see more code blocks simultaneously.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Sticky Bar -->
+<footer class="fixed bottom-0 left-0 right-0 md:left-64 bg-white/80 backdrop-blur-xl border-t border-outline-variant px-margin-mobile md:px-margin-desktop py-md z-30">
+<div class="max-w-[800px] mx-auto flex items-center justify-between">
+<div class="hidden sm:flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="info">info</span>
+<span class="font-body-sm text-body-sm">Unsaved changes detected</span>
+</div>
+<div class="flex items-center gap-md w-full sm:w-auto">
+<button class="flex-1 sm:flex-none py-base px-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container rounded-xl transition-all">Discard</button>
+<button class="flex-1 sm:flex-none py-base px-xl font-label-md text-label-md bg-primary text-on-primary rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 hover:brightness-110">Save Changes</button>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions for segmented controls
+        const segmentButtons = document.querySelectorAll('.flex.bg-surface-container-low button');
+        segmentButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                segmentButtons.forEach(b => {
+                    b.classList.remove('bg-white', 'shadow-sm', 'text-primary', 'font-bold');
+                    b.classList.add('text-on-surface-variant', 'hover:bg-surface-container');
+                });
+                btn.classList.add('bg-white', 'shadow-sm', 'text-primary', 'font-bold');
+                btn.classList.remove('text-on-surface-variant', 'hover:bg-surface-container');
+            });
+        });
+
+        // Theme card selection
+        const themeCards = document.querySelectorAll('.group.cursor-pointer');
+        themeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                themeCards.forEach(c => {
+                    const inner = c.querySelector('.aspect-video');
+                    inner.classList.remove('theme-card-selected', 'border-primary');
+                    inner.classList.add('border-outline-variant');
+                    const check = c.querySelector('.bg-primary.text-white');
+                    if (check) check.remove();
+                });
+                
+                const inner = card.querySelector('.aspect-video');
+                inner.classList.add('theme-card-selected', 'border-primary');
+                inner.classList.remove('border-outline-variant');
+                
+                const checkMark = document.createElement('div');
+                checkMark.className = 'absolute top-2 right-2 bg-primary text-white p-xs rounded-full shadow-sm';
+                checkMark.innerHTML = '<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: \'FILL\' 1;">check</span>';
+                inner.appendChild(checkMark);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>TestPilot AI - Run Test Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-bright": "#FFFFFF",
+                "surface-container-low": "#F8FAFC",
+                "surface-container-lowest": "#FFFFFF",
+                "primary-fixed-dim": "#BFDBFE",
+                "surface-container-high": "#F1F5F9",
+                "on-secondary": "#FFFFFF",
+                "tertiary-fixed-dim": "#7DD3FC",
+                "primary-fixed": "#DBEAFE",
+                "inverse-surface": "#0F172A",
+                "outline": "#94A3B8",
+                "secondary-container": "#FCD34D",
+                "on-background": "#0F172A",
+                "outline-variant": "#E2E8F0",
+                "surface-variant": "#F1F5F9",
+                "secondary": "#F59E0B",
+                "primary": "#2563EB",
+                "tertiary-container": "#BAE6FD",
+                "inverse-on-surface": "#F8FAFC",
+                "surface-tint": "#2563EB",
+                "on-primary-container": "#1E40AF",
+                "on-tertiary-fixed-variant": "#075985",
+                "on-tertiary": "#0C4A6E",
+                "on-secondary-fixed-variant": "#78350F",
+                "on-primary-fixed": "#1E3A8A",
+                "secondary-fixed": "#FEF3C7",
+                "on-primary-fixed-variant": "#1E40AF",
+                "secondary-fixed-dim": "#FCD34D",
+                "primary-container": "#DBEAFE",
+                "surface-container-highest": "#E2E8F0",
+                "on-error-container": "#7F1D1D",
+                "on-primary": "#FFFFFF",
+                "surface-container": "#F1F5F9",
+                "on-error": "#FFFFFF",
+                "on-surface": "#0F172A",
+                "on-tertiary-container": "#075985",
+                "error": "#EF4444",
+                "tertiary-fixed": "#E0F2FE",
+                "inverse-primary": "#60A5FA",
+                "on-surface-variant": "#334155",
+                "on-tertiary-fixed": "#082F49",
+                "surface-dim": "#F8FAFC",
+                "on-secondary-container": "#78350F",
+                "surface": "#FFFFFF",
+                "error-container": "#FEE2E2",
+                "on-secondary-fixed": "#451A03",
+                "tertiary": "#0EA5E9",
+                "background": "#F8FAFC"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "md": "1.5rem",
+                "sm": "1rem",
+                "container-max": "1440px",
+                "lg": "2rem",
+                "xl": "3rem",
+                "gutter": "24px",
+                "xs": "0.5rem",
+                "margin-mobile": "16px",
+                "base": "4px"
+        },
+        "fontFamily": {
+                "body-lg": ["Inter"],
+                "label-caps": ["JetBrains Mono"],
+                "display-lg": ["Inter"],
+                "code-sm": ["JetBrains Mono"],
+                "headline-lg": ["Inter"],
+                "body-md": ["Inter"],
+                "headline-lg-mobile": ["Inter"],
+                "display-sm": ["Inter"]
+        },
+        "fontSize": {
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "code-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "display-sm": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  body {
+    background-color: #F8FAFC;
+    background-image: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #F8FAFC 100%);
+    background-attachment: fixed;
+    color: #334155;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #E2E8F0;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  }
+  .glass-card:hover {
+    border-color: #CBD5E1;
+  }
+  .btn-primary-glow {
+    background: linear-gradient(135deg, #2563EB, #3B82F6);
+    box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.25);
+  }
+  .terminal-bg {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+  }
+  .toggle-checkbox:checked {
+    right: 0;
+    border-color: #2563EB;
+  }
+  .toggle-checkbox:checked + .toggle-label {
+    background-color: #2563EB;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body class="text-on-surface font-body-md h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full p-md bg-white/70 backdrop-blur-xl w-64 border-r border-slate-200 shadow-sm z-20">
+<div class="flex items-center gap-xs mb-xl">
+<span class="material-symbols-outlined text-primary text-3xl">token</span>
+<div>
+<h1 class="font-display-sm text-display-sm font-bold tracking-tighter text-slate-900 leading-none">TestPilot AI</h1>
+<p class="font-label-caps text-label-caps text-slate-500">Enterprise AI OS</p>
+</div>
+</div>
+<button class="w-full mb-lg py-xs px-sm rounded-lg btn-primary-glow text-white font-body-md flex items-center justify-center gap-xs transition-transform duration-150 hover:scale-105">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+      New Experiment
+    </button>
+<nav class="flex-1 flex flex-col gap-base">
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-primary font-bold bg-primary/10 shadow-[inset_0_0_10px_rgba(37,99,235,0.05)]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+<span class="font-body-md text-body-md">Run Test</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-body-md text-body-md">AI Workspace</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-body-md text-body-md">Workflows</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">Test History</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">bug_report</span>
+<span class="font-body-md text-body-md">Bugs</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+<a class="flex items-center gap-sm p-xs rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors duration-200 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-lg w-full sticky top-0 z-40 bg-white/50 backdrop-blur-lg border-b border-slate-200 h-16 shadow-sm">
+<div class="font-headline-lg text-headline-lg font-black text-slate-900">Workspace Controls</div>
+<div class="flex items-center gap-md">
+<div class="relative focus-within:ring-2 focus-within:ring-primary/20 rounded-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="bg-slate-100/50 rounded-full py-2 pl-10 pr-4 border border-slate-200 text-slate-900 font-body-md focus:outline-none w-64 glass-card" placeholder="Search tests..." type="text">
+</div>
+<button class="font-label-caps text-label-caps px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-primary/50 transition-colors text-primary font-bold">Deploy AI</button>
+<div class="flex gap-sm text-slate-400">
+<span class="material-symbols-outlined hover:text-primary transition-all cursor-pointer">notifications</span>
+<span class="material-symbols-outlined hover:text-primary transition-all cursor-pointer">help_outline</span>
+<span class="material-symbols-outlined hover:text-primary transition-all cursor-pointer">account_circle</span>
+</div>
+</div>
+</header>
+<div class="p-lg flex-1 flex flex-col gap-lg max-w-container-max mx-auto w-full">
+<!-- Top Config Section -->
+<section class="glass-card rounded-xl p-md flex flex-col gap-md">
+<div class="flex gap-sm">
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">link</span>
+<input class="w-full bg-slate-50 border-b border-slate-200 focus:border-primary focus:bg-white transition-all duration-300 py-3 pl-10 pr-4 text-body-lg font-body-lg text-slate-900 outline-none rounded-t-lg" placeholder="Enter target URL (e.g., https://app.example.com)" type="url">
+</div>
+<select class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-700 font-body-md outline-none focus:border-primary appearance-none pr-10 relative">
+<option>Chrome (Headless)</option>
+<option>Firefox</option>
+<option>Safari</option>
+</select>
+<select class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-700 font-body-md outline-none focus:border-primary appearance-none pr-10">
+<option>Desktop 1080p</option>
+<option>Mobile iOS</option>
+<option>Tablet Android</option>
+</select>
+<button class="btn-primary-glow text-white font-headline-lg text-headline-lg font-bold px-xl rounded-lg flex items-center gap-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+            Run AI Test
+          </button>
+</div>
+<div class="flex gap-lg items-center border-t border-slate-100 pt-md">
+<div class="flex items-center gap-xs">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-slate-200 appearance-none cursor-pointer transition-transform duration-200 ease-in-out" id="toggle1" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-200 ease-in-out" for="toggle1"></label>
+</div>
+<span class="font-body-md text-body-md text-slate-500">AI Analysis</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-slate-200 appearance-none cursor-pointer transition-transform duration-200 ease-in-out" id="toggle2" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-200 ease-in-out" for="toggle2"></label>
+</div>
+<span class="font-body-md text-body-md text-slate-500">Form Fuzzing</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-slate-200 appearance-none cursor-pointer transition-transform duration-200 ease-in-out" id="toggle3" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-200 ease-in-out" for="toggle3"></label>
+</div>
+<span class="font-body-md text-body-md text-slate-500">Accessibility Scan</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-slate-200 appearance-none cursor-pointer transition-transform duration-200 ease-in-out" id="toggle4" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-200 ease-in-out" for="toggle4"></label>
+</div>
+<span class="font-body-md text-body-md text-slate-500">Screenshot Capture</span>
+</div>
+</div>
+</section>
+<!-- Middle: Test Plan -->
+<div class="grid grid-cols-3 gap-lg">
+<section class="col-span-2 glass-card rounded-xl p-md flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-lg text-headline-lg font-semibold text-slate-900 flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">psychology</span> AI Generated Test Plan
+            </h2>
+<div class="bg-amber-50 border border-amber-200 text-amber-700 font-label-caps text-label-caps px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span> 98% Confidence
+            </div>
+</div>
+<div class="space-y-sm flex-1 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Steps -->
+<div class="flex items-start gap-sm bg-slate-50 p-sm rounded-lg border border-slate-100 hover:border-primary/20 transition-colors">
+<div class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center font-code-sm text-code-sm mt-0.5">1</div>
+<div>
+<p class="font-body-md text-body-md text-slate-800">Navigate to homepage and verify 200 OK</p>
+<p class="font-code-sm text-code-sm text-slate-500 mt-1">page.goto('/')</p>
+</div>
+</div>
+<div class="flex items-start gap-sm bg-slate-50 p-sm rounded-lg border border-slate-100 hover:border-primary/20 transition-colors">
+<div class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center font-code-sm text-code-sm mt-0.5">2</div>
+<div>
+<p class="font-body-md text-body-md text-slate-800">Locate main navigation header</p>
+<p class="font-code-sm text-code-sm text-slate-500 mt-1">expect(page.locator('nav')).toBeVisible()</p>
+</div>
+</div>
+<div class="flex items-start gap-sm bg-slate-50 p-sm rounded-lg border border-slate-100 hover:border-primary/20 transition-colors">
+<div class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center font-code-sm text-code-sm mt-0.5">3</div>
+<div>
+<p class="font-body-md text-body-md text-slate-800">Simulate user login flow with synthetic data</p>
+<p class="font-code-sm text-code-sm text-slate-500 mt-1">ai.fillForm('#login', syntheticUser)</p>
+</div>
+</div>
+</div>
+<div class="mt-md pt-sm border-t border-slate-100 flex gap-sm">
+<button class="bg-white border border-primary/20 text-primary font-code-sm text-code-sm px-3 py-1.5 rounded-full hover:bg-primary/5 transition-colors">Test checkout flow</button>
+<button class="bg-white border border-slate-200 text-slate-500 font-code-sm text-code-sm px-3 py-1.5 rounded-full hover:bg-slate-50 transition-colors">Verify search results</button>
+</div>
+</section>
+<!-- Right Side Widgets inside Main Grid -->
+<div class="flex flex-col gap-md">
+<div class="glass-card rounded-xl p-md relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors"></div>
+<h3 class="font-label-caps text-label-caps text-slate-500 mb-sm">Total Tests Run</h3>
+<div class="font-display-lg text-display-lg text-slate-900">1,024</div>
+<div class="flex items-center gap-1 text-blue-600 mt-2">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="font-body-md text-body-md">+12% this week</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-md relative overflow-hidden group flex-1">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-50 rounded-full blur-2xl group-hover:bg-amber-100 transition-colors"></div>
+<h3 class="font-label-caps text-label-caps text-slate-500 mb-sm">AI Health Status</h3>
+<div class="flex items-center gap-sm mb-4">
+<div class="w-12 h-12 rounded-full border-4 border-amber-400 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-amber-500">favorite</span>
+</div>
+<div>
+<div class="font-headline-lg text-headline-lg text-slate-900 leading-none">Optimal</div>
+<div class="font-code-sm text-code-sm text-slate-500">Latency: 42ms</div>
+</div>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2">
+<div class="bg-amber-400 h-2 rounded-full w-[95%] shadow-[0_0_8px_rgba(251,191,36,0.3)]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom: Execution -->
+<section class="glass-card rounded-xl overflow-hidden flex flex-col flex-1 min-h-[300px] bg-[#0F172A]">
+<div class="flex border-b border-slate-100 bg-slate-50/50 bg-[#1E293B]" style="border-color: #334155;"><button class="px-sm py-3 font-code-sm text-code-sm text-blue-400 border-b-2 border-blue-400 bg-blue-500/10">Logs</button>
+<button class="px-sm py-3 font-code-sm text-code-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors">Screenshots</button>
+<button class="px-sm py-3 font-code-sm text-code-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors">Network</button>
+<button class="px-sm py-3 font-code-sm text-code-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors">DOM</button>
+<button class="px-sm py-3 font-code-sm text-code-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-blue-400">auto_awesome</span> AI Analysis
+            </button></div>
+<div class="p-4 terminal-bg flex-1 overflow-y-auto font-code-sm text-code-sm text-slate-600 leading-relaxed custom-scrollbar bg-[#0F172A]" style="border: none;"><div class="flex gap-2"><span class="text-blue-400">[14:02:01]</span> <span class="text-blue-500 font-bold">INFO</span> <span class="text-slate-300">Initializing testing environment...</span></div>
+<div class="flex gap-2"><span class="text-blue-400">[14:02:02]</span> <span class="text-blue-500 font-bold">INFO</span> <span class="text-slate-300">Launching Headless Chrome on Desktop 1080p profile.</span></div>
+<div class="flex gap-2"><span class="text-blue-400">[14:02:03]</span> <span class="text-amber-400 font-bold">WARN</span> <span class="text-slate-300">Slow network response from analytics provider, bypassing.</span></div>
+<div class="flex gap-2"><span class="text-blue-400">[14:02:05]</span> <span class="text-blue-500 font-bold">INFO</span> <span class="text-slate-300">Executing Step 1: Navigate to homepage.</span></div>
+<div class="flex gap-2"><span class="text-blue-400">[14:02:06]</span> <span class="text-cyan-400 font-bold">AI</span> <span class="text-slate-300">Detected dynamic DOM structure. Adjusting locators heuristically.</span></div>
+<div class="flex gap-2"><span class="text-blue-400">[14:02:06]</span> <span class="text-blue-500 font-bold">INFO</span> <span class="text-slate-300">Locator identified: [data-testid="main-nav"]</span></div>
+<div class="animate-pulse mt-2 flex gap-2"><span class="text-blue-400">[14:02:07]</span> <span class="text-emerald-400 font-bold">EXEC</span> <span class="text-slate-300">Awaiting next AI instruction...</span> <span class="w-2 h-4 bg-emerald-400 inline-block shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span></div></div>
+</section>
+</div>
+</main>
+<!-- NavigationDrawer (Right Side AI Panel) -->
+<aside class="hidden xl:flex flex-col fixed right-0 top-0 h-screen w-80 bg-white/80 backdrop-blur-2xl border-l border-slate-200 shadow-2xl z-50">
+<div class="p-md border-b border-slate-200 flex justify-between items-center bg-white/50">
+<div>
+<h2 class="font-label-caps text-label-caps text-amber-600 flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span> AI Assistant
+          </h2>
+<p class="font-code-sm text-code-sm text-slate-500 mt-1">Real-time Insights</p>
+</div>
+<button class="text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 p-md overflow-y-auto flex flex-col gap-sm custom-scrollbar">
+<!-- AI Message -->
+<div class="bg-slate-50 p-3 rounded-lg rounded-tl-none border border-slate-100 relative shadow-sm">
+<p class="font-body-md text-body-md text-slate-700 text-sm">I've analyzed the target URL. The login form uses dynamic IDs. I recommend using semantic locators for robust testing.</p>
+</div>
+<!-- User Message -->
+<div class="bg-primary/10 p-3 rounded-lg rounded-tr-none border border-primary/20 self-end max-w-[85%] shadow-sm">
+<p class="font-body-md text-body-md text-primary font-medium text-sm">Apply semantic locators to the plan.</p>
+</div>
+<!-- AI Message -->
+<div class="bg-slate-50 p-3 rounded-lg rounded-tl-none border border-slate-100 relative mt-2 shadow-sm">
+<p class="font-body-md text-body-md text-slate-700 text-sm">Done. Test plan updated. Shall I commence execution or scan for accessibility issues first?</p>
+</div>
+</div>
+<div class="p-sm border-t border-slate-200 bg-white/50">
+<div class="flex flex-wrap gap-2 mb-sm">
+<span class="bg-white border border-slate-200 text-slate-500 font-code-sm text-[11px] px-2 py-1 rounded-md hover:bg-slate-50 cursor-pointer shadow-sm">Scan A11y</span>
+<span class="bg-white border border-slate-200 text-slate-500 font-code-sm text-[11px] px-2 py-1 rounded-md hover:bg-slate-50 cursor-pointer shadow-sm">Fuzz Login</span>
+</div>
+<div class="relative">
+<input class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 pl-3 pr-10 text-body-md font-body-md text-slate-900 focus:outline-none focus:border-primary focus:bg-white" placeholder="Ask AI..." type="text">
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:text-blue-700 transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</aside>
+
+
+</body></html>

@@ -63,31 +63,28 @@ export default function ReportsPage() {
           value={stats.total_tests}
           icon={FlaskConical}
           trend="From the latest dashboard snapshot"
-          trendUp={true}
-          accentColor="bg-blue-500"
+          trendColor="text-blue-500"
         />
         <StatCard
           title="Passed"
           value={stats.passed}
           icon={CheckCircle2}
           trend="Green health signals"
-          trendUp={true}
-          accentColor="bg-green-500"
+          trendColor="text-green-500"
         />
         <StatCard
           title="Failed"
           value={stats.failed}
           icon={XCircle}
           trend="Issues requiring review"
-          trendUp={false}
-          accentColor="bg-red-500"
+          trendColor="text-red-500"
         />
         <StatCard
           title="Active Bugs"
           value={stats.open_bugs}
           icon={Bug}
           trend="Open items from test runs"
-          accentColor="bg-amber-500"
+          trendColor="text-amber-500"
         />
       </div>
 

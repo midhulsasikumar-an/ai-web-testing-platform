@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Security Settings | TestPilot AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#004ac6",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "primary-container": "#2563eb",
+                        "tertiary-fixed": "#d3e4fe",
+                        "on-secondary-fixed": "#001e2f",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-bright": "#faf8ff",
+                        "surface-tint": "#0053db",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-background": "#131b2e",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-container": "#5e6e85",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-variant": "#dae2fd",
+                        "on-secondary-container": "#004666",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#89ceff",
+                        "on-surface": "#131b2e",
+                        "surface-container": "#eaedff",
+                        "on-surface-variant": "#434655",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#e9f0ff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#283044",
+                        "secondary-container": "#39b8fd",
+                        "on-primary-fixed": "#00174b",
+                        "surface": "#faf8ff",
+                        "secondary-fixed": "#c9e6ff",
+                        "inverse-primary": "#b4c5ff",
+                        "background": "#faf8ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-high": "#e2e7ff",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "secondary": "#006591",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "outline": "#737686",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "outline-variant": "#c3c6d7",
+                        "tertiary": "#46566c",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-dim": "#d2d9f4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "max-width": "1440px",
+                        "margin-desktop": "40px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E2E8F0;
+            box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05);
+        }
+        .sidebar-active {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #004ac6;
+            font-weight: 600;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased flex min-h-screen">
+<!-- SideNavBar (Semantic Shell) -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-low border-r border-outline-variant flex flex-col p-md gap-sm z-40 hidden md:flex">
+<div class="flex items-center gap-sm px-sm py-md">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-body-md">rocket_launch</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Settings</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Manage your workspace</p>
+</div>
+</div>
+<nav class="flex-1 mt-md space-y-xs">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg bg-secondary-container/10 text-primary font-semibold transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-label-md text-label-md">Security</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">palette</span>
+<span class="font-label-md text-label-md">Appearance</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+</nav>
+<div class="mt-auto space-y-xs">
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-sm rounded-lg hover:opacity-90 transition-all active:scale-95">
+                Upgrade Plan
+            </button>
+<div class="pt-md border-t border-outline-variant space-y-xs">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 pb-32">
+<!-- TopNavBar (Shell) -->
+<header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md flex justify-between items-center px-margin-desktop py-base border-b border-outline-variant w-full">
+<div class="flex items-center gap-md">
+<button class="md:hidden text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">TestPilot AI</h1>
+</div>
+<div class="flex items-center gap-lg">
+<div class="hidden md:flex gap-md">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Changelog</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:bg-surface-container-low p-base rounded-lg transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low p-base rounded-lg transition-all active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A clean, professional headshot of a software engineer in a minimalist office setting with soft, high-key lighting. The style is modern corporate with a focus on trust and approachability. The background features a subtle out-of-focus tech environment with blue and white color accents consistent with a premium SaaS platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpt22pedYWN1OUiePOBZjxHIch3kuniqGyT1HZNglx40k9_ADqGobN5lj_JojVRT0qPIqBweINNHrK-ymXMY6YiJc_RWeREk57Qn9yFdgBos4DH28Plspkwe1j7LdTTCPJwnkoJUSjJMyDQvcoikLA6Cshs12iHy7BNDW9cfq4GhXcnu_cBOhSqBxAcnkL1vO-A5g7uM96TI5GfY6U8lh7LktlnDoWZJUU4vs8cIxIaGdaepL-a6_CF4uvVWnKwdjR1xw-H-4eFCXP"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop mt-xl">
+<div class="mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Security &amp; Privacy</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Enhance your account security with these advanced controls.</p>
+</div>
+<div class="flex flex-col gap-lg">
+<!-- Password Section Card -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-lg">
+<div class="flex items-center gap-sm mb-lg">
+<span class="material-symbols-outlined text-primary">lock</span>
+<h3 class="font-headline-md text-headline-md">Change Password</h3>
+</div>
+<div class="space-y-md">
+<div>
+<label class="block font-label-md text-label-md mb-xs">Current Password</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm focus:border-primary-container focus:ring-4 focus:ring-primary-container/10 transition-all outline-none" placeholder="••••••••" type="password"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div>
+<label class="block font-label-md text-label-md mb-xs">New Password</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm focus:border-primary-container focus:ring-4 focus:ring-primary-container/10 transition-all outline-none" placeholder="••••••••" type="password"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md mb-xs">Confirm Password</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm focus:border-primary-container focus:ring-4 focus:ring-primary-container/10 transition-all outline-none" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="pt-sm">
+<button class="bg-primary text-on-primary font-label-md text-label-md px-lg py-sm rounded-lg hover:opacity-90 active:scale-95 transition-all">
+                                    Update Password
+                                </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Sessions Section Card -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-lg">
+<div class="flex justify-between items-center mb-lg">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">devices</span>
+<h3 class="font-headline-md text-headline-md">Active Sessions</h3>
+</div>
+<button class="text-error font-label-md text-label-md hover:bg-error-container/20 px-sm py-xs rounded-lg transition-all flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+                                Logout all devices
+                            </button>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center justify-between py-md border-b border-outline-variant last:border-0 hover:bg-surface-container-low px-md -mx-md rounded-lg transition-all">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">laptop_mac</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">MacBook Pro - San Francisco, CA <span class="ml-sm text-[10px] bg-secondary-container/20 text-on-secondary-container px-base py-[2px] rounded-full uppercase tracking-wider font-bold">Current</span></p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Chrome on macOS • Active now</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="flex items-center justify-between py-md border-b border-outline-variant last:border-0 hover:bg-surface-container-low px-md -mx-md rounded-lg transition-all">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">smartphone</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">iPhone 15 - San Francisco, CA</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Safari on iOS • 2 hours ago</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- API Access Section Card (AI Signature Gradient Edge) -->
+<section class="relative p-[1px] rounded-xl overflow-hidden bg-gradient-to-r from-primary via-secondary-container to-tertiary-fixed shadow-lg">
+<div class="bg-surface-container-lowest rounded-[11px] p-lg">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">key</span>
+<h3 class="font-headline-md text-headline-md">API Access</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-lg">Use this secret key to authenticate your local development agents with the TestPilot AI backend.</p>
+<div class="flex flex-col md:flex-row items-stretch md:items-center gap-md">
+<div class="flex-1 flex items-center gap-sm bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm">
+<span class="font-mono text-body-sm text-on-surface-variant tracking-widest overflow-hidden text-ellipsis">tp_live_••••••••••••••••••••••••••••4j9e</span>
+<button class="ml-auto text-primary hover:bg-primary/10 p-xs rounded transition-all" title="Copy Key">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+</div>
+<button class="bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md px-lg py-sm rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
+                                Regenerate
+                            </button>
+</div>
+<div class="mt-md flex items-center gap-xs text-primary font-label-md text-label-sm">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                            Keep your keys private. We will never ask for them in support.
+                        </div>
+</div>
+</section>
+</div>
+</div>
+<!-- Sticky Save Bar -->
+<div class="fixed bottom-0 left-0 md:left-64 right-0 bg-surface-container-lowest/90 backdrop-blur-xl border-t border-outline-variant px-margin-desktop py-md flex justify-end items-center z-40">
+<div class="flex items-center gap-md">
+<p class="hidden sm:block font-body-sm text-body-sm text-on-surface-variant">Unsaved changes in security settings</p>
+<button class="text-on-surface-variant hover:bg-surface-container-high px-lg py-sm rounded-lg font-label-md text-label-md transition-all">
+                    Discard
+                </button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-xl py-sm rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
+                    Save Changes
+                </button>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Ripple effect could be added here
+                if(this.textContent.trim() === 'content_copy') {
+                    const originalIcon = this.innerHTML;
+                    this.innerHTML = '<span class="material-symbols-outlined text-[20px]">check</span>';
+                    setTimeout(() => {
+                        this.innerHTML = originalIcon;
+                    }, 2000);
+                }
+            });
+        });
+
+        // Simple Mobile Menu Toggle Mockup
+        const menuBtn = document.querySelector('button .material-symbols-outlined');
+        if(menuBtn && menuBtn.textContent === 'menu') {
+            menuBtn.parentElement.addEventListener('click', () => {
+                alert('In a full implementation, this would trigger the responsive sidebar drawer.');
+            });
+        }
+    </script>
+</body></html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Settings | TestPilot AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#004ac6",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "primary-container": "#2563eb",
+                        "tertiary-fixed": "#d3e4fe",
+                        "on-secondary-fixed": "#001e2f",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-bright": "#faf8ff",
+                        "surface-tint": "#0053db",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-background": "#131b2e",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-container": "#5e6e85",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-variant": "#dae2fd",
+                        "on-secondary-container": "#004666",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#89ceff",
+                        "on-surface": "#131b2e",
+                        "surface-container": "#eaedff",
+                        "on-surface-variant": "#434655",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#e9f0ff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#283044",
+                        "secondary-container": "#39b8fd",
+                        "on-primary-fixed": "#00174b",
+                        "surface": "#faf8ff",
+                        "secondary-fixed": "#c9e6ff",
+                        "inverse-primary": "#b4c5ff",
+                        "background": "#faf8ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-high": "#e2e7ff",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "secondary": "#006591",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "outline": "#737686",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "outline-variant": "#c3c6d7",
+                        "tertiary": "#46566c",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-dim": "#d2d9f4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "max-width": "1440px",
+                        "margin-desktop": "40px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2563eb;
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            left: calc(100% - 2px);
+            transform: translateX(-100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E2E8F0;
+            box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-low border-r border-outline-variant z-50 flex flex-col p-md gap-sm">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">TestPilot AI</h1>
+<p class="text-on-surface-variant font-label-md mt-xs">Settings</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Profile</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span>Security</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">palette</span>
+<span>Appearance</span>
+</a>
+<a class="flex items-center gap-md p-md bg-secondary-container/10 text-primary font-semibold rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span>Notifications</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1 border-t border-outline-variant pt-md">
+<button class="w-full bg-primary text-on-primary font-label-md py-sm px-md rounded-lg mb-md hover:opacity-90 transition-opacity">
+                Upgrade Plan
+            </button>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64 min-h-screen pb-32">
+<header class="sticky top-0 z-40 bg-surface-container-lowest/80 backdrop-blur-md px-margin-desktop py-lg border-b border-outline-variant flex justify-between items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Notifications</h2>
+<p class="text-on-surface-variant font-body-sm">Configure how and when you want to receive updates.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-base hover:bg-surface-container-low rounded-lg transition-all active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+</button>
+<button class="p-base hover:bg-surface-container-low rounded-lg transition-all active:scale-95 relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a software engineer with a neutral expression, captured in soft studio lighting. The background is a clean, minimalist workspace with blurred tech elements. The aesthetic is modern and high-end corporate, featuring a cool color palette of whites and soft blues to match a premium enterprise UI design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ4dUNobZDDXrj3kRKoMJtpJLBXDp88iVN-94ph9lMKirQBFk6bMiGd7ONSlULx9fRd2X3kGhA_JnOWFpdEuYx6-JvbVeGvteEybRUL8GWg0Eq3BrjLaDlKdQiQjvAug7tL0C21lmdFqEaGZVRHG4PcTQMd_IRlwh2kOc6zU_3xlRgLdbqeQEhe2ovqodNrNwd3vc6NEEbAsGYbn4GWBqzTwBMIjgyWM1VMODywgZUGuUOF0Ser-dYOzgdyJbLp9WrmrInhPcwdPtW"/>
+</div>
+</div>
+</header>
+<div class="max-w-[800px] mx-auto py-xl px-margin-desktop space-y-lg">
+<!-- Email Notifications Card -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-xl border-b border-outline-variant bg-surface-container-lowest">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary text-[28px]">mail</span>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Email Notifications</h3>
+<p class="text-on-surface-variant font-body-sm">Stay updated via your registered email address.</p>
+</div>
+</div>
+</div>
+<div class="divide-y divide-outline-variant px-xl">
+<!-- Item 1 -->
+<div class="py-lg flex items-center justify-between group">
+<div class="max-w-[80%]">
+<label class="font-label-md text-on-surface block mb-1" for="email_complete">Test completion alerts</label>
+<p class="text-on-surface-variant font-body-sm">Receive a detailed summary when an automated test suite finishes running.</p>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full">
+<input checked="" class="toggle-checkbox absolute block w-0 h-0 opacity-0 cursor-pointer" id="email_complete" type="checkbox"/>
+<label class="toggle-label block h-6 overflow-hidden bg-surface-container-highest rounded-full cursor-pointer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-[20px] after:h-[20px] after:rounded-full after:transition-all after:duration-200" for="email_complete"></label>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="py-lg flex items-center justify-between group">
+<div class="max-w-[80%]">
+<label class="font-label-md text-on-surface block mb-1" for="email_bug">Critical bug alerts</label>
+<p class="text-on-surface-variant font-body-sm">Immediate notification when our AI detects a high-severity regression.</p>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full">
+<input checked="" class="toggle-checkbox absolute block w-0 h-0 opacity-0 cursor-pointer" id="email_bug" type="checkbox"/>
+<label class="toggle-label block h-6 overflow-hidden bg-surface-container-highest rounded-full cursor-pointer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-[20px] after:h-[20px] after:rounded-full after:transition-all after:duration-200" for="email_bug"></label>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="py-lg flex items-center justify-between group">
+<div class="max-w-[80%]">
+<label class="font-label-md text-on-surface block mb-1" for="email_workflow">Workflow execution alerts</label>
+<p class="text-on-surface-variant font-body-sm">Updates on the status of long-running CI/CD integration workflows.</p>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full">
+<input class="toggle-checkbox absolute block w-0 h-0 opacity-0 cursor-pointer" id="email_workflow" type="checkbox"/>
+<label class="toggle-label block h-6 overflow-hidden bg-surface-container-highest rounded-full cursor-pointer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-[20px] after:h-[20px] after:rounded-full after:transition-all after:duration-200" for="email_workflow"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- In-App Notifications Card -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-xl border-b border-outline-variant bg-surface-container-lowest">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary text-[28px]">notifications_active</span>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">In-App Notifications</h3>
+<p class="text-on-surface-variant font-body-sm">Real-time notifications while you are using the platform.</p>
+</div>
+</div>
+</div>
+<div class="divide-y divide-outline-variant px-xl">
+<!-- Item 1 -->
+<div class="py-lg flex items-center justify-between group">
+<div class="max-w-[80%]">
+<label class="font-label-md text-on-surface block mb-1" for="app_ai">AI recommendations</label>
+<p class="text-on-surface-variant font-body-sm">Smart insights on how to optimize your test cases and coverage.</p>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full">
+<input checked="" class="toggle-checkbox absolute block w-0 h-0 opacity-0 cursor-pointer" id="app_ai" type="checkbox"/>
+<label class="toggle-label block h-6 overflow-hidden bg-surface-container-highest rounded-full cursor-pointer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-[20px] after:h-[20px] after:rounded-full after:transition-all after:duration-200" for="app_ai"></label>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="py-lg flex items-center justify-between group">
+<div class="max-w-[80%]">
+<label class="font-label-md text-on-surface block mb-1" for="app_report">Report generation alerts</label>
+<p class="text-on-surface-variant font-body-sm">Get notified when your compliance and coverage reports are ready for download.</p>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full">
+<input checked="" class="toggle-checkbox absolute block w-0 h-0 opacity-0 cursor-pointer" id="app_report" type="checkbox"/>
+<label class="toggle-label block h-6 overflow-hidden bg-surface-container-highest rounded-full cursor-pointer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-[20px] after:h-[20px] after:rounded-full after:transition-all after:duration-200" for="app_report"></label>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="py-lg flex items-center justify-between group">
+<div class="max-w-[80%]">
+<label class="font-label-md text-on-surface block mb-1" for="app_failure">Execution failure alerts</label>
+<p class="text-on-surface-variant font-body-sm">Toast notifications for environment setup or execution script errors.</p>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full">
+<input checked="" class="toggle-checkbox absolute block w-0 h-0 opacity-0 cursor-pointer" id="app_failure" type="checkbox"/>
+<label class="toggle-label block h-6 overflow-hidden bg-surface-container-highest rounded-full cursor-pointer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-[20px] after:h-[20px] after:rounded-full after:transition-all after:duration-200" for="app_failure"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Info Box -->
+<div class="flex gap-md p-lg bg-surface-container-low rounded-lg border border-outline-variant">
+<span class="material-symbols-outlined text-secondary">info</span>
+<p class="text-on-surface-variant font-body-sm">
+                    Looking for Slack or Discord integrations? Visit the <a class="text-primary font-semibold hover:underline" href="#">Integrations</a> page to set up webhook notifications.
+                </p>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-64 right-0 p-lg bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant z-50">
+<div class="max-w-[800px] mx-auto flex justify-between items-center">
+<p class="text-on-surface-variant font-body-sm">You have unsaved changes in your notification preferences.</p>
+<div class="flex gap-md">
+<button class="px-xl py-sm bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md rounded-lg hover:bg-surface-container-low transition-all">
+                    Discard
+                </button>
+<button class="px-xl py-sm bg-primary text-on-primary font-label-md rounded-lg hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20" id="saveChanges">
+                    Save Changes
+                </button>
+</div>
+</div>
+</div>
+<script>
+        // Simple micro-interaction for the Save button
+        const saveButton = document.getElementById('saveChanges');
+        saveButton.addEventListener('click', () => {
+            const originalText = saveButton.innerHTML;
+            saveButton.innerHTML = '<span class="material-symbols-outlined text-[18px] align-middle mr-2">check</span>Saved';
+            saveButton.classList.replace('bg-primary', 'bg-success');
+            saveButton.style.backgroundColor = '#16a34a'; // Success green for visual feedback
+            
+            setTimeout(() => {
+                saveButton.innerHTML = originalText;
+                saveButton.style.backgroundColor = '';
+                saveButton.classList.replace('bg-success', 'bg-primary');
+            }, 2000);
+        });
+
+        // Toggle visual feedback
+        document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const parentRow = e.target.closest('.group');
+                if(e.target.checked) {
+                    parentRow.style.backgroundColor = 'rgba(0, 74, 198, 0.02)';
+                } else {
+                    parentRow.style.backgroundColor = 'transparent';
+                }
+            });
+        });
+    </script>
+</body></html>
