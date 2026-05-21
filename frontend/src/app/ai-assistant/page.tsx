@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { API_BASE_URL } from "@/services/http";
 
 type Message = {
   role: "user" | "assistant";
@@ -33,7 +34,7 @@ export default function AIAssistantPage() {
     setLoading(true);
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/ai/chat", {
+      const response = await fetch(`${API_BASE_URL}/ai/chat`, {
             method: "POST",
             headers: {
             "Content-Type": "application/json",

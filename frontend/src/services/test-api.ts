@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+import { apiJson, apiFetch, API_BASE_URL } from "@/services/http";
 
 export interface StartTestResponse {
   message: string;
@@ -62,37 +62,28 @@ export async function startTest(
   projectName: string,
   testType: string
 ): Promise<StartTestResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/tests/start`, {
+  console.debug("[test-api] POST", `${API_BASE_URL}/api/tests/start`);
+  const response = await apiFetch(`/api/tests/start`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, project_name: projectName , test_type: testType}),
+    body: JSON.stringify({ url, project_name: projectName, test_type: testType }),
   });
-
-  if (!response.ok) {
-    throw new Error(`Backend server returned ${response.status}`);
-  }
-
   return response.json();
 }
 
 export async function getTestById(
-  testId: string
+  testId: string,
+  token?: string
 ): Promise<TestApiResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/tests/${testId}`);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch test result`);
-  }
-
-  return response.json();
+  console.debug("[test-api] GET", `${API_BASE_URL}/api/tests/${testId}`);
+  return apiJson<TestApiResponse>(`/api/tests/${testId}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
 }
 
-export async function getAllTests(): Promise<TestApiResponse[]> {
-  const response = await fetch(`${API_BASE_URL}/api/tests`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch tests");
-  }
-
-  return response.json();
+export async function getAllTests(token?: string): Promise<TestApiResponse[]> {
+  console.debug("[test-api] GET", `${API_BASE_URL}/api/tests`);
+  return apiJson<TestApiResponse[]>(`/api/tests`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
 }

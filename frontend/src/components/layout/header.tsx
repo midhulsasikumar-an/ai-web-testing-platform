@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Search } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 
 interface HeaderProps {
   title: string;
@@ -9,6 +10,17 @@ interface HeaderProps {
 }
 
 export function Header({ title, description, children }: HeaderProps) {
+  const { user } = useAuth();
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((segment) => segment[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "NA";
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
       <div>
@@ -36,9 +48,9 @@ export function Header({ title, description, children }: HeaderProps) {
         </button>
         <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-border">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            AR
+            {initials}
           </div>
-          <span className="text-sm font-medium">Alex Rivera</span>
+          <span className="text-sm font-medium">{user?.name || "Unknown User"}</span>
         </div>
       </div>
     </div>

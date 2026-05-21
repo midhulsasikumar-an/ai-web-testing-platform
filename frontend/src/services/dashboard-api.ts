@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+import { apiJson, API_BASE_URL } from "@/services/http";
 
 export interface AILog {
   time: string;
@@ -44,14 +44,9 @@ export interface DashboardStatsResponse {
   recent_tests: RecentTest[];
 }
 
-export async function getDashboardStats(): Promise<DashboardStatsResponse> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/dashboard/stats`
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch dashboard stats");
-  }
-
-  return response.json();
+export async function getDashboardStats(token?: string): Promise<DashboardStatsResponse> {
+  console.debug("[dashboard-api] GET", `${API_BASE_URL}/api/dashboard/stats`);
+  return apiJson<DashboardStatsResponse>(`/api/dashboard/stats`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
 }

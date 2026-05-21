@@ -15,6 +15,7 @@ from backend.models.schema import TestRequest
 from backend.services.test_services import create_test_run, run_test_and_update
 from backend.database.mongo import collection, bug_collection
 from backend.services.auth import get_current_user
+from backend.routes.auth_routes import router as auth_router
 from backend.routes.dashboard import router as dashboard_router
 from backend.routes.ai import router as ai_router
 from backend.routes.autonomous_agent_route import router as autonomous_agent_router
@@ -107,6 +108,7 @@ def get_bug_by_id(bug_id: str, current_user: dict = Depends(get_current_user)):
     return bug
 
 app.include_router(dashboard_router,prefix="/api/dashboard",tags=["Dashboard"])
+app.include_router(auth_router)
 
 app.include_router(ai_router, prefix="/ai", tags=["AI"])
 

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
 import type { Bug, DashboardStats, AIFinding } from "@/types";
 import {sampleAIFindings } from "@/lib/data";
 import { getAllTests } from "@/services/test-api";
 import type { TestApiResponse } from "@/services/test-api";
 import { generateBugsFromTests } from "@/lib/bug-generators";
+import { useAuth } from "@/context/auth-context";
 
 // ── Context shape ──────────────────────────────────────────────────
 
@@ -26,35 +27,49 @@ const BugContext = createContext<BugContextType | undefined>(undefined);
 // ── Provider ───────────────────────────────────────────────────────
 
 export function BugProvider({ children }: { children: React.ReactNode }) {
-  const [bugs, setBugs] = useState<Bug[]>([]);
+  const { isReady, token } = useAuth();
+  const [manualBugs, setManualBugs] = useState<Bug[]>([]);
   const [testResults, setTestResults] = useState<TestApiResponse[]>([]);
   const [aiFindings] = useState<AIFinding[]>(sampleAIFindings);
   useEffect(() => {
+    if (!isReady || !token) {
+      return;
+    }
+
+    let active = true;
+
     async function loadTests() {
       try {
-        const tests = await getAllTests();
+        const tests = await getAllTests(token ?? undefined);
 
-        setTestResults(tests);
+        if (active) {
+          setTestResults(tests);
+        }
       } catch (error) {
         console.error("Failed to load tests:", error);
       }
     }
 
     loadTests();
-  }, []);
 
-  useEffect(() => {
-    const generatedBugs = generateBugsFromTests(testResults);
+    return () => {
+      active = false;
+    };
+  }, [isReady, token]);
 
-    setBugs(generatedBugs);
-  }, [testResults]);
+  const visibleTestResults = useMemo(
+    () => (isReady && token ? testResults : []),
+    [isReady, token, testResults]
+  );
+  const generatedBugs = useMemo(() => generateBugsFromTests(visibleTestResults), [visibleTestResults]);
+  const bugs = useMemo(() => (isReady && token ? [...manualBugs, ...generatedBugs] : []), [isReady, token, manualBugs, generatedBugs]);
 
   const addBug = useCallback((bug: Bug) => {
-    setBugs((prev) => [bug, ...prev]);
+    setManualBugs((prev) => [bug, ...prev]);
   }, []);
 
   const updateBugStatus = useCallback((id: string, status: Bug["status"]) => {
-    setBugs((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
+    setManualBugs((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
   }, []);
 
   const addTestResult = useCallback((result: TestApiResponse) => {
@@ -67,18 +82,18 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
   );
 
   const getTestById = useCallback(
-    (id: string) => testResults.find((t) => t.test_id === id),
-    [testResults]
+    (id: string) => visibleTestResults.find((t) => t.test_id === id),
+    [visibleTestResults]
   );
 
-    const stats: DashboardStats = {
-    totalTests: testResults.length,
+  const stats: DashboardStats = {
+    totalTests: visibleTestResults.length,
 
-    passed: testResults.filter(
+    passed: visibleTestResults.filter(
       (t) => t.overall_status === "pass"
     ).length,
 
-    failed: testResults.filter(
+    failed: visibleTestResults.filter(
       (t) => t.overall_status === "fail"
     ).length,
 

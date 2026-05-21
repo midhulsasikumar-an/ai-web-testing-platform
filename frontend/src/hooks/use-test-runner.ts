@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { TestResult, StreamLogLine } from "@/types";
+import type { StreamLogLine } from "@/types";
 import { useBugContext } from "@/context/bug-context";
 import type { TestApiResponse } from "@/services/test-api";
 import {

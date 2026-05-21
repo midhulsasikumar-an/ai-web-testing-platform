@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -12,20 +13,39 @@ import {
   ChevronRight,
   Zap,
   History,
+  Terminal,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/context/auth-context";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/reports", label: "Reports", icon: Terminal },
   { href: "/run-test", label: "Run Test", icon: Play },
   { href: "/test-history", label: "Test History", icon: History },
   { href: "/bugs", label: "Bugs", icon: Bug },
-  { href: "#", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((segment) => segment[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "NA";
+
+  function handleLogout() {
+    logout();
+    router.replace("/login");
+  }
 
   return (
     <aside
@@ -86,15 +106,23 @@ export function Sidebar() {
           collapsed && "justify-center px-0"
         )}>
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            AR
+            {initials}
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-white truncate">Alex Rivera</span>
-              <span className="text-[0.65rem] text-sidebar-foreground/50 truncate">QA Engineer</span>
+              <span className="text-xs font-semibold text-white truncate">{user?.name || "Unknown User"}</span>
+              <span className="text-[0.65rem] text-sidebar-foreground/50 truncate">{user?.email || "No email"}</span>
             </div>
           )}
         </div>
+          {!collapsed && (
+            <button
+              onClick={handleLogout}
+              className="mt-2 w-full rounded-md border border-sidebar-border px-3 py-2 text-xs text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+            >
+              Log out
+            </button>
+          )}
       </div>
 
       {/* Collapse toggle */}

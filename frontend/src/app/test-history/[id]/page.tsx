@@ -11,6 +11,7 @@ import { formatDateLong, formatTime } from "@/lib/formatters";
 import { MetadataField } from "@/components/shared/metadata-field";
 import { TEST_TYPE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "@/services/http";
 import {
   ArrowLeft, CheckCircle2, XCircle, Globe,
   Clock, Terminal, ExternalLink, Play,
@@ -23,6 +24,7 @@ export default function TestDetailPage() {
   const params = useParams();
   const { getTestById } = useBugContext();
   const test = getTestById(params.id as string);
+  const screenshotUrl = (path: string) => `${API_BASE_URL}${path}`;
 
   if (!test) {
     return (
@@ -280,12 +282,12 @@ export default function TestDetailPage() {
 
             <CardContent>
               <a
-                href={`http://localhost:8000${test.screenshot.home}`}
+                href={screenshotUrl(test.screenshot.home)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img
-                  src={`http://localhost:8000${test.screenshot.home}`}
+                  src={screenshotUrl(test.screenshot.home)}
                   alt="Homepage Screenshot"
                   className="rounded-lg border border-border hover:opacity-90 transition"
                 />
@@ -305,12 +307,12 @@ export default function TestDetailPage() {
             {test.screenshot.button_interactions.map((img, index) => (
               <a
                 key={index}
-                href={`http://localhost:8000${img}`}
+                href={screenshotUrl(img)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img
-                  src={`http://localhost:8000${img}`}
+                  src={screenshotUrl(img)}
                   alt={`Interaction ${index + 1}`}
                   className="rounded-lg border border-border hover:opacity-90 transition"
                 />

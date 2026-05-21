@@ -1,83 +1,126 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
-
-// ── Types ──────────────────────────────────────────────────────────
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { getCurrentUser, loginWithBackend, signupWithBackend } from "@/services/auth-api";
+import { clearAuthSession, getStoredAuthSession, storeAuthSession, type AuthSession } from "@/services/http";
 
 export interface User {
   id: string;
   name: string;
   email: string;
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
-  signup: (name: string, email: string, password: string) => boolean;
+  isReady: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ── Dummy user store ───────────────────────────────────────────────
-
-interface StoredUser extends User {
-  password: string;
+function toUser(session: AuthSession | null): User | null {
+  if (!session) return null;
+  return {
+    id: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    role: session.user.role,
+  };
 }
 
-const defaultUsers: StoredUser[] = [
-  { id: "usr-001", name: "Demo User", email: "demo@bugtracker.io", password: "demo123" },
-];
-
-// ── Provider ───────────────────────────────────────────────────────
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<StoredUser[]>(defaultUsers);
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
-  const login = useCallback(
-    (email: string, password: string): boolean => {
-      const found = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-      );
-      if (found) {
-        setUser({ id: found.id, name: found.name, email: found.email });
-        return true;
+  useEffect(() => {
+    let active = true;
+
+    async function init() {
+      try {
+        const hydrated = getStoredAuthSession();
+        if (hydrated?.token) {
+          const currentUser = await getCurrentUser(hydrated.token);
+          const restored: AuthSession = {
+            token: hydrated.token,
+            user: {
+              id: currentUser.id,
+              name: currentUser.name,
+              email: currentUser.email,
+              role: currentUser.role,
+            },
+          };
+          storeAuthSession(restored);
+          if (active) setSession(restored);
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to initialize auth session", error);
+        clearAuthSession();
+        if (active) setSession(null);
+      } finally {
+        if (active) setIsReady(true);
       }
-      return false;
-    },
-    [users]
-  );
+    }
 
-  const signup = useCallback(
-    (name: string, email: string, password: string): boolean => {
-      const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (exists) return false;
+    init();
 
-      const newUser: StoredUser = {
-        id: `usr-${Date.now().toString(36)}`,
-        name,
-        email,
-        password,
-      };
-      setUsers((prev) => [...prev, newUser]);
-      setUser({ id: newUser.id, name: newUser.name, email: newUser.email });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    try {
+      const nextSession = await loginWithBackend(email, password);
+      storeAuthSession(nextSession);
+      setSession(nextSession);
       return true;
-    },
-    [users]
-  );
+    } catch (error) {
+      console.error("Login failed", error);
+      return false;
+    }
+  }, []);
 
-  const logout = useCallback(() => setUser(null), []);
+  const signup = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
+    try {
+      const nextSession = await signupWithBackend(name, email, password);
+      storeAuthSession(nextSession);
+      setSession(nextSession);
+      return true;
+    } catch (error) {
+      console.error("Signup failed", error);
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    clearAuthSession();
+    setSession(null);
+  }, []);
+
+  const user = toUser(session);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token: session?.token ?? null,
+        isAuthenticated: !!session?.token,
+        isReady,
+        login,
+        signup,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
-
-// ── Hook ───────────────────────────────────────────────────────────
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

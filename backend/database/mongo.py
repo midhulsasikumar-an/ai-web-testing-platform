@@ -20,3 +20,8 @@ bug_collection = db["bugs"]
 bug_lifecycle_collection = db["bug_lifecycle"]
 run_comparison_collection = db["run_comparisons"]
 report_export_collection = db["report_exports"]
+
+users_collection = db["users"]
+
+# Ensure unique email index
+users_collection.create_index("email", unique=True)
