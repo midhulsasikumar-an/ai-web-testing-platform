@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, HelpCircle, Grid } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
 interface HeaderProps {
@@ -9,48 +9,54 @@ interface HeaderProps {
   children?: React.ReactNode;
 }
 
-export function Header({ title, description, children }: HeaderProps) {
-  const { user } = useAuth();
-
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((segment) => segment[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : "NA";
-
+export function Header({ title, children }: HeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
-      <div>
-        <div className="flex items-center gap-2 mb-0.5">
-          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            SignalTrack
-          </span>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-200 mb-6 bg-white px-8 pt-8 -mt-8 -mx-8">
+      <div className="flex items-center gap-6">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 w-48 leading-tight">
+          {title.split(' ').map((word, i) => (
+            <span key={i}>{word}{i === 1 ? <br/> : ' '}</span>
+          ))}
+        </h1>
+        
+        <div className="hidden md:flex items-center gap-4 text-[13px] font-medium text-slate-600">
+          <a href="#" className="hover:text-slate-900 transition-colors">Docs</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">API</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">Support</a>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {description && (
-          <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
-        )}
       </div>
-      <div className="flex items-center gap-3">
+
+      <div className="flex items-center gap-4">
         {children}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-          <Search className="h-4 w-4" />
+        
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input 
+            type="text" 
+            placeholder="Search tests..." 
+            className="h-9 w-64 rounded-full border border-slate-300 pl-9 pr-4 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          />
+        </div>
+
+        <button className="h-9 px-4 rounded-md border border-slate-300 bg-white text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors whitespace-nowrap">
+          Generate<br className="hidden" /> Workflow
         </button>
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-          <Bell className="h-4 w-4" />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[0.6rem] font-bold text-white">
-            3
-          </span>
+        
+        <button className="h-9 px-4 rounded-md bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+          Run<br className="hidden" /> AI Test
         </button>
-        <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-border">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            {initials}
-          </div>
-          <span className="text-sm font-medium">{user?.name || "Unknown User"}</span>
+
+        <div className="flex items-center gap-3 pl-2">
+          <button className="relative text-slate-500 hover:text-slate-900 transition-colors">
+            <Bell className="h-5 w-5" />
+            <span className="absolute 1 top-0 right-0 h-1.5 w-1.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+          </button>
+          <button className="text-slate-500 hover:text-slate-900 transition-colors">
+            <HelpCircle className="h-5 w-5" />
+          </button>
+          <button className="text-slate-500 hover:text-slate-900 transition-colors">
+            <Grid className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </div>

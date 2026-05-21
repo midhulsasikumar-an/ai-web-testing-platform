@@ -1,16 +1,15 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   title: string;
-  value: number;
+  value: string | number;
   icon: LucideIcon;
   trend?: string;
-  trendUp?: boolean;
-  accentColor?: string;
+  trendIcon?: LucideIcon;
+  trendColor?: string;
   className?: string;
 }
 
@@ -19,44 +18,33 @@ export function StatCard({
   value,
   icon: Icon,
   trend,
-  trendUp,
-  accentColor = "bg-primary",
+  trendIcon: TrendIcon,
+  trendColor = "text-slate-500",
   className,
 }: StatCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group", className)}>
-      {/* Accent top bar */}
-      <div className={cn("absolute top-0 left-0 right-0 h-1 rounded-t-lg", accentColor)} />
-
-      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
-          accentColor.replace("bg-", "bg-") + "/10"
-        )}>
-          <Icon className={cn("h-4 w-4", accentColor.replace("bg-", "text-"))} />
+    <div className={cn("bg-[#F8FAFC] rounded-2xl p-6 flex flex-col justify-between shadow-sm border border-slate-100", className)}>
+      <div className="flex items-center justify-between">
+        <h3 className="text-[13px] font-semibold text-slate-700">{title}</h3>
+        <Icon className="h-4 w-4 text-slate-400" />
+      </div>
+      
+      <div className="mt-4">
+        <div className="text-3xl font-bold tracking-tight text-slate-900">
+          {typeof value === 'number' ? value.toLocaleString() : value}
         </div>
-      </CardHeader>
-      <CardContent className="pb-4">
-        <div className="text-3xl font-bold tracking-tight">
-          {value.toLocaleString()}
-        </div>
+        
         {trend && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            {trendUp !== undefined && (
-              <span className={cn(
-                "text-xs font-semibold",
-                trendUp ? "text-green-600" : "text-red-500"
-              )}>
-                {trendUp ? "↑" : "↓"}
-              </span>
+          <div className={cn("flex flex-col mt-2", trendColor)}>
+            {TrendIcon && (
+              <div className="flex items-center mb-1">
+                <TrendIcon className="h-4 w-4" />
+              </div>
             )}
-            <p className="text-xs text-muted-foreground">{trend}</p>
+            <span className="text-[12px]">{trend}</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
