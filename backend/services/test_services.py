@@ -1,9 +1,11 @@
 import uuid
 import os
 from datetime import datetime
+from typing import Any, Dict, List
 from backend.database.mongo import collection, db
 from backend.models.schema import TestRequest
 from backend.services.test_runner import run_test
+from backend.services.execution_service import run_test_steps
 from backend.services.scoring.health_score import calculate_health_score
 from backend.services.scoring.insights import generate_insights
 from backend.services.scoring.recommendations import generate_recommendations
@@ -11,6 +13,8 @@ from backend.services.scoring.report_generator import generate_report
 from backend.services.scoring.ai_summary import generate_summary_line
 from backend.services.scoring.overall_status import calculate_overall_status
 from backend.services.bug_services import create_bugs_from_test
+from backend.ai.schema.test_plan_schema import TestCase
+from backend.services.dom_service import extract_page_elements
 
 def create_test_run(req: TestRequest, user_id: str):
     test_id = str(uuid.uuid4())
@@ -24,6 +28,7 @@ def create_test_run(req: TestRequest, user_id: str):
         "test_type": req.test_type,
         "status": "running",
         "results": [],
+        "stream_logs": [],
         "screenshot": None,
         "summary": None,
         "health_score": None,
@@ -34,6 +39,7 @@ def create_test_run(req: TestRequest, user_id: str):
         "report": None,
         "ai_summary": None,
         "bugs": [],
+        "ai_plan": req.ai_plan,
         "created_at": datetime.utcnow().isoformat()
     }
 
@@ -132,6 +138,95 @@ def run_test_and_update(test_data, url, user_id: str):
         collection.update_one(
             {"test_id": test_data["test_id"], "user_id": user_id},
             {"$set": test_data}
+        )
+
+
+def _flatten_plan_results(plan_results: List[Dict[str, Any]], case_title: str) -> List[Dict[str, Any]]:
+    flattened: List[Dict[str, Any]] = []
+    for index, step_result in enumerate(plan_results, start=1):
+        step = step_result.get("step", {}) if isinstance(step_result, dict) else {}
+        flattened.append({
+            "test": f"{case_title} - Step {index}",
+            "status": "pass" if step_result.get("status") != "failed" else "fail",
+            "details": step_result.get("error") or step_result.get("validation") or step.get("action") or "AI step executed",
+        })
+    return flattened
+
+
+async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: str, plan: Dict[str, Any]):
+    try:
+        test_case_data = plan.get("test_case") or {}
+        test_case = TestCase.model_validate(test_case_data)
+        dom = await extract_page_elements(url)
+        stream_logs: List[Dict[str, Any]] = []
+
+        async def progress_callback(event: Dict[str, Any]) -> None:
+            stream_logs.append({
+                "time": datetime.utcnow().isoformat(),
+                "level": "error" if event.get("type") == "bug_detected" else "info",
+                "msg": event.get("message", ""),
+                "type": event.get("type"),
+                "details": event,
+            })
+            collection.update_one(
+                {"test_id": test_data["test_id"], "user_id": user_id},
+                {"$set": {"stream_logs": stream_logs, "status": "running", "ai_plan": plan}},
+                upsert=True,
+            )
+
+        results_data = await run_test_steps(url=url, test_case=test_case, dom=dom, progress_callback=progress_callback)
+        plan_results = results_data.get("results", [])
+        flattened_results = _flatten_plan_results(plan_results, test_case.title or "AI Plan")
+
+        test_data["results"] = flattened_results
+        test_data["status"] = "completed"
+        test_data["summary"] = {
+            "total": len(flattened_results),
+            "passed": sum(1 for item in flattened_results if item.get("status") == "pass"),
+            "failed": sum(1 for item in flattened_results if item.get("status") == "fail"),
+            "info": sum(1 for item in flattened_results if item.get("status") == "info"),
+        }
+
+        try:
+            score_data = calculate_health_score(flattened_results)
+            test_data["health_score"] = score_data["score"]
+            test_data["summary"] = score_data["summary"]
+        except Exception:
+            test_data["health_score"] = 0
+
+        insights = generate_insights(flattened_results)
+        test_data["insights"] = insights
+        test_data["overall_status"] = calculate_overall_status(flattened_results, insights, test_data.get("health_score", 0))
+        test_data["recommendations"] = generate_recommendations(insights)
+        test_data["report"] = generate_report(test_data.get("health_score", 0), test_data.get("summary"), insights)
+        test_data["ai_summary"] = generate_summary_line(test_data.get("health_score", 0), test_data.get("summary"), insights)
+        created_bugs = create_bugs_from_test(test_data)
+        test_data["bugs"] = [bug["bug_id"] for bug in created_bugs]
+        test_data["ai_report"] = {
+            "user_id": user_id,
+            "execution_id": test_data["test_id"],
+            "website_health_score": test_data.get("health_score", 0),
+            "workflow_completion": test_data.get("overall_status"),
+            "critical_issues": len(insights.get("critical", [])),
+            "warnings": len(insights.get("moderate", [])) + len(insights.get("minor", [])),
+            "report": test_data["report"],
+            "insights": insights,
+            "generated_plan": plan,
+        }
+        test_data["stream_logs"] = stream_logs
+
+        collection.update_one(
+            {"test_id": test_data["test_id"], "user_id": user_id},
+            {"$set": test_data},
+            upsert=True,
+        )
+    except Exception as e:
+        test_data["status"] = "failed"
+        test_data["results"] = [{"error": str(e)}]
+        collection.update_one(
+            {"test_id": test_data["test_id"], "user_id": user_id},
+            {"$set": test_data},
+            upsert=True,
         )
         collection.update_one(
             {"test_id": test_data["test_id"], "user_id": user_id},

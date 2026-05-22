@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { getCurrentUser, loginWithBackend, signupWithBackend } from "@/services/auth-api";
+import { AuthApiError, getCurrentUser, loginWithBackend, signupWithBackend, toAuthErrorMessage } from "@/services/auth-api";
 import { clearAuthSession, getStoredAuthSession, storeAuthSession, type AuthSession } from "@/services/http";
 
 export interface User {
@@ -16,8 +16,8 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isReady: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -59,6 +59,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
       } catch (error) {
+        if (error instanceof AuthApiError && error.code === "UNAUTHORIZED") {
+          clearAuthSession();
+          if (active) setSession(null);
+          return;
+        }
+
         console.error("Failed to initialize auth session", error);
         clearAuthSession();
         if (active) setSession(null);
@@ -74,27 +80,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string): Promise<void> => {
     try {
       const nextSession = await loginWithBackend(email, password);
       storeAuthSession(nextSession);
       setSession(nextSession);
-      return true;
     } catch (error) {
       console.error("Login failed", error);
-      return false;
+      throw new Error(toAuthErrorMessage(error));
     }
   }, []);
 
-  const signup = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
+  const signup = useCallback(async (name: string, email: string, password: string): Promise<void> => {
     try {
       const nextSession = await signupWithBackend(name, email, password);
       storeAuthSession(nextSession);
       setSession(nextSession);
-      return true;
     } catch (error) {
       console.error("Signup failed", error);
-      return false;
+      throw new Error(toAuthErrorMessage(error));
     }
   }, []);
 

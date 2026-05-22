@@ -1,9 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
+import type { AIPlanResponse, TestApiResponse } from '@/services/test-api';
+import { generateTestPlan } from '@/services/test-api';
 import { Bot, X, RefreshCcw, Plus, ArrowRight } from 'lucide-react';
 
 interface AIChatPanelProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  targetUrl: string;
+  testType: string;
+  testData?: TestApiResponse | null;
+  onPlanGenerated: (plan: AIPlanResponse) => void;
 }
 
 const quickActions = [
@@ -15,10 +21,12 @@ const quickActions = [
   'Compare Previous Runs',
 ];
 
-export default function AIChatPanel({ open, setOpen }: AIChatPanelProps) {
+export default function AIChatPanel({ open, setOpen, targetUrl, testType, testData, onPlanGenerated }: AIChatPanelProps) {
   const [messages, setMessages] = useState<Array<{ from: 'user' | 'ai'; text: string }>>([
     { from: 'ai', text: 'Hi! I’m your testing copilot. Ask me about the current test, failures, reports, or workflows.' },
   ]);
+  // expose testData prop to show live updates
+  const prevTestIdRef = useRef<string | null>(null);
   const [input, setInput] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(380);
@@ -50,15 +58,63 @@ export default function AIChatPanel({ open, setOpen }: AIChatPanelProps) {
   // Header includes Current Context indicator
   const currentContext = "Current Test: Home Page";
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { from: 'user', text: input }]);
+  const sendMessage = async (overrideInstruction?: string) => {
+    const instruction = (overrideInstruction ?? input).trim();
+    if (!instruction) return;
+    if (!targetUrl.trim()) {
+      setMessages(prev => [...prev, { from: 'user', text: instruction }, { from: 'ai', text: 'Enter a target URL first so I can generate a real plan.' }]);
+      setInput('');
+      return;
+    }
+
+    setMessages(prev => [...prev, { from: 'user', text: instruction }]);
     setInput('');
-    // Placeholder AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { from: 'ai', text: 'Processing your request...' }]);
-    }, 500);
+
+    try {
+      const plan = await generateTestPlan(targetUrl, instruction, testType);
+      onPlanGenerated(plan);
+      setMessages(prev => [...prev, {
+        from: 'ai',
+        text: `${plan.summary} Generated ${plan.test_case.steps.length} executable step(s) for ${plan.page_title || targetUrl}.`,
+      }]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to generate a plan.';
+      setMessages(prev => [...prev, { from: 'ai', text: `AI plan request failed: ${message}` }]);
+    }
   };
+
+  // When testData changes, synthesize assistant messages from insights/results
+  useEffect(() => {
+    if (!testData) return;
+    const msgs: string[] = [];
+    try {
+      const executionId = (testData as TestApiResponse & { execution_id?: string }).execution_id;
+      const id = (testData.test_id ?? executionId) as string | undefined || null;
+      if (id && id === prevTestIdRef.current) return;
+      prevTestIdRef.current = id ?? null;
+      const status = (testData as TestApiResponse)['status'] as string | undefined;
+      if (status) msgs.push(`Execution status: ${status}`);
+      const aiSummary = (testData as TestApiResponse)['ai_summary'] as string | undefined;
+      if (aiSummary) msgs.push(`AI: ${aiSummary}`);
+      const insights = (testData as TestApiResponse)['insights'] as Record<string, unknown> | undefined;
+      if (insights) {
+        const critical = Array.isArray(insights['critical']) ? (insights['critical'] as unknown[]).length : 0;
+        const moderate = Array.isArray(insights['moderate']) ? (insights['moderate'] as unknown[]).length : 0;
+        if (critical) msgs.push(`Detected ${critical} critical issues.`);
+        if (moderate) msgs.push(`Detected ${moderate} warnings.`);
+      }
+      const bugs = (testData as TestApiResponse)['bugs'] as unknown[] | undefined;
+      if (Array.isArray(bugs) && bugs.length) msgs.push(`Created ${bugs.length} bug(s) from this run.`);
+
+    } catch {
+      // ignore
+    }
+    if (msgs.length) {
+      setTimeout(() => {
+        setMessages(prev => [...prev, ...msgs.map(m => ({ from: 'ai' as const, text: m }))]);
+      }, 0);
+    }
+  }, [testData]);
 
   if (!open) {
     return (
@@ -105,7 +161,9 @@ export default function AIChatPanel({ open, setOpen }: AIChatPanelProps) {
           <button
             key={action}
             className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full hover:bg-blue-100"
-            onClick={() => setMessages([...messages, { from: 'user', text: action }])}
+            onClick={() => {
+              void sendMessage(action);
+            }}
           >
             {action}
           </button>
@@ -141,7 +199,7 @@ export default function AIChatPanel({ open, setOpen }: AIChatPanelProps) {
         />
         <button
           className="ml-2 text-blue-600 hover:text-blue-800"
-          onClick={sendMessage}
+          onClick={() => { void sendMessage(); }}
           title="Send (Enter)"
         >
           <ArrowRight className="h-4 w-4" />

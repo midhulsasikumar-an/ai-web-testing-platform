@@ -1,3 +1,5 @@
+import inspect
+
 from playwright.async_api import async_playwright
 from backend.services.safety_service import is_same_domain
 from backend.services.selector_resolver import resolve_selector
@@ -29,13 +31,25 @@ async def safe_fill(page, selector, value):
     await locator.fill(value)
 
 
-async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict = None):
+async def _emit_progress(progress_callback, payload):
+    if not progress_callback:
+        return
+    result = progress_callback(payload)
+    if inspect.isawaitable(result):
+        await result
+
+
+async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict = None, progress_callback=None):
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
 
         await page.goto(url, wait_until="domcontentloaded")
+        await _emit_progress(progress_callback, {
+            "type": "run_status",
+            "message": f"Opened {url}",
+        })
 
         results = []
         previous_url = page.url
@@ -62,6 +76,11 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
             selector = step.selector or resolve_selector(target, dom or {}) or f'text="{target}"'
 
             try:
+                await _emit_progress(progress_callback, {
+                    "type": "action_execution",
+                    "message": f"Executing {action} on {target or selector or 'unknown target'}",
+                    "step": step.model_dump(),
+                })
                 if action == "click":
                     await safe_click(page, selector)
 
@@ -123,6 +142,12 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                         "expected_matched": expected_match
                     }
                 })
+                await _emit_progress(progress_callback, {
+                    "type": "timeline_step",
+                    "message": f"Completed step: {action}",
+                    "step": step.model_dump(),
+                    "status": status,
+                })
 
             except Exception as e:
                 results.append({
@@ -131,9 +156,20 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                     "status": "failed",
                     "error": str(e)
                 })
+                await _emit_progress(progress_callback, {
+                    "type": "bug_detected",
+                    "message": f"Step failed: {action}",
+                    "step": step.model_dump(),
+                    "error": str(e),
+                })
                 break
 
         await browser.close()
+        await _emit_progress(progress_callback, {
+            "type": "run_status",
+            "message": "Execution finished",
+            "status": "completed",
+        })
 
         return {
             "url": url,

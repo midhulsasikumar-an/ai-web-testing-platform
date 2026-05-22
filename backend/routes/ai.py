@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from backend.models.ai_schema import AIChatRequest
+from backend.models.ai_schema import AIChatRequest, AIPlanRequest
+from backend.services.auth import get_current_user
 from backend.services.ai_service import get_ai_response
+from backend.services.ai_plan_service import generate_test_plan, build_executable_test_case
 from backend.services.dom_service import extract_page_elements
 from backend.services.execution_service import run_test_steps
 from backend.services.judgement_service import analyze_test_results
@@ -28,7 +30,13 @@ async def analyze(url: str):
 
 @router.get("/plan")
 async def plan(url: str):
-    return {"error": "legacy planning endpoint deprecated; use /api/agent for autonomous runs"}
+    return {"error": "use POST /ai/plan with instruction and url"}
+
+
+@router.post("/plan")
+async def generate_plan(req: AIPlanRequest, current_user: dict = Depends(get_current_user)):
+    plan = await generate_test_plan(req.url, req.instruction, req.test_type)
+    return plan
 
 @router.post("/execute")
 async def execute_test(payload: ExecuteRequest):

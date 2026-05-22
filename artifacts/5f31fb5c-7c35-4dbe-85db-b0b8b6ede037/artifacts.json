@@ -1,0 +1,536 @@
+{
+  "execution_id": "5f31fb5c-7c35-4dbe-85db-b0b8b6ede037",
+  "user_id": "e68910cd-5280-4f7b-a99a-62b85b804464",
+  "screenshots": [
+    "artifacts/5f31fb5c-7c35-4dbe-85db-b0b8b6ede037/initial.png"
+  ],
+  "console_logs": [],
+  "network_logs": [
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/",
+      "status": 302,
+      "ok": false
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "method": "GET",
+      "resource_type": "xhr"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_branding.png?v=1763650546848",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_logo.png",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/img/blob.svg",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_logo.png",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_branding.png?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/img/blob.svg",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "method": "GET",
+      "resource_type": "xhr"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_branding.png?v=1763650546848",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_branding.png?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_logo.png",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_logo.png",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/img/blob.svg",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/img/blob.svg",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "method": "GET",
+      "resource_type": "xhr"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_branding.png?v=1763650546848",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_branding.png?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_logo.png",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/images/ohrm_logo.png",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/img/blob.svg",
+      "method": "GET",
+      "resource_type": "image"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/img/blob.svg",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/validate",
+      "method": "POST",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/validate",
+      "status": 302,
+      "ok": false
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/chunk-vendors.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/css/app.css?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/chunk-vendors.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1763650546848",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/index.php/core/i18n/messages",
+      "method": "GET",
+      "resource_type": "xhr"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-regular.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-600.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/nunito-sans-v6-latin-ext_latin-800.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://opensource-demo.orangehrmlive.com/web/dist/fonts/bootstrap-icons.woff2",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "dom_snapshots": [
+    "<!DOCTYPE html><html><head>\n  <meta charset=\"UTF-8\">\n  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <title>OrangeHRM</title>\n      <link rel=\"icon\" href=\"/web/dist/favicon.ico?v=1763650546848\">\n    <link href=\"/web/dist/css/chunk-vendors.css?v=1763650546848\" rel=\"preload\" as=\"style\">\n    <link href=\"/web/dist/css/app.css?v=1763650546848\" rel=\"preload\" as=\"style\">\n    <link href=\"/web/dist/js/chunk-vendors.js?v=1763650546848\" rel=\"preload\" as=\"script\">\n    <link href=\"/web/dist/js/app.js?v=1763650546848\" rel=\"preload\" as=\"script\">\n      <link href=\"/web/dist/css/chunk-vendors.css?v=1763650546848\" rel=\"stylesheet\">\n    <link href=\"/web/dist/css/app.css?v=1763650546848\" rel=\"stylesheet\">\n</head>\n<body>\n  <style>\n    :root {\n            --oxd-primary-one-color:#FF7B1D;\n            --oxd-primary-font-color:#FFFFFF;\n            --oxd-secondary-four-color:#76BC21;\n            --oxd-secondary-font-color:#FFFFFF;\n            --oxd-primary-gradient-start-color:#FF920B;\n            --oxd-primary-gradient-end-color:#F35C17;\n            --oxd-secondary-gradient-start-color:#FF920B;\n            --oxd-secondary-gradient-end-color:#F35C17;\n            --oxd-primary-one-lighten-5-color:#ff8a37;\n            --oxd-primary-one-lighten-30-color:#ffd4b6;\n            --oxd-primary-one-darken-5-color:#ff6c03;\n            --oxd-primary-one-alpha-10-color:rgba(255, 123, 29, 0.1);\n            --oxd-primary-one-alpha-15-color:rgba(255, 123, 29, 0.15);\n            --oxd-primary-one-alpha-20-color:rgba(255, 123, 29, 0.2);\n            --oxd-primary-one-alpha-50-color:rgba(255, 123, 29, 0.5);\n            --oxd-secondary-four-lighten-5-color:#84d225;\n            --oxd-secondary-four-darken-5-color:#68a61d;\n            --oxd-secondary-four-alpha-10-color:rgba(118, 188, 33, 0.1);\n            --oxd-secondary-four-alpha-15-color:rgba(118, 188, 33, 0.15);\n            --oxd-secondary-four-alpha-20-color:rgba(118, 188, 33, 0.2);\n            --oxd-secondary-four-alpha-50-color:rgba(118, 188, 33, 0.5);\n        }\n  </style>\n    <noscript>\n        <strong>\n            We're sorry but orangehrm doesn't work properly without JavaScript enabled. Please enable it to continue.\n        </strong>\n    </noscript>\n\n    <div id=\"app\">\n    <auth-login :token=\"&quot;be61a0ecc89d9c6da4a29870b2.uU4h_JrkosFhIAys6LQX-ZQ2o4094bfjaOrP26t0g6o.0B1vleqLyvcoY0X6htwjz-F69NVRq8GqCpmqiOUV1tCLCFuX2KvAqD5WOA&quot;\" :login-logo-src=\"&quot;\\/web\\/images\\/ohrm_logo.png&quot;\" :login-banner-src=\"&quot;\\/web\\/images\\/ohrm_branding.png?v=1763650546848&quot;\" :show-social-media=\"true\" :is-demo-mode=\"true\" :authenticators=\"[]\">\n    <template v-slot:footer=\"\">\n        <div class=\"orangehrm-copyright-wrapper\">\n            <oxd-text tag=\"p\" class=\"orangehrm-copyright\">OrangeHRM OS 5.8</oxd-text>\n<oxd-text tag=\"p\" class=\"orangehrm-copyright\">\u00a9 2005 - 2026 <a href=\"http://www.orangehrm.com\" target=\"_blank\">OrangeHRM, Inc</a>. All rights reserved.</oxd-text>\n        </div>\n    </template>\n    </auth-login>\n    <oxd-toaster id=\"oxd-toaster_1\"></oxd-toaster></div>\n    <script type=\"text/javascript\">\n        window.appGlobal = {\n          baseUrl: \"/web/index.php\",\n          publicPath: \"/web\",\n        };\n    </script>\n    <script src=\"/web/dist/js/chunk-vendors.js?v=1763650546848\"></script>\n    <script src=\"/web/dist/js/app.js?v=1763650546848\"></script>\n\n\n</body></html>",
+    "<!DOCTYPE html><html><head>\n  <meta charset=\"UTF-8\">\n  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <title>OrangeHRM</title>\n      <link rel=\"icon\" href=\"/web/dist/favicon.ico?v=1763650546848\">\n    <link href=\"/web/dist/css/chunk-vendors.css?v=1763650546848\" rel=\"preload\" as=\"style\">\n    <link href=\"/web/dist/css/app.css?v=1763650546848\" rel=\"preload\" as=\"style\">\n    <link href=\"/web/dist/js/chunk-vendors.js?v=1763650546848\" rel=\"preload\" as=\"script\">\n    <link href=\"/web/dist/js/app.js?v=1763650546848\" rel=\"preload\" as=\"script\">\n      <link href=\"/web/dist/css/chunk-vendors.css?v=1763650546848\" rel=\"stylesheet\">\n    <link href=\"/web/dist/css/app.css?v=1763650546848\" rel=\"stylesheet\">\n</head>\n<body>\n  <style>\n    :root {\n            --oxd-primary-one-color:#FF7B1D;\n            --oxd-primary-font-color:#FFFFFF;\n            --oxd-secondary-four-color:#76BC21;\n            --oxd-secondary-font-color:#FFFFFF;\n            --oxd-primary-gradient-start-color:#FF920B;\n            --oxd-primary-gradient-end-color:#F35C17;\n            --oxd-secondary-gradient-start-color:#FF920B;\n            --oxd-secondary-gradient-end-color:#F35C17;\n            --oxd-primary-one-lighten-5-color:#ff8a37;\n            --oxd-primary-one-lighten-30-color:#ffd4b6;\n            --oxd-primary-one-darken-5-color:#ff6c03;\n            --oxd-primary-one-alpha-10-color:rgba(255, 123, 29, 0.1);\n            --oxd-primary-one-alpha-15-color:rgba(255, 123, 29, 0.15);\n            --oxd-primary-one-alpha-20-color:rgba(255, 123, 29, 0.2);\n            --oxd-primary-one-alpha-50-color:rgba(255, 123, 29, 0.5);\n            --oxd-secondary-four-lighten-5-color:#84d225;\n            --oxd-secondary-four-darken-5-color:#68a61d;\n            --oxd-secondary-four-alpha-10-color:rgba(118, 188, 33, 0.1);\n            --oxd-secondary-four-alpha-15-color:rgba(118, 188, 33, 0.15);\n            --oxd-secondary-four-alpha-20-color:rgba(118, 188, 33, 0.2);\n            --oxd-secondary-four-alpha-50-color:rgba(118, 188, 33, 0.5);\n        }\n  </style>\n    <noscript>\n        <strong>\n            We're sorry but orangehrm doesn't work properly without JavaScript enabled. Please enable it to continue.\n        </strong>\n    </noscript>\n\n    <div id=\"app\">\n    <auth-login :error=\"{&quot;error&quot;:&quot;invalid_credentials&quot;,&quot;message&quot;:&quot;Invalid credentials&quot;}\" :token=\"&quot;8f4221bcc.KFXzqCN6S7HhSBrIa3MnS9vxGhepFDSzC1MnKnn5rak.QQa9wVMVI4eoC1OeBRsTfa69TU_FXkL6aSBCeTeY-NMaE4nDYTUp2L4-Lg&quot;\" :login-logo-src=\"&quot;\\/web\\/images\\/ohrm_logo.png&quot;\" :login-banner-src=\"&quot;\\/web\\/images\\/ohrm_branding.png?v=1763650546848&quot;\" :show-social-media=\"true\" :is-demo-mode=\"true\" :authenticators=\"[]\">\n    <template v-slot:footer=\"\">\n        <div class=\"orangehrm-copyright-wrapper\">\n            <oxd-text tag=\"p\" class=\"orangehrm-copyright\">OrangeHRM OS 5.8</oxd-text>\n<oxd-text tag=\"p\" class=\"orangehrm-copyright\">\u00a9 2005 - 2026 <a href=\"http://www.orangehrm.com\" target=\"_blank\">OrangeHRM, Inc</a>. All rights reserved.</oxd-text>\n        </div>\n    </template>\n    </auth-login>\n    <oxd-toaster id=\"oxd-toaster_1\"></oxd-toaster></div>\n    <script type=\"text/javascript\">\n        window.appGlobal = {\n          baseUrl: \"/web/index.php\",\n          publicPath: \"/web\",\n        };\n    </script>\n    <script src=\"/web/dist/js/chunk-vendors.js?v=1763650546848\"></script>\n    <script src=\"/web/dist/js/app.js?v=1763650546848\"></script>\n\n\n</body></html>"
+  ],
+  "cookies": [
+    {
+      "name": "orangehrm",
+      "value": "em7hgc55tdq8d1vv4nubcitj79",
+      "domain": "opensource-demo.orangehrmlive.com",
+      "path": "/web",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "metadata": {
+    "url": "https://opensource-demo.orangehrmlive.com/"
+  },
+  "form_fuzzing": [],
+  "home": "/screenshots/5f31fb5c-7c35-4dbe-85db-b0b8b6ede037/home.png"
+}

@@ -1,0 +1,55 @@
+{
+  "execution_id": "da4a0a87-914d-4962-ad3d-2a7274a4bd65",
+  "user_id": "f316b877-6b72-4c4a-8e1b-dc1a4a5004e3",
+  "screenshots": [
+    "artifacts/da4a0a87-914d-4962-ad3d-2a7274a4bd65/initial.png"
+  ],
+  "console_logs": [],
+  "network_logs": [
+    {
+      "url": "http://example.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://example.com/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://example.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://example.com/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://example.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://example.com/",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "dom_snapshots": [
+    "<!DOCTYPE html><html lang=\"en\"><head><title>Example Domain</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348}</style></head><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div>\n</body></html>",
+    "<!DOCTYPE html><html lang=\"en\"><head><title>Example Domain</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348}</style></head><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div>\n</body></html>"
+  ],
+  "cookies": [],
+  "metadata": {
+    "url": "http://example.com"
+  },
+  "form_fuzzing": [
+    {
+      "form_count": 0,
+      "note": "no forms found"
+    }
+  ],
+  "home": "/screenshots/da4a0a87-914d-4962-ad3d-2a7274a4bd65/home.png"
+}

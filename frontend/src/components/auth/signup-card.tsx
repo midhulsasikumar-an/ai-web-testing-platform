@@ -24,10 +24,7 @@ export function SignupCard() {
     setLoading(true);
 
     try {
-      const ok = await signup(name, email, password);
-      if (!ok) {
-        throw new Error("Signup failed. The email may already exist.");
-      }
+      await signup(name, email, password);
       router.replace("/dashboard");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Signup failed");

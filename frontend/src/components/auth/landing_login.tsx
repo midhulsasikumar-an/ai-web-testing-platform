@@ -21,10 +21,7 @@ export function LandingLogin() {
     setLoading(true);
 
     try {
-      const ok = await login(email, password);
-      if (!ok) {
-        throw new Error("Invalid credentials. Please check your email and password.");
-      }
+      await login(email, password);
       router.replace("/dashboard");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Login failed");

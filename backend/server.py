@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.models.schema import TestRequest
 
 from backend.services.test_services import create_test_run, run_test_and_update
+from backend.services.test_services import run_ai_plan_and_update
 from backend.database.mongo import collection, bug_collection
 from backend.services.auth import get_current_user
 from backend.routes.auth_routes import router as auth_router
@@ -27,7 +28,10 @@ from backend.routes.intelligence import router as intelligence_router
 app = FastAPI()
 allowed_origins = [
     origin.strip()
-    for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")
+    for origin in os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
     if origin.strip()
 ]
 app.add_middleware(
@@ -47,16 +51,41 @@ def home():
     return {"message": "Server is running 🚀"}
 
 
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "service": "ai-testing-platform-backend",
+    }
+
+
+@app.get("/api/health")
+def api_health_check():
+    return {
+        "status": "ok",
+        "service": "ai-testing-platform-backend",
+    }
+
+
 @app.post("/api/tests/start")
 def start_test(req: TestRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     test_data = create_test_run(req, current_user["user_id"])
 
-    background_tasks.add_task(
-        run_test_and_update,
-        test_data.copy(),   # to prevent mutation issues
-        req.url,
-        current_user["user_id"]
-    )
+    if req.ai_plan:
+        background_tasks.add_task(
+            run_ai_plan_and_update,
+            test_data.copy(),   # to prevent mutation issues
+            req.url,
+            current_user["user_id"],
+            req.ai_plan,
+        )
+    else:
+        background_tasks.add_task(
+            run_test_and_update,
+            test_data.copy(),   # to prevent mutation issues
+            req.url,
+            current_user["user_id"]
+        )
 
     return {
         "message": "Test started successfully",

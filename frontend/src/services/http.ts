@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+import { API_BASE_URL, buildApiUrl } from "@/config/api";
+
 const AUTH_STORAGE_KEY = "signaltrack.auth.session";
 
 export type AuthSession = {
@@ -55,7 +56,7 @@ export function buildAuthHeaders(initHeaders?: HeadersInit): Headers {
 }
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
+  const url = buildApiUrl(path);
   const headers = buildAuthHeaders(init.headers);
   console.debug("[apiFetch] request", { url, method: init.method || "GET" });
   const response = await fetch(url, {

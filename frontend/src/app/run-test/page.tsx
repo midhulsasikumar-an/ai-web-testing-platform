@@ -2,36 +2,94 @@
 
 import { Header } from "@/components/layout/header";
 import { Play, Link as LinkIcon, BrainCircuit, Verified, Bot } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AIChatPanel from "@/components/ai-chat-panel/AIChatPanel";
+import { startTest, getTestById, TestApiResponse, AIPlanResponse } from "@/services/test-api";
+import { useAuth } from "@/context/auth-context";
 
 export default function RunTestPage() {
   // Top controls state
   const [targetUrl, setTargetUrl] = useState("");
   const [browser, setBrowser] = useState("Chrome (Headless)");
   const [device, setDevice] = useState("Desktop 1080p");
+  const [testType, setTestType] = useState("AI Generated Test");
+  const [aiPlan, setAiPlan] = useState<AIPlanResponse | null>(null);
+  useAuth();
+
+  // Live test state
+  const [testId, setTestId] = useState<string | null>(null);
+  const [testData, setTestData] = useState<TestApiResponse | null>(null);
+  const [running, setRunning] = useState(false);
+  // start polling when testId changes
+  useTestPolling(testId, setTestData, setRunning);
 
 
 
   // AI panel visibility
   const [aiPanelOpen, setAiPanelOpen] = useState(true);
 
-  // Mock test plan data
-  const testPlanSteps = [
-    { id: 1, text: "Navigate to homepage and verify 200 OK", code: "page.goto('/')" },
-    { id: 2, text: "Locate main navigation header", code: "expect(page.locator('nav')).toBeVisible()" },
-    { id: 3, text: "Simulate user login flow with synthetic data", code: "ai.fillForm('#login', syntheticUser)" },
+  // Supported test types
+  const TEST_TYPES = [
+    "AI Generated Test",
+    "Regression Test",
+    "Accessibility Test",
+    "Login Test",
+    "Smoke Test",
+    "Custom Test",
   ];
 
-  // Mock terminal logs
-  const terminalLogs = [
-    { time: "14:02:01", level: "INFO", text: "Initializing testing environment...", color: "text-blue-500" },
-    { time: "14:02:02", level: "INFO", text: "Launching Headless Chrome on Desktop 1080p profile.", color: "text-blue-500" },
-    { time: "14:02:03", level: "WARN", text: "Slow network response from analytics provider, bypassing.", color: "text-amber-400" },
-    { time: "14:02:05", level: "INFO", text: "Executing Step 1: Navigate homepage.", color: "text-blue-500" },
-    { time: "14:02:06", level: "AI", text: "Detected dynamic DOM structure. Adjusting locators heuristically.", color: "text-cyan-400" },
-    { time: "14:02:06", level: "INFO", text: "Locator identified: [data-testid=\"main-nav\"]", color: "text-blue-500" },
-  ];
+  // Derived logs from backend results or live backend stream logs
+  const results = (testData?.results ?? []) as Array<Record<string, unknown>>;
+  const streamLogs = testData?.stream_logs ?? [];
+  const terminalLogs = streamLogs.length > 0
+    ? streamLogs.map((entry) => ({
+        time: entry.time,
+        level: entry.level.toUpperCase(),
+        text: entry.msg,
+        color: entry.level === 'error' ? 'text-red-400' : entry.level === 'warn' ? 'text-amber-400' : 'text-blue-400',
+      }))
+    : results.map((r) => ({
+    time: (r['time'] as string) ?? new Date().toLocaleTimeString('en-GB', { hour12: false }),
+    level: ((r['status'] as string) ?? 'INFO').toUpperCase(),
+    text: r['test'] ? `${String(r['test'])}: ${String(r['details'] ?? JSON.stringify(r))}` : JSON.stringify(r),
+    color: (r['status'] === 'fail') ? 'text-red-400' : 'text-blue-400',
+    }));
+
+  const activePlan = testType === 'AI Generated Test' ? (aiPlan ?? testData?.ai_plan ?? null) : null;
+
+  const handlePlanGenerated = (plan: AIPlanResponse) => {
+    setAiPlan(plan);
+  };
+
+  const runTest = async () => {
+    if (!targetUrl) {
+      alert('Please enter a target URL');
+      return;
+    }
+
+    try {
+      setRunning(true);
+      setTestData(null);
+      setTestId(null);
+      if (testType === 'AI Generated Test') {
+        if (!activePlan) {
+          alert('Ask the AI Copilot to generate a plan before running AI tests.');
+          setRunning(false);
+          return;
+        }
+        const res = await startTest(targetUrl, 'default', testType, activePlan);
+        setTestId(res.test_id);
+        return;
+      }
+
+      const res = await startTest(targetUrl, 'default', testType);
+      setTestId(res.test_id);
+    } catch (error) {
+      console.error('Failed to start test', error);
+      setRunning(false);
+      alert('Failed to start test. See console for details.');
+    }
+  };
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen flex flex-col relative overflow-hidden">
@@ -66,9 +124,12 @@ export default function RunTestPage() {
               <option>Mobile iOS</option>
               <option>Tablet Android</option>
             </select>
-            <button className="bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white text-sm font-medium px-4 py-1 rounded-md flex items-center gap-1 shadow-[0_2px_6px_rgba(37,99,235,0.25)] transition-transform hover:scale-105">
+            <select value={testType} onChange={(e) => setTestType(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-sm text-slate-700 focus:border-blue-600 outline-none">
+              {TEST_TYPES.map(t => <option key={t}>{t}</option>)}
+            </select>
+            <button onClick={runTest} disabled={running} className="bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:opacity-60 disabled:hover:scale-100 text-white text-sm font-medium px-4 py-1 rounded-md flex items-center gap-1 shadow-[0_2px_6px_rgba(37,99,235,0.25)] transition-transform hover:scale-105">
               <Play className="h-4 w-4" />
-              Run Test
+              {running ? 'Running...' : 'Run Test'}
             </button>
           </section>
 
@@ -80,21 +141,55 @@ export default function RunTestPage() {
                 AI Generated Test Plan
               </h2>
               <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
-                <Verified className="h-3 w-3" /> 98% Confidence
+                <Verified className="h-3 w-3" /> {(() => { const hs = testData?.health_score ?? null; return hs ? `${Math.round(hs)}% Confidence` : activePlan ? 'Plan Ready' : 'AI Confidence'; })()}
               </div>
             </div>
             <div className="space-y-2 flex-1">
-              {testPlanSteps.map((step) => (
-                <div key={step.id} className="flex items-start gap-3 bg-slate-50 p-2 rounded-md border border-slate-100 hover:border-blue-200 transition-colors">
-                  <div className="bg-blue-100 text-blue-600 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                    {step.id}
+              {activePlan ? (
+                <div className="space-y-2">
+                  <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                    <div className="text-sm font-semibold">Plan Title</div>
+                    <div className="text-xs text-slate-500">{activePlan.test_case.title}</div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-800">{step.text}</p>
-                    <p className="font-mono text-xs text-slate-500 mt-0.5">{step.code}</p>
+                  <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                    <div className="text-sm font-semibold">Summary</div>
+                    <div className="text-xs text-slate-500">{activePlan.summary}</div>
+                  </div>
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {activePlan.test_case.steps.map((step, index) => (
+                      <div key={`${step.action}-${index}`} className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                        <div className="text-sm font-semibold text-slate-800">Step {index + 1}: {step.action}</div>
+                        <div className="text-xs text-slate-500 mt-1">{step.target || step.selector || 'No explicit target'}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-2">
+                  <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                    <div className="text-sm font-semibold">Target URL</div>
+                    <div className="text-xs text-slate-500">{String(testData?.url ?? targetUrl) || '—'}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                      <div className="text-sm font-semibold">Execution Status</div>
+                      <div className="text-xs text-slate-500">{String(testData?.status ?? (running ? 'running' : 'idle'))}</div>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                      <div className="text-sm font-semibold">Pages Discovered</div>
+                      <div className="text-xs text-slate-500">{((testData?.artifacts as Record<string, unknown> | undefined)?.['dom_snapshots'] as unknown[] | undefined)?.length ?? 0}</div>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                      <div className="text-sm font-semibold">Forms Found</div>
+                      <div className="text-xs text-slate-500">{((testData?.artifacts as Record<string, unknown> | undefined)?.['form_fuzzing'] as unknown[] | undefined)?.length ?? 0}</div>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
+                      <div className="text-sm font-semibold">Buttons Tested</div>
+                      <div className="text-xs text-slate-500">{results.filter((r)=> String(r['test'] ?? '').toLowerCase().includes('button')).length}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -114,27 +209,58 @@ export default function RunTestPage() {
               </button>
             </div>
             <div className="p-3 flex-1 overflow-y-auto font-mono text-sm text-slate-300 space-y-1">
-              {terminalLogs.map((log, i) => (
+              {terminalLogs.length > 0 ? terminalLogs.map((log, i) => (
                 <div key={i} className="flex gap-2">
                   <span className="text-blue-400 shrink-0">[{log.time}]</span>
                   <span className={`${log.color} font-bold w-12 shrink-0`}>{log.level}</span>
                   <span>{log.text}</span>
                 </div>
-              ))}
-              <div className="flex gap-2 mt-3 animate-pulse">
-                <span className="text-blue-400">[{new Date().toLocaleTimeString('en-GB', { hour12: false })}]</span>
-                <span className="text-emerald-400 font-bold w-12">EXEC</span>
-                <span className="flex items-center gap-2 text-slate-300">Awaiting next AI instruction...<span className="w-2 h-4 bg-emerald-400 inline-block shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span></span>
-              </div>
+              )) : (
+                <div className="text-slate-500">No execution logs yet — start a test to see real-time activity.</div>
+              )}
             </div>
           </section>
         </div>
 
         {/* Right AI Copilot Panel */}
         <div className="relative border-l border-slate-200 pl-2">
-          <AIChatPanel open={aiPanelOpen} setOpen={setAiPanelOpen} />
+          <AIChatPanel
+            open={aiPanelOpen}
+            setOpen={setAiPanelOpen}
+            targetUrl={targetUrl}
+            testType={testType}
+            testData={testData}
+            onPlanGenerated={handlePlanGenerated}
+          />
         </div>
       </div>
     </div>
   );
+}
+
+// Side effects: polling test status when a test is started
+function useTestPolling(testId: string | null, setTestData: (d: TestApiResponse | null)=>void, setRunning: (v:boolean)=>void) {
+  useEffect(() => {
+    if (!testId) return;
+
+    let mounted = true;
+    const interval = window.setInterval(async () => {
+      try {
+        const data = await getTestById(testId);
+        if (!mounted) return;
+        setTestData(data as TestApiResponse);
+        if ((data as TestApiResponse)['status'] && (data as TestApiResponse)['status'] !== 'running') {
+          setRunning(false);
+          window.clearInterval(interval);
+        }
+      } catch (e) {
+        console.error('Polling failed', e);
+      }
+    }, 2000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(interval);
+    };
+  }, [testId, setTestData, setRunning]);
 }

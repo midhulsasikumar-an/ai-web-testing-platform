@@ -3,7 +3,32 @@ import { apiJson, apiFetch, API_BASE_URL } from "@/services/http";
 export interface StartTestResponse {
   message: string;
   test_id: string;
+  execution_id?: string;
   status: string;
+}
+
+export interface AIPlanStep {
+  action: string;
+  target?: string | null;
+  selector?: string | null;
+  value?: string | null;
+}
+
+export interface AIPlanTestCase {
+  title: string;
+  expected?: string | null;
+  steps: AIPlanStep[];
+}
+
+export interface AIPlanResponse {
+  url: string;
+  instruction: string;
+  page_title?: string | null;
+  summary: string;
+  source: string;
+  test_case: AIPlanTestCase;
+  test_cases: AIPlanTestCase[];
+  raw_plan?: Record<string, unknown> | null;
 }
 
 export interface TestApiResponse {
@@ -48,6 +73,21 @@ export interface TestApiResponse {
 
   ai_summary?: string;
 
+  ai_report?: Record<string, unknown>;
+
+  artifacts?: Record<string, unknown>;
+  bugs?: unknown[];
+
+  stream_logs?: Array<{
+    time: string;
+    level: string;
+    msg: string;
+    type?: string;
+    details?: Record<string, unknown>;
+  }>;
+
+  ai_plan?: AIPlanResponse;
+
   screenshot?: {
     home?: string | null;
     button_interactions?: string[] | null;
@@ -60,15 +100,25 @@ export interface TestApiResponse {
 export async function startTest(
   url: string,
   projectName: string,
-  testType: string
+  testType: string,
+  aiPlan?: AIPlanResponse | null
 ): Promise<StartTestResponse> {
   console.debug("[test-api] POST", `${API_BASE_URL}/api/tests/start`);
   const response = await apiFetch(`/api/tests/start`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, project_name: projectName, test_type: testType }),
+    body: JSON.stringify({ url, project_name: projectName, test_type: testType, ai_plan: aiPlan ?? undefined }),
   });
   return response.json();
+}
+
+export async function generateTestPlan(url: string, instruction: string, testType: string): Promise<AIPlanResponse> {
+  console.debug("[test-api] POST", `${API_BASE_URL}/ai/plan`);
+  return apiJson<AIPlanResponse>(`/ai/plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, instruction, test_type: testType }),
+  });
 }
 
 export async function getTestById(
