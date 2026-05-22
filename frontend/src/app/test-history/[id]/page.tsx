@@ -12,6 +12,7 @@ import { TerminalLog } from "@/components/shared/terminal-log";
 import { SeverityBadge } from "@/components/shared/severity-badge";
 import { MetadataField } from "@/components/shared/metadata-field";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ThreadPanel } from "@/components/collaboration/thread-panel";
 import { formatDateLong, formatTime, formatDuration } from "@/lib/formatters";
 import { TEST_TYPE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -202,6 +203,9 @@ export default function TestDetailPage() {
               )}
             </CardContent>
           </Card>
+          
+          {/* Collaboration Thread Panel */}
+          <ThreadPanel objectType="test_run" objectId={test.id} title={`Discussion for Test ${test.id}`} />
         </div>
       </div>
     </>

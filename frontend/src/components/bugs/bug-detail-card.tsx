@@ -8,6 +8,7 @@ import { AvatarCircle } from "@/components/shared/avatar-circle";
 import { MetadataField } from "@/components/shared/metadata-field";
 import { TerminalLog } from "@/components/shared/terminal-log";
 import { formatDate, formatTime24 } from "@/lib/formatters";
+import { ThreadPanel } from "@/components/collaboration/thread-panel";
 import {
   ExternalLink, Calendar, AlertTriangle, Link2,
   Terminal, Monitor, User, Tag, Clock,
@@ -170,6 +171,9 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
             </MetadataField>
           </CardContent>
         </Card>
+
+        {/* Collaboration Thread Panel */}
+        <ThreadPanel objectType="bug" objectId={bug.id} title={`Discussion for ${bug.title}`} />
       </div>
     </div>
   );

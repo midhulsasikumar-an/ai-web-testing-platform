@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Bell, Search, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { NotificationBell } from "@/components/collaboration/notification-bell";
 
 interface HeaderProps {
   title: string;
@@ -79,28 +80,7 @@ export function Header({ title, description, children }: HeaderProps) {
           )}
         </div>
 
-        {/* Notifications */}
-        <div className="relative">
-          <button 
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[0.6rem] font-bold text-white">
-              3
-            </span>
-          </button>
-          {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-64 p-2 bg-card border border-border rounded-lg shadow-lg z-20">
-              <p className="text-xs font-semibold text-muted-foreground mb-2 px-2">Notifications</p>
-              <div className="space-y-1">
-                <div className="text-xs p-2 hover:bg-accent rounded cursor-pointer">New bug detected in auth flow.</div>
-                <div className="text-xs p-2 hover:bg-accent rounded cursor-pointer">Test run #123 completed.</div>
-                <div className="text-xs p-2 hover:bg-accent rounded cursor-pointer">System health at 94%.</div>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationBell />
 
         {/* Profile & Logout */}
         <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-border">

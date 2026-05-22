@@ -15,6 +15,9 @@ export interface Bug {
   assignedTo?: string;
   environment?: string;
   logs?: LogEntry[];
+  commentCount?: number;
+  lastActivityAt?: string;
+  reviewStatus?: string;
 }
 
 export interface LogEntry {

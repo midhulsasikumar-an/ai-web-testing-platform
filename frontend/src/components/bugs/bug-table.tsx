@@ -13,7 +13,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { AvatarCircle } from "@/components/shared/avatar-circle";
 import { MiniStatCard } from "@/components/shared/mini-stat-card";
 import { formatDate } from "@/lib/formatters";
-import { Eye, AlertTriangle, CheckCircle2, Flame } from "lucide-react";
+import { Eye, AlertTriangle, CheckCircle2, Flame, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BugTableProps {
@@ -54,6 +54,7 @@ export function BugTable({ bugs }: BugTableProps) {
               <TableHead className="w-[90px] text-xs font-semibold">Priority</TableHead>
               <TableHead className="w-[110px] text-xs font-semibold">Assigned To</TableHead>
               <TableHead className="w-[100px] text-xs font-semibold">Status</TableHead>
+              <TableHead className="w-[80px] text-xs font-semibold">Discussion</TableHead>
               <TableHead className="w-[100px] text-xs font-semibold">Date</TableHead>
               <TableHead className="w-[60px] text-right text-xs font-semibold">View</TableHead>
             </TableRow>
@@ -61,7 +62,7 @@ export function BugTable({ bugs }: BugTableProps) {
           <TableBody>
             {bugs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   No bugs recorded yet. Run a test to get started.
                 </TableCell>
               </TableRow>
@@ -91,6 +92,12 @@ export function BugTable({ bugs }: BugTableProps) {
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={bug.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-muted-foreground text-xs font-medium">
+                      <MessageSquare className="h-3 w-3" />
+                      {bug.commentCount || 0}
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(bug.createdAt)}

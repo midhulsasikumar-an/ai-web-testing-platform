@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Zap,
   History,
+  MessageSquare,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -20,6 +21,7 @@ const navItems = [
   { href: "/run-test", label: "Run Test", icon: Play },
   { href: "/test-history", label: "Test History", icon: History },
   { href: "/bugs", label: "Bugs", icon: Bug },
+  { href: "/activity", label: "Activity", icon: MessageSquare },
   { href: "#", label: "Settings", icon: Settings },
 ];
 
