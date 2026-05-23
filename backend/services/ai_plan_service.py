@@ -51,25 +51,25 @@ def _fallback_plan(url: str, instruction: str, dom: Dict[str, Any]) -> Dict[str,
         if inputs:
             first_input = inputs[0]
             steps.append({
-                "action": "fill",
-                "target": first_input.get("placeholder") or first_input.get("name") or first_input.get("id") or "username field",
-                "selector": first_input.get("id") and f"#{first_input.get('id')}" or None,
-                "value": "test.user@example.com",
+                "action": "input",
+                "target": "username field",
+                "selector": first_input.get("placeholder") or first_input.get("name") or first_input.get("id") or "username field",
+                "value": "Admin",
             })
         if len(inputs) > 1:
             second_input = inputs[1]
             steps.append({
-                "action": "fill",
-                "target": second_input.get("placeholder") or second_input.get("name") or second_input.get("id") or "password field",
-                "selector": second_input.get("id") and f"#{second_input.get('id')}" or None,
-                "value": "Password123!",
+                "action": "input",
+                "target": "password field",
+                "selector": second_input.get("placeholder") or second_input.get("name") or second_input.get("id") or "password field",
+                "value": "admin123",
             })
         if buttons:
             primary_button = buttons[0]
             steps.append({
                 "action": "click",
-                "target": primary_button.get("text") or primary_button.get("aria_label") or "Submit",
-                "selector": primary_button.get("id") and f"#{primary_button.get('id')}" or None,
+                "target": "login button",
+                "selector": primary_button.get("text") or primary_button.get("aria_label") or primary_button.get("id") or "login button",
             })
     elif any(keyword in instruction_lower for keyword in ["search", "find", "lookup"]):
         if inputs:
@@ -129,14 +129,15 @@ async def generate_test_plan(url: str, instruction: str, test_type: str | None =
         "You are an expert QA automation engineer.\n"
         "Generate ONE executable test case from the following page data and user instruction.\n"
         "Return valid JSON only with keys: title, expected, steps.\n"
-        "Each step must include action, target, selector, value when relevant.\n\n"
+        "For login and other forms, use structured input steps with action 'input', selector as the field hint, and value as the text to type.\n"
+        "Never put credential values such as usernames or passwords into target.\n\n"
         f"URL: {url}\n"
         f"Test Type: {test_type or 'AI Generated Test'}\n"
         f"Instruction: {instruction}\n"
         f"Page Title: {page_title}\n"
         f"DOM: {json.dumps(dom, ensure_ascii=False)[:8000]}\n"
         "\nJSON schema example:\n"
-        '{"title":"","expected":"","steps":[{"action":"click","target":"","selector":"","value":""}]}'
+        '{"title":"","expected":"","steps":[{"action":"input","target":"username field","selector":"username field","value":"Admin"},{"action":"input","target":"password field","selector":"password field","value":"admin123"},{"action":"click","target":"login button","selector":"login button"}]}'
     )
 
     client = _get_client()

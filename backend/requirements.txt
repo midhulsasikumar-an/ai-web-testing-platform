@@ -1,0 +1,10 @@
+# Backend Python dependencies (add to your venv)
+argon2-cffi
+bcrypt
+pydantic[email]
+groq
+pydantic-settings
+# Fallback HTML parsing for environments without Playwright
+requests
+beautifulsoup4
+# add other deps as needed

@@ -199,6 +199,10 @@ async function authRequest<T>(path: string, body: Record<string, string>, method
     }
 
     if (error instanceof TypeError) {
+      // Log the original TypeError for debugging (network/CORS/timeouts)
+      // Keep minimal diagnostics to avoid leaking sensitive info.
+      // eslint-disable-next-line no-console
+      console.error("[auth-api] network-typeerror", { url, error });
       throw new AuthApiError(
         "NETWORK_ERROR",
         "Network error: Unable to reach authentication service. Check API URL, CORS, and backend status.",

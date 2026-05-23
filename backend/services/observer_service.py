@@ -1,5 +1,43 @@
 from playwright.async_api import Page
 
+
+async def _extract_accessibility_meta(page: Page, el):
+
+    element_id = None
+    try:
+        element_id = await el.get_attribute("id")
+    except:
+        element_id = None
+
+    aria_label = None
+    role = None
+    try:
+        aria_label = await el.get_attribute("aria-label")
+        role = await el.get_attribute("role")
+    except:
+        pass
+
+    label_text = None
+    try:
+        if element_id:
+            label_locator = page.locator(f'label[for="{element_id}"]')
+            if await label_locator.count() > 0:
+                label_text = (await label_locator.first.inner_text()).strip() or None
+
+        if not label_text:
+            ancestor_label = el.locator("xpath=ancestor::label[1]")
+            if await ancestor_label.count() > 0:
+                label_text = (await ancestor_label.first.inner_text()).strip() or None
+    except:
+        pass
+
+    return {
+        "id": element_id,
+        "aria_label": aria_label,
+        "role": role,
+        "label": label_text,
+    }
+
 # ---------------------------------------------------
 # BUTTONS
 # ---------------------------------------------------
@@ -16,12 +54,18 @@ async def extract_buttons(page: Page):
 
         try:
             text = (await el.inner_text()).strip()
+            meta = await _extract_accessibility_meta(page, el)
 
         except:
             text = ""
+            meta = {}
 
         results.append({
             "text": text,
+            "id": meta.get("id"),
+            "aria_label": meta.get("aria_label"),
+            "role": meta.get("role"),
+            "label": meta.get("label"),
             "selector": await generate_selector(el)
         })
 
@@ -76,11 +120,16 @@ async def extract_inputs(page: Page):
             input_type = await el.get_attribute("type")
             name = await el.get_attribute("name")
             placeholder = await el.get_attribute("placeholder")
+            meta = await _extract_accessibility_meta(page, el)
 
             results.append({
                 "type": input_type,
                 "name": name,
                 "placeholder": placeholder,
+                "id": meta.get("id"),
+                "aria_label": meta.get("aria_label"),
+                "role": meta.get("role"),
+                "label": meta.get("label"),
                 "selector": await generate_selector(el)
             })
 
@@ -237,6 +286,30 @@ async def generate_selector(el):
 
         if aria:
             return f'[aria-label="{aria}"]'
+
+        name = await el.get_attribute("name")
+
+        if name:
+            return f'[name="{name}"]'
+
+        placeholder = await el.get_attribute("placeholder")
+
+        if placeholder:
+            tag_name = await el.evaluate("el => el.tagName.toLowerCase()")
+            if tag_name in ("input", "textarea", "select"):
+                return f'{tag_name}[placeholder="{placeholder}"]'
+
+        role = await el.get_attribute("role")
+
+        if role:
+            return f'[role="{role}"]'
+
+        input_type = await el.get_attribute("type")
+
+        if input_type:
+            tag_name = await el.evaluate("el => el.tagName.toLowerCase()")
+            if tag_name == "input":
+                return f'input[type="{input_type}"]'
 
         text = (await el.inner_text()).strip()
 

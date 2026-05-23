@@ -85,7 +85,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     minor_count = 0
 
     for test in tests:
-        insights = test.get("insights", {})
+        insights = test.get("insights") or {}
 
         critical_count += len(insights.get("critical", []))
         moderate_count += len(insights.get("moderate", []))
@@ -109,7 +109,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
     for test in sorted_tests[:5]:
         recent_tests.append({
-            "test_id": str(test.get("_id", "")),
+            "test_id": str(test.get("test_id") or test.get("_id", "")),
             "project": test.get("project", "Unknown"),
             "url": test.get("url", ""),
             "overall_status": test.get("overall_status", "unknown"),

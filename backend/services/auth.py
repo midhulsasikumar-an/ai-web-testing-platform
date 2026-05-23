@@ -12,7 +12,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 # ── Password Hashing ────────────────────────────────────────────────
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 security = HTTPBearer()
 

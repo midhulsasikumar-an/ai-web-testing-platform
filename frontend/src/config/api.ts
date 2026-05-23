@@ -4,7 +4,7 @@ type ApiConfig = {
   authTimeoutMs: number;
 };
 
-const DEV_DEFAULT_API_URL = "http://localhost:8000";
+const DEV_DEFAULT_API_URL = "http://127.0.0.1:8001";
 const DEFAULT_HEALTH_PATH = "/health";
 const DEFAULT_AUTH_TIMEOUT_MS = 10000;
 
@@ -36,7 +36,7 @@ function resolveApiBaseUrl(): string {
 
     if (process.env.NODE_ENV !== "test") {
       console.warn(
-        "[api-config] NEXT_PUBLIC_API_URL is not set. Falling back to http://localhost:8000 for development."
+        "[api-config] NEXT_PUBLIC_API_URL is not set. Falling back to http://127.0.0.1:8001 for development."
       );
     }
 

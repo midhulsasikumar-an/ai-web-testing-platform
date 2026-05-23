@@ -17,8 +17,8 @@ const getIconForProject = (project: string) => {
   return <Globe className="h-4 w-4 text-slate-400" />;
 };
 
-const getStatusBadge = (status: string) => {
-  const s = status.toLowerCase();
+const getStatusBadge = (status: string | null | undefined) => {
+  const s = (status ?? "warning").toLowerCase();
   if (s === 'passed' || s === 'completed' || s === 'success') {
     return (
       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">

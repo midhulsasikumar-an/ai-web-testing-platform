@@ -22,6 +22,7 @@ export function BugDistributionChart({
   ];
 
   const total = distribution.reduce((sum, [, count]) => sum + count, 0);
+  const safeTotal = total > 0 ? total : 1;
 
   // Donut chart geometry
   const cx = 50;
@@ -57,7 +58,7 @@ export function BugDistributionChart({
               />
               {/* Segments */}
               {distribution.map(([severity, count]) => {
-                const pct = count / total;
+                const pct = count / safeTotal;
                 const dashLength = pct * circumference;
                 const dashGap = circumference - dashLength;
                 const offset = cumulativeOffset;

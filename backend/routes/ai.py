@@ -7,6 +7,7 @@ from backend.services.ai_plan_service import generate_test_plan, build_executabl
 from backend.services.dom_service import extract_page_elements
 from backend.services.execution_service import run_test_steps
 from backend.services.judgement_service import analyze_test_results
+from backend.services.action_translation_service import translate_test_case
 # Legacy planning_service has been archived. Planning endpoints are deprecated.
 from backend.ai.schema.test_plan_schema import ExecuteRequest
 
@@ -34,14 +35,18 @@ async def plan(url: str):
 
 
 @router.post("/plan")
-async def generate_plan(req: AIPlanRequest, current_user: dict = Depends(get_current_user)):
+async def generate_plan(req: AIPlanRequest):
+    """Generate an AI test plan. This endpoint is intentionally public to allow
+    interactive plan generation from the UI without requiring authentication.
+    If you want to restrict this in production, re-enable the auth dependency.
+    """
     plan = await generate_test_plan(req.url, req.instruction, req.test_type)
     return plan
 
 @router.post("/execute")
 async def execute_test(payload: ExecuteRequest):
     url = payload.url
-    test_case = payload.test_case
+    test_case, translation_logs = translate_test_case(payload.test_case)
 
     if not url or not test_case:
         return {
@@ -69,6 +74,7 @@ async def execute_test(payload: ExecuteRequest):
             "success": True,
             "url": url,
             "result": result,
+            "translation_logs": translation_logs,
             "ai_analysis": ai_analysis
         }
 

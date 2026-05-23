@@ -72,13 +72,14 @@ def start_test(req: TestRequest, background_tasks: BackgroundTasks, current_user
     test_data = create_test_run(req, current_user["user_id"])
 
     if req.ai_plan:
-        background_tasks.add_task(
-            run_ai_plan_and_update,
-            test_data.copy(),   # to prevent mutation issues
-            req.url,
-            current_user["user_id"],
-            req.ai_plan,
-        )
+        # run_ai_plan_and_update is async; ensure it is executed reliably from
+        # BackgroundTasks by wrapping it in a synchronous callable that runs
+        # the coroutine using asyncio.run.
+        def _run_plan_sync(td=test_data.copy(), url=req.url, uid=current_user["user_id"], plan=req.ai_plan):
+            import asyncio
+            asyncio.run(run_ai_plan_and_update(td, url, uid, plan))
+
+        background_tasks.add_task(_run_plan_sync)
     else:
         background_tasks.add_task(
             run_test_and_update,

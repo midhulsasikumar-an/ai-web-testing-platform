@@ -1,5 +1,6 @@
 import uuid
 import os
+import base64
 from datetime import datetime
 from typing import Any, Dict, List
 from backend.database.mongo import collection, db
@@ -15,6 +16,7 @@ from backend.services.scoring.overall_status import calculate_overall_status
 from backend.services.bug_services import create_bugs_from_test
 from backend.ai.schema.test_plan_schema import TestCase
 from backend.services.dom_service import extract_page_elements
+from backend.services.action_translation_service import translate_test_case
 
 def create_test_run(req: TestRequest, user_id: str):
     test_id = str(uuid.uuid4())
@@ -122,6 +124,7 @@ def run_test_and_update(test_data, url, user_id: str):
         }
 
         test_data["ai_report"] = ai_report
+        test_data["screenshot_paths"] = screenshot_urls
 
         #database update
         collection.update_one(
@@ -156,22 +159,63 @@ def _flatten_plan_results(plan_results: List[Dict[str, Any]], case_title: str) -
 async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: str, plan: Dict[str, Any]):
     try:
         test_case_data = plan.get("test_case") or {}
-        test_case = TestCase.model_validate(test_case_data)
+        raw_test_case = TestCase.model_validate(test_case_data)
+        test_case, translation_logs = translate_test_case(raw_test_case)
+        test_data["raw_ai_plan"] = test_case_data
+        test_data["normalized_ai_plan"] = test_case.model_dump()
         dom = await extract_page_elements(url)
         stream_logs: List[Dict[str, Any]] = []
+        screenshot_paths: List[str] = []
+
+        def _track_screenshot_path(raw: str) -> None:
+            if not raw:
+                return
+            normalized = raw if raw.startswith("/") else f"/{raw.lstrip('/')}"
+            if normalized not in screenshot_paths:
+                screenshot_paths.append(normalized)
 
         async def progress_callback(event: Dict[str, Any]) -> None:
+            # Handle screenshot payloads specially: persist to artifacts and
+            # replace base64 payload with a file path for downstream reports.
+            evt = dict(event)
+            if evt.get("type") == "screenshot" and evt.get("screenshot_b64"):
+                try:
+                    folder = f"artifacts/{test_data['test_id']}"
+                    os.makedirs(folder, exist_ok=True)
+                    filename = f"step-{len(stream_logs)+1}-{int(datetime.utcnow().timestamp()*1000)}.png"
+                    path = os.path.join(folder, filename)
+                    with open(path, "wb") as fh:
+                        fh.write(base64.b64decode(evt.get("screenshot_b64")))
+                    # Replace payload with a reference URL path used by frontend
+                    evt["screenshot"] = f"/artifacts/{test_data['test_id']}/{filename}"
+                    _track_screenshot_path(evt["screenshot"])
+                    # remove the heavy base64 content
+                    evt.pop("screenshot_b64", None)
+                except Exception as e:
+                    evt["screenshot_error"] = str(e)
+            elif isinstance(evt.get("screenshot"), str):
+                _track_screenshot_path(str(evt.get("screenshot")))
+
             stream_logs.append({
                 "time": datetime.utcnow().isoformat(),
-                "level": "error" if event.get("type") == "bug_detected" else "info",
-                "msg": event.get("message", ""),
-                "type": event.get("type"),
-                "details": event,
+                "level": "error" if evt.get("type") == "bug_detected" else "info",
+                "msg": evt.get("message", ""),
+                "type": evt.get("type"),
+                "details": evt,
             })
             collection.update_one(
                 {"test_id": test_data["test_id"], "user_id": user_id},
-                {"$set": {"stream_logs": stream_logs, "status": "running", "ai_plan": plan}},
+                {"$set": {"stream_logs": stream_logs, "status": "running", "ai_plan": plan, "screenshot_paths": screenshot_paths}},
                 upsert=True,
+            )
+
+        for entry in translation_logs:
+            await progress_callback(
+                {
+                    "type": "action_translation",
+                    "message": f"Original Action: {entry['original_action']} -> Normalized Action: {entry['normalized_action']}",
+                    "details": entry,
+                }
             )
 
         results_data = await run_test_steps(url=url, test_case=test_case, dom=dom, progress_callback=progress_callback)
@@ -202,6 +246,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         test_data["ai_summary"] = generate_summary_line(test_data.get("health_score", 0), test_data.get("summary"), insights)
         created_bugs = create_bugs_from_test(test_data)
         test_data["bugs"] = [bug["bug_id"] for bug in created_bugs]
+        test_data["screenshot_paths"] = screenshot_paths
         test_data["ai_report"] = {
             "user_id": user_id,
             "execution_id": test_data["test_id"],
@@ -209,9 +254,12 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             "workflow_completion": test_data.get("overall_status"),
             "critical_issues": len(insights.get("critical", [])),
             "warnings": len(insights.get("moderate", [])) + len(insights.get("minor", [])),
+            "screenshots": screenshot_paths,
             "report": test_data["report"],
             "insights": insights,
             "generated_plan": plan,
+            "raw_ai_plan": test_case_data,
+            "normalized_ai_plan": test_case.model_dump(),
         }
         test_data["stream_logs"] = stream_logs
 

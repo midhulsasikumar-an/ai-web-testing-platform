@@ -70,13 +70,57 @@ export function statusColor(status: BugStatus): string {
 
 // ── Test type config ──────────────────────────────────────────────
 
-import { RefreshCw, ScanLine, Accessibility } from "lucide-react";
+import { RefreshCw, ScanLine, Accessibility, CircleHelp } from "lucide-react";
 
 export const TEST_TYPE_CONFIG: Record<
   string,
   { label: string; icon: typeof RefreshCw }
 > = {
   full: { label: "Full Regression", icon: RefreshCw },
+  e2e: { label: "End-to-End", icon: RefreshCw },
   ai: { label: "AI Scan", icon: ScanLine },
   accessibility: { label: "Accessibility", icon: Accessibility },
 };
+
+export const DEFAULT_TEST_TYPE_CONFIG = {
+  label: "Unknown Test Type",
+  icon: CircleHelp,
+};
+
+const TEST_TYPE_ALIASES: Record<string, keyof typeof TEST_TYPE_CONFIG> = {
+  ai: "ai",
+  "ai generated test": "ai",
+  "ai-generated test": "ai",
+  "ai test": "ai",
+  e2e: "e2e",
+  "end to end": "e2e",
+  "end-to-end": "e2e",
+  endtoend: "e2e",
+  full: "full",
+  "full regression": "full",
+  regression: "full",
+  "regression test": "full",
+  smoke: "full",
+  "smoke test": "full",
+  accessibility: "accessibility",
+  "accessibility test": "accessibility",
+};
+
+function normalizeTestType(testType?: string | null): string {
+  return (testType ?? "").trim().toLowerCase().replace(/[_\-]+/g, " ").replace(/\s+/g, " ");
+}
+
+export function resolveTestTypeConfig(testType?: string | null) {
+  const normalized = normalizeTestType(testType);
+
+  if (normalized in TEST_TYPE_CONFIG) {
+    return TEST_TYPE_CONFIG[normalized];
+  }
+
+  const alias = TEST_TYPE_ALIASES[normalized];
+  if (alias && TEST_TYPE_CONFIG[alias]) {
+    return TEST_TYPE_CONFIG[alias];
+  }
+
+  return DEFAULT_TEST_TYPE_CONFIG;
+}
