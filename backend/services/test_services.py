@@ -4,6 +4,7 @@ import base64
 from datetime import datetime
 from typing import Any, Dict, List
 from backend.database.mongo import collection, db
+from backend.database.report_repository import save_report
 from backend.models.schema import TestRequest
 from backend.services.test_runner import run_test
 from backend.services.execution_service import run_test_steps
@@ -130,6 +131,16 @@ def run_test_and_update(test_data, url, user_id: str):
         collection.update_one(
             {"test_id": test_data["test_id"], "user_id": user_id},
             {"$set": test_data}
+        )
+
+        save_report(
+            test_data,
+            report_type="legacy",
+            user_id=user_id,
+            test_run_id=test_data["test_id"],
+            title=test_data.get("project") or test_data.get("test_name") or test_data["test_id"],
+            summary=test_data.get("ai_summary") or test_data.get("report") or "Legacy test execution report.",
+            status=test_data.get("status"),
         )
 
     except Exception as e:
@@ -267,6 +278,16 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             {"test_id": test_data["test_id"], "user_id": user_id},
             {"$set": test_data},
             upsert=True,
+        )
+
+        save_report(
+            test_data,
+            report_type="ai",
+            user_id=user_id,
+            test_run_id=test_data["test_id"],
+            title=test_data.get("project") or test_case.title or test_data["test_id"],
+            summary=test_data.get("ai_summary") or test_data.get("report") or "AI execution report.",
+            status=test_data.get("status"),
         )
     except Exception as e:
         test_data["status"] = "failed"

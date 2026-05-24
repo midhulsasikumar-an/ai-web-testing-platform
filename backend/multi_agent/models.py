@@ -18,6 +18,7 @@ class MultiAgentRole(str, Enum):
 class MultiAgentRunRequest(BaseModel):
     url: HttpUrl
     goal: str
+    user_id: Optional[str] = None
     credentials: Optional[Dict[str, str]] = None
     run_id: Optional[str] = None
     max_steps: int = Field(default=30, ge=1, le=200)
@@ -53,6 +54,12 @@ class AgentExecutionResult(BaseModel):
 
 class UnifiedMultiAgentReport(BaseModel):
     report_id: Optional[str] = None
+    report_key: Optional[str] = None
+    user_id: str = ""
+    test_run_id: str = ""
+    report_type: str = "multi_agent"
+    title: str = ""
+    summary: str = ""
     run_id: str
     goal: str
     status: str

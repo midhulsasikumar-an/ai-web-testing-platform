@@ -96,6 +96,7 @@ class MultiAgentOrchestrator:
         shared_snapshot = await shared_memory.snapshot()
         report = build_unified_report(
             run_id=run_id,
+            user_id=request.user_id or "",
             goal=request.goal,
             status="completed" if ordered_results else "failed",
             agent_results=ordered_results,

@@ -11,6 +11,7 @@ from backend.multi_agent.models import AgentExecutionResult, UnifiedMultiAgentRe
 def build_unified_report(
     *,
     run_id: str,
+    user_id: str,
     goal: str,
     status: str,
     agent_results: List[AgentExecutionResult],
@@ -26,6 +27,11 @@ def build_unified_report(
     reproduction_paths = _build_reproduction_paths(shared_memory, navigation_graph)
     report = UnifiedMultiAgentReport(
         run_id=run_id,
+        user_id=user_id,
+        test_run_id=run_id,
+        report_type="multi_agent",
+        title=goal,
+        summary=str(consensus.get("summary") or consensus.get("verdict") or goal or "Multi-agent report").strip(),
         goal=goal,
         status=status,
         agent_results=[result.model_dump(mode="json") for result in agent_results],
@@ -37,7 +43,15 @@ def build_unified_report(
         reproduction_paths=reproduction_paths,
         severity_prioritization=severity_prioritization,
     ).model_dump(mode="json")
-    report_id = save_report(jsonable_encoder(report))
+    report_id = save_report(
+        jsonable_encoder(report),
+        report_type="multi_agent",
+        user_id=user_id,
+        test_run_id=run_id,
+        title=goal,
+        summary=report.get("summary") or goal,
+        status=status,
+    )
     report["report_id"] = report_id
     return report
 

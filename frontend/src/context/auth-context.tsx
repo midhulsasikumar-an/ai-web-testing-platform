@@ -11,14 +11,21 @@ export interface User {
   role?: string;
 }
 
+export interface InitWarning {
+  code: "BACKEND_UNAVAILABLE" | "NETWORK_ERROR" | "TIMEOUT" | "ENDPOINT_NOT_FOUND";
+  message: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isReady: boolean;
+  initWarning: InitWarning | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  clearInitWarning: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,38 +43,110 @@ function toUser(session: AuthSession | null): User | null {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [initWarning, setInitWarning] = useState<InitWarning | null>(null);
 
   useEffect(() => {
     let active = true;
 
     async function init() {
+      const hydrated = getStoredAuthSession();
+
+      // ── Case 1: No token in storage ──────────────────────────────────
+      if (!hydrated?.token) {
+        console.info("[auth] No stored session found. Starting as unauthenticated.");
+        if (active) {
+          setSession(null);
+          setIsReady(true);
+        }
+        return;
+      }
+
+      // ── Case 2: Token exists — validate it against backend ────────────
+      console.info("[auth] Stored session token found. Validating...");
+
       try {
-        const hydrated = getStoredAuthSession();
-        if (hydrated?.token) {
-          const currentUser = await getCurrentUser(hydrated.token);
-          const restored: AuthSession = {
-            token: hydrated.token,
-            user: {
-              id: currentUser.id,
-              name: currentUser.name,
-              email: currentUser.email,
-              role: currentUser.role,
-            },
-          };
-          storeAuthSession(restored);
-          if (active) setSession(restored);
-          return;
+        const currentUser = await getCurrentUser(hydrated.token);
+
+        const restored: AuthSession = {
+          token: hydrated.token,
+          user: {
+            id: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.email,
+            role: currentUser.role,
+          },
+        };
+        storeAuthSession(restored);
+
+        if (active) {
+          setSession(restored);
+          setInitWarning(null);
+          console.info("[auth] Session validated successfully.");
         }
       } catch (error) {
-        if (error instanceof AuthApiError && error.code === "UNAUTHORIZED") {
-          clearAuthSession();
-          if (active) setSession(null);
-          return;
-        }
+        if (error instanceof AuthApiError) {
+          switch (error.code) {
+            // ── Token invalid / expired — clear it ──────────────────────
+            case "UNAUTHORIZED":
+              console.info("[auth] Token expired or invalid. Clearing session.");
+              clearAuthSession();
+              if (active) {
+                setSession(null);
+                setInitWarning(null);
+              }
+              break;
 
-        console.error("Failed to initialize auth session", error);
-        clearAuthSession();
-        if (active) setSession(null);
+            // ── Backend not reachable — keep token, degrade gracefully ──
+            case "BACKEND_UNAVAILABLE":
+            case "NETWORK_ERROR":
+            case "ENDPOINT_NOT_FOUND":
+              console.warn("[auth] Backend unreachable during init. Keeping stored token for next attempt.",
+                { code: error.code, message: error.message }
+              );
+              if (active) {
+                setSession(null);
+                setInitWarning({
+                  code: error.code as InitWarning["code"],
+                  message: error.message,
+                });
+              }
+              break;
+
+            // ── Request timed out — keep token, degrade gracefully ──────
+            case "TIMEOUT":
+              console.warn("[auth] Session validation timed out. Keeping stored token for next attempt.",
+                { code: error.code, message: error.message }
+              );
+              if (active) {
+                setSession(null);
+                setInitWarning({
+                  code: "TIMEOUT",
+                  message: error.message,
+                });
+              }
+              break;
+
+            // ── Server error or unexpected failure — clear to be safe ────
+            default:
+              console.error("[auth] Unexpected AuthApiError during init. Clearing session.",
+                { code: error.code, message: error.message }
+              );
+              clearAuthSession();
+              if (active) {
+                setSession(null);
+                setInitWarning(null);
+              }
+              break;
+          }
+        } else {
+          // Non-AuthApiError (shouldn't happen, but be safe)
+          console.error("[auth] Non-auth error during session init. Clearing session.", error);
+          clearAuthSession();
+          if (active) {
+            setSession(null);
+            setInitWarning(null);
+          }
+        }
       } finally {
         if (active) setIsReady(true);
       }
@@ -85,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const nextSession = await loginWithBackend(email, password);
       storeAuthSession(nextSession);
       setSession(nextSession);
+      setInitWarning(null);
     } catch (error) {
       console.error("Login failed", error);
       throw new Error(toAuthErrorMessage(error));
@@ -96,6 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const nextSession = await signupWithBackend(name, email, password);
       storeAuthSession(nextSession);
       setSession(nextSession);
+      setInitWarning(null);
     } catch (error) {
       console.error("Signup failed", error);
       throw new Error(toAuthErrorMessage(error));
@@ -105,6 +186,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     clearAuthSession();
     setSession(null);
+    setInitWarning(null);
+  }, []);
+
+  const clearInitWarning = useCallback(() => {
+    setInitWarning(null);
   }, []);
 
   const user = toUser(session);
@@ -116,9 +202,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token: session?.token ?? null,
         isAuthenticated: !!session?.token,
         isReady,
+        initWarning,
         login,
         signup,
         logout,
+        clearInitWarning,
       }}
     >
       {children}

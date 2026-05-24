@@ -15,6 +15,8 @@ from backend.models.schema import TestRequest
 from backend.services.test_services import create_test_run, run_test_and_update
 from backend.services.test_services import run_ai_plan_and_update
 from backend.database.mongo import collection, bug_collection
+from backend.services.bug_services import normalize_bug_record
+from bson.objectid import ObjectId
 from backend.services.auth import get_current_user
 from backend.routes.auth_routes import router as auth_router
 from backend.routes.dashboard import router as dashboard_router
@@ -24,6 +26,7 @@ from backend.routes.multi_agent import router as multi_agent_router
 from backend.routes.live_execution import router as live_execution_router
 from backend.routes.runtime import router as runtime_router
 from backend.routes.intelligence import router as intelligence_router
+from backend.routes.reports import router as reports_router
 
 app = FastAPI()
 allowed_origins = [
@@ -102,9 +105,24 @@ def get_tests(current_user: dict = Depends(get_current_user)):
 
 @app.get("/api/tests/{test_id}")
 def get_test_by_id(test_id: str, current_user: dict = Depends(get_current_user)):
+    # Primary lookup by test_id
     test = collection.find_one({"test_id": test_id, "user_id": current_user["user_id"]}, {"_id": 0})
+
+    # Fallback: some legacy records may have only _id stored; try ObjectId lookup
+    if not test:
+        try:
+            obj = ObjectId(test_id)
+            raw = collection.find_one({"_id": obj, "user_id": current_user["user_id"]})
+            if raw:
+                raw.pop("_id", None)
+                test = raw
+        except Exception:
+            # not a valid ObjectId or not found — continue
+            test = None
+
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
+
     return test
 
 @app.get("/api/bugs")
@@ -116,26 +134,35 @@ def get_bugs(current_user: dict = Depends(get_current_user)):
         )
     )
 
-    return bugs
+    # Ensure all returned bugs are normalized so frontend can rely on consistent fields
+    normalized = [normalize_bug_record(b) for b in bugs]
+    return normalized
 
 @app.get("/api/bugs/{bug_id}")
 def get_bug_by_id(bug_id: str, current_user: dict = Depends(get_current_user)):
-
+    # Primary lookup: bug_id field
     bug = bug_collection.find_one(
-        {
-            "bug_id": bug_id,
-            "user_id": current_user["user_id"]
-        },
-        {"_id": 0}
+        {"bug_id": bug_id, "user_id": current_user["user_id"]}
     )
 
+    # Fallback: try to resolve by ObjectId if bug_id was not populated
     if not bug:
-        raise HTTPException(
-            status_code=404,
-            detail="Bug not found"
-        )
+        try:
+            obj = ObjectId(bug_id)
+            bug = bug_collection.find_one({"_id": obj, "user_id": current_user["user_id"]})
+        except Exception:
+            bug = None
 
-    return bug
+    if not bug:
+        # Last resort: try matching stringified _id field (some records store string ids)
+        bug = bug_collection.find_one({"_id": bug_id, "user_id": current_user["user_id"]})
+
+    if not bug:
+        raise HTTPException(status_code=404, detail="Bug not found")
+
+    # Normalize record shape for consistent frontend consumption
+    normalized = normalize_bug_record(bug)
+    return normalized
 
 app.include_router(dashboard_router,prefix="/api/dashboard",tags=["Dashboard"])
 app.include_router(auth_router)
@@ -147,6 +174,7 @@ app.include_router(live_execution_router, prefix="/api/agent", tags=["Autonomous
 app.include_router(multi_agent_router, prefix="/api/agent", tags=["Multi-Agent Runtime"])
 app.include_router(runtime_router)
 app.include_router(intelligence_router, prefix="/api/intelligence", tags=["Historical Intelligence"])
+app.include_router(reports_router, prefix="/api", tags=["Reports"])
 
 
 @app.on_event("startup")

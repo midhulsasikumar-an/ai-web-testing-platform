@@ -3,8 +3,10 @@ from pydantic import BaseModel, EmailStr
 
 class TestRequest(BaseModel):
     url: str
-    project_name: str
-    test_type: str
+    test_name: Optional[str] = None
+    goal: Optional[str] = None
+    project_name: Optional[str] = None
+    test_type: Optional[str] = None
     ai_plan: Optional[Dict[str, Any]] = None
 
 class SignupRequest(BaseModel):

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { useBugContext } from "@/context/bug-context";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,8 @@ import { formatDateLong, formatTime } from "@/lib/formatters";
 import { DEFAULT_TEST_TYPE_CONFIG, resolveTestTypeConfig } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { API_BASE_URL } from "@/services/http";
+import { getTestById as fetchTestById } from "@/services/test-api";
+import { useAuth } from "@/context/auth-context";
 import {
   AlertCircle,
   AlertTriangle,
@@ -184,45 +186,84 @@ export default function TestDetailPage() {
   const { getTestById } = useBugContext();
   const test = getTestById(params.id as string) as TestRecord | null;
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  const { token } = useAuth();
+  const [remoteTest, setRemoteTest] = useState<TestRecord | null>(null);
+  const [loadingRemote, setLoadingRemote] = useState(false);
 
-  const testRecord = test ?? {};
+  const activeTest = test ?? remoteTest;
+  const testRecord = activeTest ?? {};
 
   const summaryText = useMemo(() => {
-    if (!test) return "";
-    if (typeof test.summary === "string") return test.summary;
-    if (test.summary) return stringifyValue(test.summary);
+    if (!activeTest) return "";
+    if (typeof activeTest.summary === "string") return activeTest.summary;
+    if (activeTest.summary) return stringifyValue(activeTest.summary);
     return "No summary available";
-  }, [test]);
+  }, [activeTest]);
 
   const reportText = useMemo(() => {
-    if (!test) return "";
-    if (typeof test.report === "string") return test.report;
-    if (test.report) return stringifyValue(test.report);
+    if (!activeTest) return "";
+    if (typeof activeTest.report === "string") return activeTest.report;
+    if (activeTest.report) return stringifyValue(activeTest.report);
     return "";
-  }, [test]);
+  }, [activeTest]);
 
   const results = useMemo<DetailResult[]>(() => {
-    return Array.isArray(test?.results) ? (test?.results as DetailResult[]) : [];
-  }, [test]);
+    return Array.isArray(activeTest?.results) ? (activeTest?.results as DetailResult[]) : [];
+  }, [activeTest]);
 
   const screenshotEvidence = useMemo(() => buildScreenshotEvidence(testRecord), [testRecord]);
   const findings = useMemo(() => buildFindings(testRecord, results, summaryText), [results, summaryText, testRecord]);
   const recommendations = useMemo(() => buildRecommendations(testRecord, results, screenshotEvidence.length), [results, screenshotEvidence.length, testRecord]);
 
-  const typeConfig = resolveTestTypeConfig(test?.test_type);
+  const typeConfig = resolveTestTypeConfig(activeTest?.test_type);
   const TypeIcon = typeConfig.icon ?? DEFAULT_TEST_TYPE_CONFIG.icon;
   const typeLabel = typeConfig.label ?? DEFAULT_TEST_TYPE_CONFIG.label;
-  const statusLabel = test?.overall_status ?? test?.status ?? "unknown";
-  const aiPlan = test?.ai_plan ?? null;
-  const streamLogs = Array.isArray(test?.stream_logs) ? test.stream_logs : [];
-  const artifacts = test?.artifacts && typeof test.artifacts === "object" ? (test.artifacts as Record<string, unknown>) : null;
+  const statusLabel = activeTest?.overall_status ?? activeTest?.status ?? "unknown";
+  const aiPlan = activeTest?.ai_plan ?? null;
+  const streamLogs = Array.isArray(activeTest?.stream_logs) ? activeTest.stream_logs : [];
+  const artifacts = activeTest?.artifacts && typeof activeTest.artifacts === "object" ? (activeTest.artifacts as Record<string, unknown>) : null;
   const previewShot = previewIndex !== null ? screenshotEvidence[previewIndex] ?? null : null;
 
-  const downloadReport = () => downloadTextFile(`test-${test?.test_id ?? "run"}-report.txt`, reportText || summaryText || "No report available");
-  const downloadLogs = () => downloadTextFile(`test-${test?.test_id ?? "run"}-logs.json`, JSON.stringify(streamLogs, null, 2));
-  const downloadScreenshots = () => downloadTextFile(`test-${test?.test_id ?? "run"}-screenshots.json`, JSON.stringify(screenshotEvidence, null, 2));
+  const downloadReport = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-report.txt`, reportText || summaryText || "No report available");
+  const downloadLogs = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-logs.json`, JSON.stringify(streamLogs, null, 2));
+  const downloadScreenshots = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-screenshots.json`, JSON.stringify(screenshotEvidence, null, 2));
 
-  if (!test) {
+  useEffect(() => {
+    const id = String(params.id || "");
+    if (!id || test || !token) return;
+
+    let active = true;
+    setLoadingRemote(true);
+
+    fetchTestById(id, token)
+      .then((t) => {
+        if (!active) return;
+        setRemoteTest(t as TestRecord);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch test by id:", err);
+      })
+      .finally(() => {
+        if (active) setLoadingRemote(false);
+      });
+
+    return () => { active = false; };
+  }, [params.id, test, token]);
+
+  if (!activeTest && loadingRemote) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <Terminal className="h-10 w-10 text-muted-foreground/30" />
+        <p className="text-muted-foreground font-medium">Loading test...</p>
+        <Link href="/test-history" className={cn(buttonVariants({ variant: "outline" }))}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to History
+        </Link>
+      </div>
+    );
+  }
+
+  if (!activeTest) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
         <Terminal className="h-10 w-10 text-muted-foreground/30" />
@@ -286,7 +327,7 @@ export default function TestDetailPage() {
                     </div>
 
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      {stringifyValue(test.ai_summary || summaryText || "No AI summary available")}
+                      {stringifyValue(activeTest?.ai_summary || summaryText || "No AI summary available")}
                     </p>
                   </div>
                 </div>
@@ -433,7 +474,7 @@ export default function TestDetailPage() {
             </CardContent>
           </Card>
 
-          {Array.isArray(test.priority_issues) && test.priority_issues.length > 0 && (
+          {Array.isArray(activeTest?.priority_issues) && activeTest.priority_issues.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -442,7 +483,7 @@ export default function TestDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {test.priority_issues.map((issue: { level?: string; issue?: string }, index: number) => (
+                {activeTest.priority_issues.map((issue: { level?: string; issue?: string }, index: number) => (
                   <div key={index} className="rounded-lg border border-border p-4 bg-muted/20">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-medium break-words">{issue.issue || "Priority issue detected"}</p>
@@ -464,12 +505,12 @@ export default function TestDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <MetadataField icon={Terminal} label="Test ID">
-                <p className="text-sm font-mono font-medium break-all">{test.test_id}</p>
+                <p className="text-sm font-mono font-medium break-all">{activeTest?.test_id}</p>
               </MetadataField>
 
               <MetadataField icon={Globe} label="Target URL">
-                <a href={test.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 break-all">
-                  {test.url}
+                <a href={activeTest?.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 break-all">
+                  {activeTest?.url}
                   <ExternalLink className="h-3 w-3 shrink-0" />
                 </a>
               </MetadataField>
@@ -482,18 +523,18 @@ export default function TestDetailPage() {
               </MetadataField>
 
               <MetadataField icon={Clock} label="Health Score">
-                <p className="text-sm font-mono font-medium">{test.health_score ?? 0}/100</p>
+                <p className="text-sm font-mono font-medium">{activeTest?.health_score ?? 0}/100</p>
               </MetadataField>
 
               <MetadataField icon={Calendar} label="Timestamp">
                 <div className="text-sm">
-                  <p>{formatDateLong(test.created_at || "")}</p>
-                  <p className="text-xs text-muted-foreground">{formatTime(test.created_at || "")}</p>
+                  <p>{formatDateLong(activeTest?.created_at || "")}</p>
+                  <p className="text-xs text-muted-foreground">{formatTime(activeTest?.created_at || "")}</p>
                 </div>
               </MetadataField>
 
               <MetadataField icon={Clock} label="Duration">
-                <p className="text-sm font-mono font-medium">{typeof test.duration !== "undefined" ? String(test.duration) : "—"}</p>
+                <p className="text-sm font-mono font-medium">{typeof activeTest?.duration !== "undefined" ? String(activeTest?.duration) : "—"}</p>
               </MetadataField>
 
               <MetadataField icon={mainStatus === "pass" ? CheckCircle2 : XCircle} label="Result">

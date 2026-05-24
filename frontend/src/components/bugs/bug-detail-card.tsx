@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Bug } from "@/types";
 import { useBugContext } from "@/context/bug-context";
 import { formatDate, formatTime24 } from "@/lib/formatters";
+import { resolveTestDisplayName, truncateText } from "@/lib/test-display";
 import {
   BrainCircuit, MapPin,
   Circle, Monitor, User, GitBranch,
@@ -69,7 +70,7 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
     date:   formatTime24(l.timestamp),
     type:   l.level as string,
   })) ?? [
-    { label: "Detected", detail: `Bug first detected — ${bug.title}`, date: formatDate(bug.createdAt), type: "error" },
+    { label: "Detected", detail: `Bug first detected - ${bug.bug_name || bug.title}`, date: formatDate(bug.createdAt), type: "error" },
   ];
 
   return (
@@ -218,7 +219,7 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="pb-2 text-left text-xs font-medium text-slate-500">RUN ID</th>
+                  <th className="pb-2 text-left text-xs font-medium text-slate-500">TEST NAME</th>
                   <th className="pb-2 text-left text-xs font-medium text-slate-500">DATE</th>
                   <th className="pb-2 text-left text-xs font-medium text-slate-500">STATUS</th>
                   <th className="pb-2 text-left text-xs font-medium text-slate-500">RESULT</th>
@@ -227,7 +228,7 @@ export function BugDetailCard({ bug }: BugDetailCardProps) {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 <tr>
-                  <td className="py-3 font-mono text-xs text-blue-600">#{linkedTest.test_id.slice(0, 8)}</td>
+                  <td className="py-3 text-xs text-blue-600 font-medium">{truncateText(resolveTestDisplayName(linkedTest), 65)}</td>
                   <td className="py-3 text-xs text-slate-600">{linkedTest.created_at ? formatDate(linkedTest.created_at) : "—"}</td>
                   <td className="py-3">
                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border ${

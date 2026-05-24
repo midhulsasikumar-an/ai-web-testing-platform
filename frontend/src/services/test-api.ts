@@ -7,6 +7,15 @@ export interface StartTestResponse {
   status: string;
 }
 
+export interface StartTestRequest {
+  url: string;
+  testName: string;
+  goal: string;
+  projectName?: string;
+  testType?: string;
+  aiPlan?: AIPlanResponse | null;
+}
+
 export interface AIPlanStep {
   action: string;
   target?: string | null;
@@ -34,8 +43,12 @@ export interface AIPlanResponse {
 export interface TestApiResponse {
   test_id: string;
   url: string;
+  target_url?: string;
   project: string;
+  test_name?: string;
   test_type: string;
+  run_type?: string;
+  goal?: string;
 
   status: string;
 
@@ -98,16 +111,32 @@ export interface TestApiResponse {
 }
 
 export async function startTest(
-  url: string,
-  projectName: string,
-  testType: string,
+  requestOrUrl: StartTestRequest | string,
+  projectName?: string,
+  testType?: string,
   aiPlan?: AIPlanResponse | null
 ): Promise<StartTestResponse> {
   console.debug("[test-api] POST", `${API_BASE_URL}/api/tests/start`);
+  const payload = typeof requestOrUrl === "string"
+    ? {
+        url: requestOrUrl,
+        project_name: projectName,
+        test_type: testType,
+        ai_plan: aiPlan ?? undefined,
+      }
+    : {
+        url: requestOrUrl.url,
+        test_name: requestOrUrl.testName,
+        goal: requestOrUrl.goal,
+        ...(requestOrUrl.projectName ? { project_name: requestOrUrl.projectName } : {}),
+        ...(requestOrUrl.testType ? { test_type: requestOrUrl.testType } : {}),
+        ...(requestOrUrl.aiPlan ? { ai_plan: requestOrUrl.aiPlan } : {}),
+      };
+
   const response = await apiFetch(`/api/tests/start`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, project_name: projectName, test_type: testType, ai_plan: aiPlan ?? undefined }),
+    body: JSON.stringify(payload),
   });
   return response.json();
 }

@@ -14,6 +14,7 @@ import { MiniStatCard } from "@/components/shared/mini-stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useFilteredList } from "@/hooks/use-filtered-list";
 import { formatDate, formatTime } from "@/lib/formatters";
+import { extractHostname, resolveTestDisplayName, truncateText } from "@/lib/test-display";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2, XCircle, Globe, Eye,
@@ -33,14 +34,18 @@ export default function TestHistoryPage() {
     setSearchQuery,
   } = useFilteredList(testResults, {
     getStatus: (t) => t.overall_status || "warning",
-    getSearchText: (t) => t.url,
+    getSearchText: (t) => {
+      const testName = resolveTestDisplayName(t);
+      const website = extractHostname(t.target_url || t.url);
+      return `${testName} ${website}`;
+    },
   });
 
-  const uniqueUrls = [...new Set(testResults.map((t) => t.url))];
+  const uniqueUrls = [...new Set(testResults.map((t) => t.target_url || t.url))];
 
   // Group filtered results by URL
   const groupedByUrl = uniqueUrls.reduce<Record<string, typeof testResults>>((acc, url) => {
-    const tests = filtered.filter((t) => t.url === url);
+    const tests = filtered.filter((t) => (t.target_url || t.url) === url);
     if (tests.length > 0) acc[url] = tests;
     return acc;
   }, {});
@@ -92,7 +97,7 @@ export default function TestHistoryPage() {
             <div className="flex-1" />
             <input
               type="text"
-              placeholder="Filter by URL..."
+              placeholder="Search by test name or website..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="px-3 py-1.5 rounded-lg text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-64"
@@ -140,7 +145,7 @@ export default function TestHistoryPage() {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-muted/30">
-                          <TableHead className="w-[100px] text-xs font-semibold">Test ID</TableHead>
+                          <TableHead className="w-[210px] text-xs font-semibold">Test Name</TableHead>
                           <TableHead className="w-[90px] text-xs font-semibold">Status</TableHead>
                           <TableHead className="w-[90px] text-xs font-semibold">Type</TableHead>
                           <TableHead className="text-xs font-semibold">Details</TableHead>
@@ -152,7 +157,9 @@ export default function TestHistoryPage() {
                       <TableBody>
                         {tests.map((test) => (
                           <TableRow key={test.test_id} className="hover:bg-accent/50 transition-colors">
-                            <TableCell className="font-mono text-xs text-primary font-medium">{test.test_id}</TableCell>
+                            <TableCell className="text-xs text-primary font-medium">
+                              {truncateText(resolveTestDisplayName(test), 80)}
+                            </TableCell>
                             <TableCell>
                               <Badge
                                 variant={
@@ -175,7 +182,7 @@ export default function TestHistoryPage() {
                             </TableCell>
                             <TableCell>
                               <span className="text-xs text-muted-foreground capitalize">
-                                {test.test_type || "full"}
+                                {test.run_type || test.test_type || "full"}
                               </span>
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground max-w-[250px] truncate">

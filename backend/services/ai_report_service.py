@@ -210,7 +210,12 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
         final_report["user_id"] = user_id or run_data.get("user_id") or run_data.get("owner_id") or ""
         final_report["execution_id"] = execution_id or run_data.get("execution_id") or run_data.get("run_id") or ""
         final_report["created_by"] = final_report["user_id"]
-        saved_id = save_report(jsonable_encoder(final_report))
+        saved_id = save_report(
+            jsonable_encoder(final_report),
+            report_type="ai",
+            user_id=final_report["user_id"],
+            test_run_id=final_report["execution_id"],
+        )
         final_report["report_id"] = saved_id
         try:
             lifecycle_records = ingest_bug_lifecycle(run_data, final_report)
@@ -249,7 +254,12 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
             "created_by": user_id or run_data.get("user_id") or "",
         }
         try:
-            save_report(jsonable_encoder(fallback))
+            save_report(
+                jsonable_encoder(fallback),
+                report_type="ai",
+                user_id=fallback["user_id"],
+                test_run_id=fallback["execution_id"],
+            )
         except Exception:
             logger.exception("failed to persist fallback report")
         return fallback

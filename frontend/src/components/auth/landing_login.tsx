@@ -9,7 +9,7 @@ import { useAuth } from "@/context/auth-context";
 
 export function LandingLogin() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, initWarning, clearInitWarning } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -55,6 +55,32 @@ export function LandingLogin() {
       </header>
 
       {/* Main Content Split */}
+      {/* Stored-session warning banner when backend was unreachable during init */}
+      {initWarning && (
+        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-12 pt-4">
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <span className="mt-0.5 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </span>
+            <p className="flex-1">{initWarning.message}</p>
+            <button
+              onClick={clearInitWarning}
+              className="shrink-0 rounded p-0.5 text-amber-600 hover:text-amber-900 transition-colors"
+              aria-label="Dismiss"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 flex flex-col lg:flex-row items-center max-w-7xl mx-auto w-full p-6 lg:p-12 gap-12 relative z-10">
         
         {/* Left Side: Copy & Benefits */}

@@ -1,17 +1,82 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
 import { BugDetailCard } from "@/components/bugs/bug-detail-card";
 import { BugDialog } from "@/components/bugs/bug-dialog";
 import { useBugContext } from "@/context/bug-context";
+import { useAuth } from "@/context/auth-context";
+import { getBugById as fetchBugById } from "@/services/bugs-api";
+import type { Bug } from "@/types";
+import { truncateText } from "@/lib/test-display";
 import { ArrowLeft, AlertTriangle, RefreshCw, Play } from "lucide-react";
 
 export default function BugDetailPage() {
   const params = useParams();
+  const { token } = useAuth();
   const { getBugById } = useBugContext();
-  const bug = getBugById(params.id as string);
+  const contextBug = getBugById(params.id as string);
+  const [remoteBug, setRemoteBug] = useState<Bug | null>(null);
+  const [loadingRemote, setLoadingRemote] = useState(false);
+
+  useEffect(() => {
+    const bugId = String(params.id || "");
+    if (!bugId || contextBug || !token) {
+      return;
+    }
+
+    let active = true;
+    setLoadingRemote(true);
+
+    fetchBugById(bugId, token)
+      .then((raw) => {
+        if (!active) {
+          return;
+        }
+
+        const description = String(raw.bug_description || raw.description || "No details provided").trim();
+        const fallbackName = String(raw.bug_name || raw.issue_type || raw.failed_step_name || raw.failed_step || raw.title || "General Issue").trim();
+        const mapped: Bug = {
+          id: String(raw.bug_id || bugId),
+          title: truncateText(fallbackName || "General Issue", 50),
+          bug_name: truncateText(fallbackName || "General Issue", 50),
+          description,
+          bug_description: description,
+          severity: (raw.severity as Bug["severity"]) || "medium",
+          status: (raw.status as Bug["status"]) || "open",
+          url: String(raw.url || ""),
+          createdAt: String(raw.created_at || new Date().toISOString()),
+          steps: [],
+          test_id: raw.test_id,
+          test_name: raw.test_name,
+        };
+        setRemoteBug(mapped);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch bug detail by id:", error);
+      })
+      .finally(() => {
+        if (active) {
+          setLoadingRemote(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [params.id, contextBug, token]);
+
+  const bug = contextBug ?? remoteBug;
+
+  if (!bug && loadingRemote) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <p className="text-slate-400 text-sm">Loading bug details...</p>
+      </div>
+    );
+  }
 
   if (!bug) {
     return (
@@ -45,7 +110,7 @@ export default function BugDetailPage() {
   return (
     <>
       {/* ── Top breadcrumb + title header ── */}
-      <Header title={bug.title}>
+      <Header title={bug.bug_name || bug.title}>
         {/* badges */}
         <span className={`hidden sm:inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${severityBadge}`}>
           <AlertTriangle className="h-3 w-3" />
@@ -72,8 +137,6 @@ export default function BugDetailPage() {
 
       {/* ── breadcrumb ── */}
       <div className="px-6 pt-1 pb-3 flex items-center gap-1.5 text-xs text-slate-400">
-        <span className="text-blue-500 font-mono font-medium">{bug.id}</span>
-        <span>·</span>
         <a
           href={bug.url}
           target="_blank"

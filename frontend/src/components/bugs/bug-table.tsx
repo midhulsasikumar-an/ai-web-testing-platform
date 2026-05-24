@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { Bug } from "@/types";
 import { formatDate } from "@/lib/formatters";
+import { truncateText } from "@/lib/test-display";
 import {
   Globe, AlertCircle, CheckCircle2, RefreshCw,
   Search, Eye, Plus, ChevronDown,
@@ -102,7 +103,10 @@ export function BugTable({ bugs }: BugTableProps) {
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (b) => b.title.toLowerCase().includes(q) || extractDomain(b.url).includes(q)
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          (b.description || "").toLowerCase().includes(q) ||
+          extractDomain(b.url).includes(q)
       );
     }
     if (filter === "Open")     result = result.filter((b) => b.status === "open" || b.status === "in-progress");
@@ -298,7 +302,7 @@ export function BugTable({ bugs }: BugTableProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/60">
-                    <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500">Bug Title</th>
+                    <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500">Bug Name</th>
                     <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 w-28">Severity</th>
                     <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 w-28">Status</th>
                     <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 w-36">Date Detected</th>
@@ -313,7 +317,7 @@ export function BugTable({ bugs }: BugTableProps) {
                           href={`/bugs/${bug.id}`}
                           className="font-medium text-slate-800 hover:text-blue-600 hover:underline transition-colors line-clamp-1"
                         >
-                          {bug.title}
+                          {truncateText(bug.bug_name || bug.title, 50)}
                         </Link>
                       </td>
                       <td className="px-4 py-3.5">

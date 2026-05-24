@@ -2,43 +2,48 @@
 
 import { Header } from "@/components/layout/header";
 import { Play, Link as LinkIcon, BrainCircuit, Verified, Bot } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AIChatPanel from "@/components/ai-chat-panel/AIChatPanel";
 import { startTest, getTestById, TestApiResponse, AIPlanResponse } from "@/services/test-api";
 import { useAuth } from "@/context/auth-context";
 
+type FormErrors = {
+  targetUrl?: string;
+  testName?: string;
+  goal?: string;
+};
+
+function readLatestCopilotGoal(panelRoot: HTMLDivElement | null): string {
+  if (!panelRoot) {
+    return "";
+  }
+
+  const typedInput = panelRoot.querySelector('input[placeholder*="Ask AI about"]') as HTMLInputElement | null;
+  const typedGoal = typedInput?.value?.trim() ?? "";
+  if (typedGoal) {
+    return typedGoal;
+  }
+
+  const userMessages = Array.from(panelRoot.querySelectorAll("div.bg-blue-600.text-white")) as HTMLElement[];
+  const lastMessage = userMessages[userMessages.length - 1];
+  return lastMessage?.textContent?.trim() ?? "";
+}
+
 export default function RunTestPage() {
-  // Top controls state
   const [targetUrl, setTargetUrl] = useState("");
-  const [browser, setBrowser] = useState("Chrome (Headless)");
-  const [device, setDevice] = useState("Desktop 1080p");
-  const [testType, setTestType] = useState("AI Generated Test");
+  const [testName, setTestName] = useState("");
   const [aiPlan, setAiPlan] = useState<AIPlanResponse | null>(null);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   useAuth();
 
-  // Live test state
   const [testId, setTestId] = useState<string | null>(null);
   const [testData, setTestData] = useState<TestApiResponse | null>(null);
   const [running, setRunning] = useState(false);
-  // start polling when testId changes
   useTestPolling(testId, setTestData, setRunning);
 
-
-
-  // AI panel visibility
   const [aiPanelOpen, setAiPanelOpen] = useState(true);
+  const aiPanelHostRef = useRef<HTMLDivElement | null>(null);
 
-  // Supported test types
-  const TEST_TYPES = [
-    "AI Generated Test",
-    "Regression Test",
-    "Accessibility Test",
-    "Login Test",
-    "Smoke Test",
-    "Custom Test",
-  ];
-
-  // Derived logs from backend results or live backend stream logs
   const results = (testData?.results ?? []) as Array<Record<string, unknown>>;
   const streamLogs = testData?.stream_logs ?? [];
   const terminalLogs = streamLogs.length > 0
@@ -55,82 +60,96 @@ export default function RunTestPage() {
     color: (r['status'] === 'fail') ? 'text-red-400' : 'text-blue-400',
     }));
 
-  const activePlan = testType === 'AI Generated Test' ? (aiPlan ?? testData?.ai_plan ?? null) : null;
+  const activePlan = aiPlan ?? testData?.ai_plan ?? null;
 
   const handlePlanGenerated = (plan: AIPlanResponse) => {
     setAiPlan(plan);
   };
 
   const runTest = async () => {
-    if (!targetUrl) {
-      alert('Please enter a target URL');
+    const nextErrors: FormErrors = {};
+    const normalizedUrl = targetUrl.trim();
+    const normalizedTestName = testName.trim();
+    const goal = readLatestCopilotGoal(aiPanelHostRef.current);
+
+    if (!normalizedUrl) {
+      nextErrors.targetUrl = "Target URL is required.";
+    }
+
+    if (!normalizedTestName) {
+      nextErrors.testName = "Test Name is required.";
+    }
+
+    if (!goal) {
+      nextErrors.goal = "Add the test goal in AI Copilot first.";
+    }
+
+    setFormErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
     try {
       setRunning(true);
+      setFormErrors({});
       setTestData(null);
       setTestId(null);
-      if (testType === 'AI Generated Test') {
-        if (!activePlan) {
-          alert('Ask the AI Copilot to generate a plan before running AI tests.');
-          setRunning(false);
-          return;
-        }
-        const res = await startTest(targetUrl, 'default', testType, activePlan);
-        setTestId(res.test_id);
-        return;
-      }
-
-      const res = await startTest(targetUrl, 'default', testType);
+      const res = await startTest({
+        url: normalizedUrl,
+        testName: normalizedTestName,
+        goal,
+        aiPlan: activePlan,
+      });
       setTestId(res.test_id);
     } catch (error) {
       console.error('Failed to start test', error);
       setRunning(false);
-      alert('Failed to start test. See console for details.');
+      setFormErrors((current) => ({
+        ...current,
+        goal: error instanceof Error ? error.message : 'Failed to start the test.',
+      }));
     }
   };
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen flex flex-col relative overflow-hidden">
-      <Header title="Workspace Controls">
-        <button className="h-8 px-3 rounded-md border border-slate-300 bg-white text-blue-600 text-[12px] font-bold hover:border-blue-500 transition-colors">
-          Deploy AI
-        </button>
-      </Header>
+      <Header title="Run Test" />
 
       <div className="flex-1 flex gap-4 max-w-[1440px] mx-auto w-full px-4 py-4">
         {/* Left / Main Workspace */}
         <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
-          {/* Top configuration bar */}
-          <section className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl p-3 flex flex-col md:flex-row gap-3 shadow-sm">
+          <section className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl p-4 grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] gap-3 lg:gap-4 items-center shadow-sm">
             <div className="relative flex-1 flex items-center">
               <LinkIcon className="absolute left-2 h-4 w-4 text-slate-400" />
-              <input
-                type="url"
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                className="w-full bg-slate-50 border-b-2 border-slate-200 focus:border-blue-600 focus:bg-white py-2 pl-8 pr-3 text-sm text-slate-900 outline-none rounded-t"
-                placeholder="Enter target URL"
-              />
+              <div className="w-full">
+                <input
+                  type="url"
+                  value={targetUrl}
+                  onChange={(e) => setTargetUrl(e.target.value)}
+                  className={`w-full h-10 bg-slate-50 border-b-2 ${formErrors.targetUrl ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-blue-600'} focus:bg-white py-2 pl-8 pr-3 text-sm text-slate-900 outline-none rounded-t`}
+                  placeholder="Enter target URL"
+                />
+                {formErrors.targetUrl ? <p className="mt-1 text-xs text-red-600">{formErrors.targetUrl}</p> : null}
+              </div>
             </div>
-            <select value={browser} onChange={(e) => setBrowser(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-sm text-slate-700 focus:border-blue-600 outline-none">
-              <option>Chrome (Headless)</option>
-              <option>Firefox</option>
-              <option>Safari</option>
-            </select>
-            <select value={device} onChange={(e) => setDevice(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-sm text-slate-700 focus:border-blue-600 outline-none">
-              <option>Desktop 1080p</option>
-              <option>Mobile iOS</option>
-              <option>Tablet Android</option>
-            </select>
-            <select value={testType} onChange={(e) => setTestType(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-sm text-slate-700 focus:border-blue-600 outline-none">
-              {TEST_TYPES.map(t => <option key={t}>{t}</option>)}
-            </select>
-            <button onClick={runTest} disabled={running} className="bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:opacity-60 disabled:hover:scale-100 text-white text-sm font-medium px-4 py-1 rounded-md flex items-center gap-1 shadow-[0_2px_6px_rgba(37,99,235,0.25)] transition-transform hover:scale-105">
-              <Play className="h-4 w-4" />
-              {running ? 'Running...' : 'Run Test'}
-            </button>
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
+                className={`w-full h-10 bg-slate-50 border-b-2 ${formErrors.testName ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-blue-600'} focus:bg-white py-2 px-3 text-sm text-slate-900 outline-none rounded-t`}
+                placeholder="Enter test name..."
+              />
+              {formErrors.testName ? <p className="text-xs text-red-600">{formErrors.testName}</p> : null}
+            </div>
+            <div className="flex flex-col items-stretch justify-center gap-1">
+              <button onClick={runTest} disabled={running} className="h-10 bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:opacity-60 disabled:hover:scale-100 text-white text-sm font-medium px-5 rounded-md flex items-center justify-center gap-1 shadow-[0_2px_6px_rgba(37,99,235,0.25)] transition-transform hover:scale-105 whitespace-nowrap">
+                <Play className="h-4 w-4" />
+                {running ? 'Running...' : 'Run Test'}
+              </button>
+              {formErrors.goal ? <p className="text-xs text-red-600 max-w-xs">{formErrors.goal}</p> : null}
+            </div>
           </section>
 
           {/* Test Plan */}
@@ -223,12 +242,12 @@ export default function RunTestPage() {
         </div>
 
         {/* Right AI Copilot Panel */}
-        <div className="relative border-l border-slate-200 pl-2">
+        <div ref={aiPanelHostRef} className="relative border-l border-slate-200 pl-2">
           <AIChatPanel
             open={aiPanelOpen}
             setOpen={setAiPanelOpen}
             targetUrl={targetUrl}
-            testType={testType}
+            testType="AI Generated Test"
             testData={testData}
             onPlanGenerated={handlePlanGenerated}
           />

@@ -1,0 +1,979 @@
+{
+  "execution_id": "0c806f2f-819c-4fb1-8d95-aff99f1bd980",
+  "user_id": "268e5ea4-9b33-4df7-8c73-4ba11c5011f1",
+  "screenshots": [
+    "artifacts/0c806f2f-819c-4fb1-8d95-aff99f1bd980/initial.png"
+  ],
+  "console_logs": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[HMR] connected"
+    },
+    {
+      "type": "info",
+      "text": "[auth] No stored session found. Starting as unauthenticated."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[HMR] connected"
+    },
+    {
+      "type": "info",
+      "text": "[auth] No stored session found. Starting as unauthenticated."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[HMR] connected"
+    },
+    {
+      "type": "info",
+      "text": "[auth] No stored session found. Starting as unauthenticated."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[HMR] connected"
+    },
+    {
+      "type": "info",
+      "text": "[auth] No stored session found. Starting as unauthenticated."
+    }
+  ],
+  "network_logs": [
+    {
+      "url": "http://localhost:3000/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://localhost:3000/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://localhost:3000/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://localhost:3000/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/?",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "http://localhost:3000/?",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rqeker._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_0nl_y25._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_02e1eih._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_layout_tsx_004glpo._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/_0rea2gl._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js",
+      "status": 304,
+      "ok": false
+    },
+    {
+      "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "dom_snapshots": [
+    "<!DOCTYPE html><html lang=\"en\" class=\"inter_786c1081-module__J60SBq__variable geist_mono_8d43a2aa-module__8Li5zG__variable h-full antialiased\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\" data-precedence=\"next_static/chunks/[root-of-the-server]__13des5y._.css\"><link rel=\"preload\" as=\"script\" fetchpriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js\"><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_115brz8._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js\" async=\"\"></script><script src=\"/_next/static/chunks/_0rqeker._.js\" async=\"\"></script><script src=\"/_next/static/chunks/turbopack-_0p44nws._.js\" async=\"\"></script><script src=\"/_next/static/chunks/src_0nl_y25._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_02e1eih._.js\" async=\"\"></script><script src=\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\" async=\"\"></script><script src=\"/_next/static/chunks/_0rea2gl._.js\" async=\"\"></script><script src=\"/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js\" async=\"\"></script><meta name=\"next-size-adjust\" content=\"\"><title>SignalTrack \u2014 AI Bug Tracking Dashboard</title><meta name=\"description\" content=\"AI-powered testing and bug tracking platform. Run automated probes, track bugs, and monitor system health with the Precision QA System.\"><link rel=\"icon\" href=\"/favicon.ico?favicon.0x3dzn~oxb6tn.ico\" sizes=\"256x256\" type=\"image/x-icon\"><script src=\"/_next/static/chunks/node_modules_next_dist_build_polyfills_polyfill-nomodule.js\" nomodule=\"\"></script></head><body class=\"min-h-full\"><div hidden=\"\"><!--$--><!--/$--></div><div class=\"min-h-screen flex items-center justify-center text-sm text-muted-foreground\">Loading session...</div><script id=\"_R_\">self.__next_r=\"-7c6FKkCJvBkBIrPqV6dP\"</script><script src=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js\" async=\"\"></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1f:I[\\\"[project]/src/components/layout/client-shell.tsx [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"ClientShell\\\"]\\n21:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n23:I[\\\"[project]/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n37:I[\\\"[project]/node_modules/next/dist/client/components/client-page.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"ClientPageRoot\\\"]\\n38:I[\\\"[project]/src/app/page.tsx [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\",\\\"/_next/static/chunks/_0rea2gl._.js\\\",\\\"/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js\\\"],\\\"default\\\"]\\n40:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"OutletBoundary\\\"]\\n42:\\\"$Sreact.suspense\\\"\\n4f:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"ViewportBoundary\\\"]\\n59:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"MetadataBoundary\\\"]\\n60:I[\\\"[project]/node_modules/next/dist/client/components/builtin/global-error.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\",\\\"/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js\\\"],\\\"default\\\",1]\\n6c:I[\\\"[project]/node_modules/next/dist/lib/metadata/generate/icon-mark.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"IconMark\\\"]\\n:HL[\\\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\\\",\\\"style\\\"]\\n:HL[\\\"/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2\\\",\\\"font\\\",{\\\"crossOrigin\\\":\\\"\\\",\\\"type\\\":\\\"font/woff2\\\"}]\\n:HL[\\\"/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2\\\",\\\"font\\\",{\\\"crossOrigin\\\":\\\"\\\",\\\"type\\\":\\\"font/woff2\\\"}]\\n1:D\\\"$6\\\"\\n1:D\\\"$2\\\"\\n1:D\\\"$7\\\"\\n1:null\\n10:D\\\"$1a\\\"\\n10:D\\\"$11\\\"\\n10:D\\\"$1c\\\"\\n25:D\\\"$27\\\"\\n25:D\\\"$26\\\"\\n25:D\\\"$29\\\"\\n25:D\\\"$28\\\"\\n25:D\\\"$2a\\\"\\n25:[[\\\"$\\\",\\\"title\\\",null,{\\\"children\\\":\\\"404: This page could not be found.\\\"},\\\"$28\\\",\\\"$2b\\\",1],[\\\"$\\\",\\\"div\\\",null,{\\\"style\\\":{\\\"fontFamily\\\":\\\"system-ui,\\\\\\\"Segoe UI\\\\\\\",Roboto,Helvetica,Arial,sans-serif,\\\\\\\"Apple Color Emoji\\\\\\\",\\\\\\\"Segoe UI Emoji\\\\\\\"\\\",\\\"height\\\":\\\"100vh\\\",\\\"textAlign\\\":\\\"center\\\",\\\"display\\\":\\\"flex\\\",\\\"flexDirection\\\":\\\"column\\\",\\\"alignItems\\\":\\\"center\\\",\\\"justifyContent\\\":\\\"center\\\"},\\\"children\\\":[\\\"$\\\",\\\"div\\\",null,{\\\"children\\\":[[\\\"$\\\",\\\"style\\\",null,{\\\"dangerouslySetInnerHTML\\\":{\\\"__html\\\":\\\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body\"])</script><script>self.__next_f.push([1,\"{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\\\"}},\\\"$28\\\",\\\"$2e\\\",1],[\\\"$\\\",\\\"h1\\\",null,{\\\"className\\\":\\\"next-error-h1\\\",\\\"style\\\":{\\\"display\\\":\\\"inline-block\\\",\\\"margin\\\":\\\"0 20px 0 0\\\",\\\"padding\\\":\\\"0 23px 0 0\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":500,\\\"verticalAlign\\\":\\\"top\\\",\\\"lineHeight\\\":\\\"49px\\\"},\\\"children\\\":404},\\\"$28\\\",\\\"$2f\\\",1],[\\\"$\\\",\\\"div\\\",null,{\\\"style\\\":{\\\"display\\\":\\\"inline-block\\\"},\\\"children\\\":[\\\"$\\\",\\\"h2\\\",null,{\\\"style\\\":{\\\"fontSize\\\":14,\\\"fontWeight\\\":400,\\\"lineHeight\\\":\\\"49px\\\",\\\"margin\\\":0},\\\"children\\\":\\\"This page could not be found.\\\"},\\\"$28\\\",\\\"$31\\\",1]},\\\"$28\\\",\\\"$30\\\",1]]},\\\"$28\\\",\\\"$2d\\\",1]},\\\"$28\\\",\\\"$2c\\\",1]]\\n10:[\\\"$\\\",\\\"html\\\",null,{\\\"lang\\\":\\\"en\\\",\\\"className\\\":\\\"inter_786c1081-module__J60SBq__variable geist_mono_8d43a2aa-module__8Li5zG__variable h-full antialiased\\\",\\\"children\\\":[\\\"$\\\",\\\"body\\\",null,{\\\"className\\\":\\\"min-h-full\\\",\\\"children\\\":[\\\"$\\\",\\\"$L1f\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$L21\\\",null,{\\\"parallelRouterKey\\\":\\\"children\\\",\\\"error\\\":\\\"$undefined\\\",\\\"errorStyles\\\":\\\"$undefined\\\",\\\"errorScripts\\\":\\\"$undefined\\\",\\\"template\\\":[\\\"$\\\",\\\"$L23\\\",null,{},null,\\\"$22\\\",1],\\\"templateStyles\\\":\\\"$undefined\\\",\\\"templateScripts\\\":\\\"$undefined\\\",\\\"notFound\\\":[\\\"$\\\",\\\"$L9\\\",\\\"c-not-found\\\",{\\\"type\\\":\\\"not-found\\\",\\\"pagePath\\\":\\\"__next_builtin__not-found.js\\\",\\\"children\\\":[\\\"$25\\\",[]]},null,\\\"$24\\\",0],\\\"forbidden\\\":\\\"$undefined\\\",\\\"unauthorized\\\":\\\"$undefined\\\",\\\"segmentViewBoundaries\\\":[[\\\"$\\\",\\\"$L9\\\",null,{\\\"type\\\":\\\"boundary:not-found\\\",\\\"pagePath\\\":\\\"__next_builtin__not-found.js@boundary\\\"},null,\\\"$32\\\",1],\\\"$undefined\\\",\\\"$undefined\\\",[\\\"$\\\",\\\"$L9\\\",null,{\\\"type\\\":\\\"boundary:global-error\\\",\\\"pagePath\\\":\\\"__next_builtin__global-error.js\\\"},null,\\\"$33\\\",1]]},null,\\\"$20\\\",1]},\\\"$11\\\",\\\"$1e\\\",1]},\\\"$11\\\",\\\"$1d\\\",1]},\\\"$11\\\",\\\"$1b\\\",1]\\n3b:D\\\"$3d\\\"\\n3b:D\\\"$3c\\\"\\n3b:D\\\"$3f\\\"\\n3b:[\\\"$\\\",\\\"$L40\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$42\\\",null,{\\\"name\\\":\\\"Next.MetadataOutlet\\\",\\\"children\\\":\\\"$@43\\\"},\\\"$3c\\\",\\\"$41\\\",1]},\\\"$3c\\\",\\\"$3e\\\",1]\\n45:D\\\"$48\\\"\\n45:D\\\"$46\\\"\\n45:D\\\"$49\\\"\\n45:null\\n4a:D\\\"$4c\\\"\\n4a:D\\\"$4b\\\"\\n4a:D\\\"$4e\\\"\\n50:D\\\"$52\\\"\\n50:D\\\"$51\\\"\\n4a:[\\\"$\\\",\\\"$L4f\\\",null,{\\\"children\\\":\\\"$L50\\\"},\\\"$4b\\\",\\\"$4d\\\",1]\\n53:D\\\"$55\\\"\\n53:D\\\"$54\\\"\\n53:D\\\"$57\\\"\\n5b:D\\\"$5d\\\"\\n5b:D\\\"$5c\\\"\\n53:[\\\"$\\\",\\\"div\\\",null,{\\\"hidden\\\":true,\\\"children\\\":[\\\"$\\\",\\\"$L59\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$42\\\",null,{\\\"name\\\":\\\"Next.Metadata\\\",\\\"children\\\":\\\"$L5b\\\"},\\\"$54\\\",\\\"$5a\\\",1]},\\\"$54\\\",\\\"$58\\\",1]},\\\"$54\\\",\\\"$56\\\",1]\\n5f:[]\\n\"])</script><script>self.__next_f.push([1,\"0:{\\\"P\\\":\\\"$1\\\",\\\"c\\\":[\\\"\\\",\\\"\\\"],\\\"q\\\":\\\"\\\",\\\"i\\\":true,\\\"f\\\":[[[\\\"\\\",{\\\"children\\\":[\\\"__PAGE__\\\",{}]},\\\"$undefined\\\",\\\"$undefined\\\",16],[[\\\"$\\\",\\\"$L9\\\",\\\"layout\\\",{\\\"type\\\":\\\"layout\\\",\\\"pagePath\\\":\\\"layout.tsx\\\",\\\"children\\\":[\\\"$\\\",\\\"$b\\\",\\\"c\\\",{\\\"children\\\":[[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\\\",\\\"precedence\\\":\\\"next_static/chunks/[root-of-the-server]__13des5y._.css\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$c\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$d\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$e\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-2\\\",{\\\"src\\\":\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$f\\\",0]],\\\"$10\\\"]},null,\\\"$a\\\",1]},null,\\\"$8\\\",0],{\\\"children\\\":[[\\\"$\\\",\\\"$b\\\",\\\"c\\\",{\\\"children\\\":[[\\\"$\\\",\\\"$L9\\\",\\\"c-page\\\",{\\\"type\\\":\\\"page\\\",\\\"pagePath\\\":\\\"page.tsx\\\",\\\"children\\\":[\\\"$\\\",\\\"$L37\\\",null,{\\\"Component\\\":\\\"$38\\\",\\\"serverProvidedParams\\\":{\\\"searchParams\\\":{},\\\"params\\\":{},\\\"promises\\\":null}},null,\\\"$36\\\",1]},null,\\\"$35\\\",1],[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/_0rea2gl._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$39\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$3a\\\",0]],\\\"$3b\\\"]},null,\\\"$34\\\",0],{},null,false,null]},null,false,null],[\\\"$\\\",\\\"$b\\\",\\\"h\\\",{\\\"children\\\":[\\\"$45\\\",\\\"$4a\\\",\\\"$53\\\",[\\\"$\\\",\\\"meta\\\",null,{\\\"name\\\":\\\"next-size-adjust\\\",\\\"content\\\":\\\"\\\"},null,\\\"$5e\\\",1]]},null,\\\"$44\\\",0],false]],\\\"m\\\":\\\"$W5f\\\",\\\"G\\\":[\\\"$60\\\",[\\\"$\\\",\\\"$L9\\\",\\\"ge-svn\\\",{\\\"type\\\":\\\"global-error\\\",\\\"pagePath\\\":\\\"__next_builtin__global-error.js\\\",\\\"children\\\":[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\\\",\\\"precedence\\\":\\\"next_static/chunks/[root-of-the-server]__13des5y._.css\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$62\\\",0]]},null,\\\"$61\\\",0]],\\\"S\\\":false,\\\"h\\\":null,\\\"s\\\":\\\"$undefined\\\",\\\"l\\\":\\\"$undefined\\\",\\\"p\\\":\\\"$undefined\\\",\\\"d\\\":\\\"$undefined\\\",\\\"b\\\":\\\"development\\\"}\\n\"])</script><script>self.__next_f.push([1,\"50:D\\\"$63\\\"\\n50:[[\\\"$\\\",\\\"meta\\\",\\\"0\\\",{\\\"charSet\\\":\\\"utf-8\\\"},\\\"$3c\\\",\\\"$64\\\",0],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"viewport\\\",\\\"content\\\":\\\"width=device-width, initial-scale=1\\\"},\\\"$3c\\\",\\\"$65\\\",0]]\\n43:D\\\"$66\\\"\\n43:null\\n5b:D\\\"$67\\\"\\n5b:[[\\\"$\\\",\\\"title\\\",\\\"0\\\",{\\\"children\\\":\\\"SignalTrack \u2014 AI Bug Tracking Dashboard\\\"},\\\"$3c\\\",\\\"$68\\\",0],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"description\\\",\\\"content\\\":\\\"AI-powered testing and bug tracking platform. Run automated probes, track bugs, and monitor system health with the Precision QA System.\\\"},\\\"$3c\\\",\\\"$69\\\",0],[\\\"$\\\",\\\"link\\\",\\\"2\\\",{\\\"rel\\\":\\\"icon\\\",\\\"href\\\":\\\"/favicon.ico?favicon.0x3dzn~oxb6tn.ico\\\",\\\"sizes\\\":\\\"256x256\\\",\\\"type\\\":\\\"image/x-icon\\\"},\\\"$3c\\\",\\\"$6a\\\",0],[\\\"$\\\",\\\"$L6c\\\",\\\"3\\\",{},\\\"$3c\\\",\\\"$6b\\\",0]]\\n\"])</script></body></html>",
+    "<!DOCTYPE html><html lang=\"en\" class=\"inter_786c1081-module__J60SBq__variable geist_mono_8d43a2aa-module__8Li5zG__variable h-full antialiased\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\" data-precedence=\"next_static/chunks/[root-of-the-server]__13des5y._.css\"><link rel=\"preload\" as=\"script\" fetchpriority=\"low\" href=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js\"><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_0553esy.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_0p3wegg._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_115brz8._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_%40swc_helpers_cjs_0-4ujiy._.js\" async=\"\"></script><script src=\"/_next/static/chunks/_0rqeker._.js\" async=\"\"></script><script src=\"/_next/static/chunks/turbopack-_0p44nws._.js\" async=\"\"></script><script src=\"/_next/static/chunks/src_0nl_y25._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_02e1eih._.js\" async=\"\"></script><script src=\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\" async=\"\"></script><script src=\"/_next/static/chunks/_0rea2gl._.js\" async=\"\"></script><script src=\"/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js\" async=\"\"></script><script src=\"/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js\" async=\"\"></script><meta name=\"next-size-adjust\" content=\"\"><title>SignalTrack \u2014 AI Bug Tracking Dashboard</title><meta name=\"description\" content=\"AI-powered testing and bug tracking platform. Run automated probes, track bugs, and monitor system health with the Precision QA System.\"><link rel=\"icon\" href=\"/favicon.ico?favicon.0x3dzn~oxb6tn.ico\" sizes=\"256x256\" type=\"image/x-icon\"><script src=\"/_next/static/chunks/node_modules_next_dist_build_polyfills_polyfill-nomodule.js\" nomodule=\"\"></script><script src=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_0yjw1oe._.js\"></script><script src=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10mygs7._.js\"></script><link rel=\"preload\" href=\"/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2\" as=\"font\" crossorigin=\"\" type=\"font/woff2\"><link rel=\"preload\" href=\"/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2\" as=\"font\" crossorigin=\"\" type=\"font/woff2\"><style>@font-face{font-family:'__nextjs-Geist';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'__nextjs-Geist Mono';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-mono-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'__nextjs-Geist';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'__nextjs-Geist Mono';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style></head><body class=\"min-h-full\"><div hidden=\"\"><!--$--><!--/$--></div><script id=\"_R_\">self.__next_r=\"GYea1Yi_1-aj6UEb833l1\"</script><script src=\"/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_10z625~._.js\" async=\"\"></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1f:I[\\\"[project]/src/components/layout/client-shell.tsx [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"ClientShell\\\"]\\n21:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n23:I[\\\"[project]/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n37:I[\\\"[project]/node_modules/next/dist/client/components/client-page.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"ClientPageRoot\\\"]\\n38:I[\\\"[project]/src/app/page.tsx [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\",\\\"/_next/static/chunks/_0rea2gl._.js\\\",\\\"/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js\\\"],\\\"default\\\"]\\n40:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"OutletBoundary\\\"]\\n42:\\\"$Sreact.suspense\\\"\\n4f:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"ViewportBoundary\\\"]\\n59:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"MetadataBoundary\\\"]\\n60:I[\\\"[project]/node_modules/next/dist/client/components/builtin/global-error.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\",\\\"/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_0rfpy-m.js\\\"],\\\"default\\\",1]\\n6c:I[\\\"[project]/node_modules/next/dist/lib/metadata/generate/icon-mark.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"IconMark\\\"]\\n:HL[\\\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\\\",\\\"style\\\"]\\n:HL[\\\"/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2\\\",\\\"font\\\",{\\\"crossOrigin\\\":\\\"\\\",\\\"type\\\":\\\"font/woff2\\\"}]\\n:HL[\\\"/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2\\\",\\\"font\\\",{\\\"crossOrigin\\\":\\\"\\\",\\\"type\\\":\\\"font/woff2\\\"}]\\n1:D\\\"$6\\\"\\n1:D\\\"$2\\\"\\n1:D\\\"$7\\\"\\n1:null\\n10:D\\\"$1a\\\"\\n10:D\\\"$11\\\"\\n10:D\\\"$1c\\\"\\n25:D\\\"$27\\\"\\n25:D\\\"$26\\\"\\n25:D\\\"$29\\\"\\n25:D\\\"$28\\\"\\n25:D\\\"$2a\\\"\\n25:[[\\\"$\\\",\\\"title\\\",null,{\\\"children\\\":\\\"404: This page could not be found.\\\"},\\\"$28\\\",\\\"$2b\\\",1],[\\\"$\\\",\\\"div\\\",null,{\\\"style\\\":{\\\"fontFamily\\\":\\\"system-ui,\\\\\\\"Segoe UI\\\\\\\",Roboto,Helvetica,Arial,sans-serif,\\\\\\\"Apple Color Emoji\\\\\\\",\\\\\\\"Segoe UI Emoji\\\\\\\"\\\",\\\"height\\\":\\\"100vh\\\",\\\"textAlign\\\":\\\"center\\\",\\\"display\\\":\\\"flex\\\",\\\"flexDirection\\\":\\\"column\\\",\\\"alignItems\\\":\\\"center\\\",\\\"justifyContent\\\":\\\"center\\\"},\\\"children\\\":[\\\"$\\\",\\\"div\\\",null,{\\\"children\\\":[[\\\"$\\\",\\\"style\\\",null,{\\\"dangerouslySetInnerHTML\\\":{\\\"__html\\\":\\\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body\"])</script><script>self.__next_f.push([1,\"{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\\\"}},\\\"$28\\\",\\\"$2e\\\",1],[\\\"$\\\",\\\"h1\\\",null,{\\\"className\\\":\\\"next-error-h1\\\",\\\"style\\\":{\\\"display\\\":\\\"inline-block\\\",\\\"margin\\\":\\\"0 20px 0 0\\\",\\\"padding\\\":\\\"0 23px 0 0\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":500,\\\"verticalAlign\\\":\\\"top\\\",\\\"lineHeight\\\":\\\"49px\\\"},\\\"children\\\":404},\\\"$28\\\",\\\"$2f\\\",1],[\\\"$\\\",\\\"div\\\",null,{\\\"style\\\":{\\\"display\\\":\\\"inline-block\\\"},\\\"children\\\":[\\\"$\\\",\\\"h2\\\",null,{\\\"style\\\":{\\\"fontSize\\\":14,\\\"fontWeight\\\":400,\\\"lineHeight\\\":\\\"49px\\\",\\\"margin\\\":0},\\\"children\\\":\\\"This page could not be found.\\\"},\\\"$28\\\",\\\"$31\\\",1]},\\\"$28\\\",\\\"$30\\\",1]]},\\\"$28\\\",\\\"$2d\\\",1]},\\\"$28\\\",\\\"$2c\\\",1]]\\n10:[\\\"$\\\",\\\"html\\\",null,{\\\"lang\\\":\\\"en\\\",\\\"className\\\":\\\"inter_786c1081-module__J60SBq__variable geist_mono_8d43a2aa-module__8Li5zG__variable h-full antialiased\\\",\\\"children\\\":[\\\"$\\\",\\\"body\\\",null,{\\\"className\\\":\\\"min-h-full\\\",\\\"children\\\":[\\\"$\\\",\\\"$L1f\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$L21\\\",null,{\\\"parallelRouterKey\\\":\\\"children\\\",\\\"error\\\":\\\"$undefined\\\",\\\"errorStyles\\\":\\\"$undefined\\\",\\\"errorScripts\\\":\\\"$undefined\\\",\\\"template\\\":[\\\"$\\\",\\\"$L23\\\",null,{},null,\\\"$22\\\",1],\\\"templateStyles\\\":\\\"$undefined\\\",\\\"templateScripts\\\":\\\"$undefined\\\",\\\"notFound\\\":[\\\"$\\\",\\\"$L9\\\",\\\"c-not-found\\\",{\\\"type\\\":\\\"not-found\\\",\\\"pagePath\\\":\\\"__next_builtin__not-found.js\\\",\\\"children\\\":[\\\"$25\\\",[]]},null,\\\"$24\\\",0],\\\"forbidden\\\":\\\"$undefined\\\",\\\"unauthorized\\\":\\\"$undefined\\\",\\\"segmentViewBoundaries\\\":[[\\\"$\\\",\\\"$L9\\\",null,{\\\"type\\\":\\\"boundary:not-found\\\",\\\"pagePath\\\":\\\"__next_builtin__not-found.js@boundary\\\"},null,\\\"$32\\\",1],\\\"$undefined\\\",\\\"$undefined\\\",[\\\"$\\\",\\\"$L9\\\",null,{\\\"type\\\":\\\"boundary:global-error\\\",\\\"pagePath\\\":\\\"__next_builtin__global-error.js\\\"},null,\\\"$33\\\",1]]},null,\\\"$20\\\",1]},\\\"$11\\\",\\\"$1e\\\",1]},\\\"$11\\\",\\\"$1d\\\",1]},\\\"$11\\\",\\\"$1b\\\",1]\\n3b:D\\\"$3d\\\"\\n3b:D\\\"$3c\\\"\\n3b:D\\\"$3f\\\"\\n3b:[\\\"$\\\",\\\"$L40\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$42\\\",null,{\\\"name\\\":\\\"Next.MetadataOutlet\\\",\\\"children\\\":\\\"$@43\\\"},\\\"$3c\\\",\\\"$41\\\",1]},\\\"$3c\\\",\\\"$3e\\\",1]\\n45:D\\\"$48\\\"\\n45:D\\\"$46\\\"\\n45:D\\\"$49\\\"\\n45:null\\n4a:D\\\"$4c\\\"\\n4a:D\\\"$4b\\\"\\n4a:D\\\"$4e\\\"\\n50:D\\\"$52\\\"\\n50:D\\\"$51\\\"\\n4a:[\\\"$\\\",\\\"$L4f\\\",null,{\\\"children\\\":\\\"$L50\\\"},\\\"$4b\\\",\\\"$4d\\\",1]\\n53:D\\\"$55\\\"\\n53:D\\\"$54\\\"\\n53:D\\\"$57\\\"\\n5b:D\\\"$5d\\\"\\n5b:D\\\"$5c\\\"\\n53:[\\\"$\\\",\\\"div\\\",null,{\\\"hidden\\\":true,\\\"children\\\":[\\\"$\\\",\\\"$L59\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$42\\\",null,{\\\"name\\\":\\\"Next.Metadata\\\",\\\"children\\\":\\\"$L5b\\\"},\\\"$54\\\",\\\"$5a\\\",1]},\\\"$54\\\",\\\"$58\\\",1]},\\\"$54\\\",\\\"$56\\\",1]\\n5f:[]\\n\"])</script><script>self.__next_f.push([1,\"0:{\\\"P\\\":\\\"$1\\\",\\\"c\\\":[\\\"\\\",\\\"\\\"],\\\"q\\\":\\\"\\\",\\\"i\\\":true,\\\"f\\\":[[[\\\"\\\",{\\\"children\\\":[\\\"__PAGE__\\\",{}]},\\\"$undefined\\\",\\\"$undefined\\\",16],[[\\\"$\\\",\\\"$L9\\\",\\\"layout\\\",{\\\"type\\\":\\\"layout\\\",\\\"pagePath\\\":\\\"layout.tsx\\\",\\\"children\\\":[\\\"$\\\",\\\"$b\\\",\\\"c\\\",{\\\"children\\\":[[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\\\",\\\"precedence\\\":\\\"next_static/chunks/[root-of-the-server]__13des5y._.css\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$c\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/src_0nl_y25._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$d\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/node_modules_02e1eih._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$e\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-2\\\",{\\\"src\\\":\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$f\\\",0]],\\\"$10\\\"]},null,\\\"$a\\\",1]},null,\\\"$8\\\",0],{\\\"children\\\":[[\\\"$\\\",\\\"$b\\\",\\\"c\\\",{\\\"children\\\":[[\\\"$\\\",\\\"$L9\\\",\\\"c-page\\\",{\\\"type\\\":\\\"page\\\",\\\"pagePath\\\":\\\"page.tsx\\\",\\\"children\\\":[\\\"$\\\",\\\"$L37\\\",null,{\\\"Component\\\":\\\"$38\\\",\\\"serverProvidedParams\\\":{\\\"searchParams\\\":{},\\\"params\\\":{},\\\"promises\\\":null}},null,\\\"$36\\\",1]},null,\\\"$35\\\",1],[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/_0rea2gl._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$39\\\",0],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/src_app_page_tsx_0rfpy-m._.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$3a\\\",0]],\\\"$3b\\\"]},null,\\\"$34\\\",0],{},null,false,null]},null,false,null],[\\\"$\\\",\\\"$b\\\",\\\"h\\\",{\\\"children\\\":[\\\"$45\\\",\\\"$4a\\\",\\\"$53\\\",[\\\"$\\\",\\\"meta\\\",null,{\\\"name\\\":\\\"next-size-adjust\\\",\\\"content\\\":\\\"\\\"},null,\\\"$5e\\\",1]]},null,\\\"$44\\\",0],false]],\\\"m\\\":\\\"$W5f\\\",\\\"G\\\":[\\\"$60\\\",[\\\"$\\\",\\\"$L9\\\",\\\"ge-svn\\\",{\\\"type\\\":\\\"global-error\\\",\\\"pagePath\\\":\\\"__next_builtin__global-error.js\\\",\\\"children\\\":[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/%5Broot-of-the-server%5D__13des5y._.css\\\",\\\"precedence\\\":\\\"next_static/chunks/[root-of-the-server]__13des5y._.css\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"},null,\\\"$62\\\",0]]},null,\\\"$61\\\",0]],\\\"S\\\":false,\\\"h\\\":null,\\\"s\\\":\\\"$undefined\\\",\\\"l\\\":\\\"$undefined\\\",\\\"p\\\":\\\"$undefined\\\",\\\"d\\\":\\\"$undefined\\\",\\\"b\\\":\\\"development\\\"}\\n\"])</script><script>self.__next_f.push([1,\"50:D\\\"$63\\\"\\n50:[[\\\"$\\\",\\\"meta\\\",\\\"0\\\",{\\\"charSet\\\":\\\"utf-8\\\"},\\\"$3c\\\",\\\"$64\\\",0],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"viewport\\\",\\\"content\\\":\\\"width=device-width, initial-scale=1\\\"},\\\"$3c\\\",\\\"$65\\\",0]]\\n43:D\\\"$66\\\"\\n43:null\\n5b:D\\\"$67\\\"\\n5b:[[\\\"$\\\",\\\"title\\\",\\\"0\\\",{\\\"children\\\":\\\"SignalTrack \u2014 AI Bug Tracking Dashboard\\\"},\\\"$3c\\\",\\\"$68\\\",0],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"description\\\",\\\"content\\\":\\\"AI-powered testing and bug tracking platform. Run automated probes, track bugs, and monitor system health with the Precision QA System.\\\"},\\\"$3c\\\",\\\"$69\\\",0],[\\\"$\\\",\\\"link\\\",\\\"2\\\",{\\\"rel\\\":\\\"icon\\\",\\\"href\\\":\\\"/favicon.ico?favicon.0x3dzn~oxb6tn.ico\\\",\\\"sizes\\\":\\\"256x256\\\",\\\"type\\\":\\\"image/x-icon\\\"},\\\"$3c\\\",\\\"$6a\\\",0],[\\\"$\\\",\\\"$L6c\\\",\\\"3\\\",{},\\\"$3c\\\",\\\"$6b\\\",0]]\\n\"])</script><script data-nextjs-dev-overlay=\"true\" style=\"display: block; position: absolute;\"><nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal></script><next-route-announcer style=\"position: absolute;\"></next-route-announcer><div class=\"min-h-screen flex flex-col bg-white text-gray-900 relative overflow-hidden\"><div class=\"absolute inset-0 pointer-events-none z-0\" style=\"background-image: radial-gradient(rgb(229, 231, 235) 1px, transparent 1px); background-size: 24px 24px;\"></div><header class=\"relative z-10 flex flex-col sm:flex-row items-center justify-between px-8 py-6 gap-4\"><a class=\"text-xl font-bold text-blue-600\" href=\"/\">TestPulse AI</a><div class=\"text-sm\"><span class=\"text-gray-600 mr-4\">Don't have an account?</span><a class=\"font-semibold text-blue-600 hover:text-blue-700\" href=\"/signup\">Sign up</a></div></header><main class=\"flex-1 flex flex-col lg:flex-row items-center max-w-7xl mx-auto w-full p-6 lg:p-12 gap-12 relative z-10\"><div class=\"flex-1 space-y-8 relative\"><div class=\"absolute -top-20 -left-20 text-gray-100/50 font-mono text-2xl rotate-[-15deg] pointer-events-none whitespace-pre select-none -z-10 hidden md:block\">async function testPulse() {\n  const heart = await monitor.status();\n  if (heart.beat === 0) {\n    throw new Error(\"Pulse lost\");\n  }\n}</div><h1 class=\"text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 leading-tight max-w-md\">Precision-engineered for the modern developer.</h1><p class=\"text-gray-600 text-lg max-w-md leading-relaxed\">Join 10k+ engineers automating their E2E testing with AI-driven pulse checks and real-time syntax validation.</p><ul class=\"space-y-4 pt-4 text-gray-700\"><li class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-circle-check text-blue-600 flex-shrink-0\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"m9 12 2 2 4-4\"></path></svg><span>CI/CD Pipeline Integration (Jenkins, GitHub Actions)</span></li><li class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-circle-check text-blue-600 flex-shrink-0\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"m9 12 2 2 4-4\"></path></svg><span>Automated DOM Healing with Pulse AI</span></li><li class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-circle-check text-blue-600 flex-shrink-0\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"m9 12 2 2 4-4\"></path></svg><span>Real-time Syntax-Aware Debugging</span></li></ul></div><div class=\"flex-1 w-full max-w-[500px] relative\"><div class=\"absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none\"></div><div class=\"w-full max-w-[600px] mx-auto rounded-xl overflow-hidden shadow-2xl border border-[#2a2a2a] bg-[#1a1a1a] flex flex-col font-mono text-sm\"><div class=\"h-10 bg-[#2d2d2d] flex items-center px-4 border-b border-[#111111] relative\"><div class=\"flex gap-2 absolute left-4\"><div class=\"w-3 h-3 rounded-full bg-[#ff5f56]\"></div><div class=\"w-3 h-3 rounded-full bg-[#ffbd2e]\"></div><div class=\"w-3 h-3 rounded-full bg-[#27c93f]\"></div></div><div class=\"flex-1 text-center text-[#00f2fe] font-medium text-xs\">login.config.ts</div></div><div class=\"p-8 text-[#e0e0e0]\"><div class=\"space-y-5\"><p class=\"text-[#32CD32]/80\">// Enter your credentials to access your terminal</p><form class=\"space-y-5\"><div class=\"space-y-2\"><div class=\"flex text-sm\"><span class=\"text-[#32CD32]\">email:</span><span class=\"text-[#00f2fe] ml-2\">\"developer@host.io\"</span></div><input placeholder=\"dev@testpulse.ai\" class=\"w-full bg-transparent border border-[#444] rounded px-4 py-3 text-gray-300 font-mono text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-[#555]\" required=\"\" type=\"email\" value=\"\"></div><div class=\"space-y-2\"><div class=\"flex text-sm\"><span class=\"text-[#32CD32]\">password:</span><span class=\"text-[#00f2fe] ml-2\">\"********\"</span></div><input placeholder=\"\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\" class=\"w-full bg-transparent border border-[#444] rounded px-4 py-3 text-gray-300 font-mono text-sm tracking-[0.2em] focus:outline-none focus:border-blue-500 transition-colors placeholder:text-[#555] placeholder:tracking-normal\" required=\"\" type=\"password\" value=\"\"></div><button type=\"submit\" class=\"w-full bg-[#2f80ed] hover:bg-blue-700 disabled:opacity-50 text-white font-sans font-medium py-3 rounded flex items-center justify-center gap-2 transition-colors mt-6\">Log In<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-log-in rotate-180\" aria-hidden=\"true\"><path d=\"m10 17 5-5-5-5\"></path><path d=\"M15 12H3\"></path><path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path></svg></button></form><div class=\"pt-4\"><div class=\"flex items-center gap-4 mb-4\"><div class=\"h-px bg-[#444] flex-1\"></div><span class=\"text-[10px] text-gray-400 font-sans tracking-widest uppercase\">Alternative Access</span><div class=\"h-px bg-[#444] flex-1\"></div></div><div class=\"grid grid-cols-2 gap-4 font-sans text-sm\"><button type=\"button\" class=\"flex items-center justify-center gap-2 py-2.5 bg-[#1a1a1a] border border-[#333] rounded hover:bg-[#222] transition-colors text-white font-semibold\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4\"></path><path d=\"M9 18c-4.51 2-5-2-7-2\"></path></svg>GitHub</button><button type=\"button\" class=\"flex items-center justify-center gap-2 py-2.5 bg-[#1a1a1a] border border-[#333] rounded hover:bg-[#222] transition-colors text-white font-semibold\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-cloud\" aria-hidden=\"true\"><path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\"></path></svg>SSO</button></div></div><div class=\"text-center pt-2\"><p class=\"text-[#ff3b30] text-xs font-mono\">auth.requestPasswordReset()</p></div></div></div><div class=\"h-8 bg-[#2d2d2d] border-t border-[#111111] flex items-center justify-between px-4 text-[10px] text-gray-400 font-sans\"><div class=\"flex items-center gap-4\"><div class=\"flex items-center gap-1.5\"><div class=\"w-2 h-2 rounded-full bg-[#27c93f]\"></div><span>CONNECTED</span></div><div class=\"flex items-center gap-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-terminal\" aria-hidden=\"true\"><path d=\"M12 19h8\"></path><path d=\"m4 17 6-6-6-6\"></path></svg><span>MAIN</span></div></div><div>UTF-8</div></div></div><div class=\"mt-8 flex items-center justify-center gap-3 opacity-60\"><div class=\"w-8 h-8 rounded bg-gray-100 flex items-center justify-center border border-gray-200\"><div class=\"w-3 h-3 border-2 border-gray-400 rounded-[2px]\"></div></div><span class=\"text-xs font-mono font-semibold tracking-widest text-gray-500 uppercase\">Trusted by 1000+ Repos</span></div></div></main><footer class=\"relative z-10 flex flex-col md:flex-row items-center justify-between px-8 py-8 text-sm text-gray-500 bg-white/80 backdrop-blur-sm mt-auto gap-4\"><div class=\"font-bold text-gray-900 text-lg\">TestPulse AI</div><div class=\"text-center flex-1\">\u00a9 2024 TestPulse AI. Built for technical precision and human warmth.</div><div class=\"flex items-center gap-6\"><a class=\"hover:text-gray-900\" href=\"#\">Privacy</a><a class=\"hover:text-gray-900\" href=\"#\">Terms</a><a class=\"hover:text-gray-900\" href=\"#\">Support</a></div></footer></div></body></html>"
+  ],
+  "cookies": [],
+  "metadata": {
+    "url": "http://localhost:3000/"
+  },
+  "form_fuzzing": [],
+  "home": "/screenshots/0c806f2f-819c-4fb1-8d95-aff99f1bd980/home.png"
+}
