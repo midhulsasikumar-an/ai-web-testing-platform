@@ -1,129 +1,403 @@
 "use client";
 
-import { HelpCircle, Bell, Shield, Key, Smartphone, Laptop, Check } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  KeyRound,
+  Laptop,
+  Loader2,
+  Lock,
+  LogOut,
+  Monitor,
+  Shield,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Header } from "@/components/layout/header";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { SettingsFormField } from "@/components/settings/settings-form-field";
+import { SettingsStatus, StatusPill } from "@/components/settings/settings-status";
+import { UnsupportedCallout } from "@/components/settings/unsupported-callout";
+import { changePassword, revokeAllSessions, toAccountErrorMessage } from "@/services/profile-api";
+import { useAuth } from "@/context/auth-context";
+import { getStoredAuthToken } from "@/services/http";
+import { decodeSession, detectBrowser, formatDateTime, formatRelativeTime } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
-export default function SecuritySettingsPage() {
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+type ActionStatus = "idle" | "loading" | "success" | "error";
 
-  const handleSave = () => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }, 1000);
+const MIN_PASSWORD = 6;
+
+function passwordIssues(value: string): string[] {
+  const issues: string[] = [];
+  if (value.length < MIN_PASSWORD) issues.push(`At least ${MIN_PASSWORD} characters`);
+  if (!/[A-Za-z]/.test(value)) issues.push("At least one letter");
+  if (!/[0-9]/.test(value)) issues.push("At least one number");
+  return issues;
+}
+
+export default function SecuritySettingsPage() {
+  const router = useRouter();
+  const { user, token, logout } = useAuth();
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [status, setStatus] = useState<ActionStatus>("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const [revokeStatus, setRevokeStatus] = useState<ActionStatus>("idle");
+  const [revokeError, setRevokeError] = useState<string | null>(null);
+  const [revokeMessage, setRevokeMessage] = useState<string | null>(null);
+
+  const session = useMemo(() => decodeSession(token ?? getStoredAuthToken()), [token]);
+  const browser = useMemo(
+    () => (typeof navigator === "undefined" ? { name: "Unknown browser", os: "Unknown OS" } : detectBrowser(navigator.userAgent)),
+    []
+  );
+
+  useEffect(() => {
+    if (status !== "success") return;
+    const timer = window.setTimeout(() => setStatus("idle"), 4000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
+
+  useEffect(() => {
+    if (revokeStatus !== "success") return;
+    const timer = window.setTimeout(() => setRevokeStatus("idle"), 4000);
+    return () => window.clearTimeout(timer);
+  }, [revokeStatus]);
+
+  const passwordChecks = useMemo(() => passwordIssues(next), [next]);
+  const passwordStrong = passwordChecks.length === 0 && next.length > 0;
+  const confirmMatches = confirm === next && confirm.length > 0;
+
+  const canSubmit =
+    current.length > 0 &&
+    passwordStrong &&
+    confirmMatches &&
+    status !== "loading";
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canSubmit) return;
+
+    setStatus("loading");
+    setError(null);
+    try {
+      const result = await changePassword(
+        { currentPassword: current, newPassword: next },
+        token ?? getStoredAuthToken()
+      );
+      setStatus("success");
+      setCurrent("");
+      setNext("");
+      setConfirm("");
+      if (result.revokedSessions) {
+        window.setTimeout(() => {
+          logout();
+          router.replace("/login");
+        }, 1200);
+      }
+    } catch (err) {
+      setStatus("error");
+      setError(toAccountErrorMessage(err));
+    }
   };
 
+  const handleRevokeAll = async () => {
+    setRevokeStatus("loading");
+    setRevokeError(null);
+    setRevokeMessage(null);
+    try {
+      await revokeAllSessions(token ?? getStoredAuthToken());
+      setRevokeStatus("success");
+      setRevokeMessage("All other sessions have been revoked.");
+    } catch (err) {
+      const message = toAccountErrorMessage(err);
+      setRevokeStatus("error");
+      setRevokeError(message);
+    }
+  };
+
+  const handleSignOutCurrent = () => {
+    logout();
+    router.replace("/login");
+  };
+
+  const accountAgeLabel = session?.issuedAt ? formatDateTime(session.issuedAt) : "—";
+  const expiryLabel = session?.expiresAt ? formatDateTime(session.expiresAt) : "—";
+  const expiryRelative = session?.expiresAt ? formatRelativeTime(session.expiresAt) : "—";
+
+  const isUnsupported = (msg: string | null) =>
+    Boolean(msg && /not available|not exposed|not implemented|contact/i.test(msg));
+
   return (
-    <div className="flex flex-col min-h-full pb-32">
-      <header className="sticky top-0 z-30 bg-[#faf8ff]/80 backdrop-blur-md px-10 py-6 flex justify-between items-center border-b border-[#e2e8f0]">
-        <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-[#131b2e]">Security</h2>
-          <p className="text-sm text-[#434655] mt-1">Manage passwords, 2FA, and your active sessions.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-lg hover:bg-[#f2f3ff] transition-all text-[#434655]">
-            <HelpCircle className="h-6 w-6" />
-          </button>
-          <button className="p-2 rounded-lg hover:bg-[#f2f3ff] transition-all text-[#434655]">
-            <Bell className="h-6 w-6" />
-          </button>
-        </div>
-      </header>
+    <div className="flex flex-col gap-5">
+      <Header
+        title="Security"
+        description="Authentication, password, and active session controls."
+        eyebrow="Settings"
+      />
 
-      <div className="max-w-[800px] mx-auto w-full px-10 py-8 flex-1 space-y-6">
-        
-        <div className="bg-white/95 backdrop-blur-md border border-[#e2e8f0] shadow-sm rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-[#c3c6d7]/30 flex items-center gap-4">
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <Key className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-[#131b2e]">Change Password</h3>
-              <p className="text-sm text-[#434655]">Update your password associated with your account.</p>
+      <SettingsSection
+        title="Change password"
+        description="Update the password associated with your account."
+        icon={<KeyRound className="h-4 w-4" />}
+        footer={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <SettingsStatus
+              status={status}
+              errorMessage={error}
+              successLabel={status === "success" ? "Password updated. Re-authenticating…" : undefined}
+              loadingLabel="Updating password…"
+            />
+            <div className="flex items-center gap-2 sm:ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setCurrent("");
+                  setNext("");
+                  setConfirm("");
+                  setStatus("idle");
+                  setError(null);
+                }}
+                disabled={status === "loading"}
+              >
+                Clear
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                form="change-password-form"
+                disabled={!canSubmit}
+              >
+                {status === "loading" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
+                Update password
+              </Button>
             </div>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#434655]">Current Password</label>
-              <input type="password" placeholder="••••••••" className="px-4 py-2.5 rounded-lg border border-[#c3c6d7] bg-white text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all max-w-md" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#434655]">New Password</label>
-              <input type="password" placeholder="••••••••" className="px-4 py-2.5 rounded-lg border border-[#c3c6d7] bg-white text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all max-w-md" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/95 backdrop-blur-md border border-[#e2e8f0] shadow-sm rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-[#c3c6d7]/30 flex items-center gap-4">
-            <div className="p-3 bg-purple-50 rounded-lg">
-              <Smartphone className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[#131b2e]">Two-Factor Authentication (2FA)</h3>
-              <p className="text-sm text-[#434655]">Add an extra layer of security to your account.</p>
-            </div>
-            <button className="px-4 py-2 bg-[#2563eb] text-white text-sm font-medium rounded-lg hover:bg-[#004ac6] transition-colors">
-              Enable 2FA
-            </button>
-          </div>
-        </div>
-
-        <div className="bg-white/95 backdrop-blur-md border border-[#e2e8f0] shadow-sm rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-[#c3c6d7]/30 flex items-center gap-4">
-            <div className="p-3 bg-amber-50 rounded-lg">
-              <Laptop className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-[#131b2e]">Active Sessions</h3>
-              <p className="text-sm text-[#434655]">Manage the devices currently logged into your account.</p>
-            </div>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 border border-[#c3c6d7]/50 rounded-lg bg-[#f2f3ff]">
-              <div>
-                <p className="text-sm font-semibold text-[#131b2e]">Windows PC - Chrome</p>
-                <p className="text-xs text-[#434655]">San Francisco, CA • Current session</p>
-              </div>
-              <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded">Active</span>
-            </div>
-            <div className="flex items-center justify-between p-4 border border-[#c3c6d7]/50 rounded-lg">
-              <div>
-                <p className="text-sm font-semibold text-[#131b2e]">iPhone 13 - Safari</p>
-                <p className="text-xs text-[#434655]">San Francisco, CA • Last active 2h ago</p>
-              </div>
-              <button className="text-sm text-red-600 font-medium hover:underline">Revoke</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Sticky Action Bar */}
-      <div className="fixed bottom-0 right-0 left-0 md:left-64 bg-[#faf8ff]/90 backdrop-blur-xl border-t border-[#c3c6d7]/30 px-10 py-4 z-40">
-        <div className="max-w-[800px] mx-auto flex justify-between items-center w-full lg:-ml-[calc(50vw-400px)] 2xl:ml-auto">
-          <p className="text-sm font-medium text-[#434655]">Unsaved changes will be lost if you leave.</p>
-          <div className="flex items-center gap-4">
-            <button className="px-6 py-2 text-sm font-medium text-[#434655] hover:bg-[#f2f3ff] rounded-lg transition-all">
-              Discard
-            </button>
-            <button 
-              onClick={handleSave}
-              disabled={saving}
-              className={cn(
-                "px-8 py-2.5 rounded-lg text-sm font-medium shadow-lg transition-all flex items-center justify-center gap-2 min-w-[140px]",
-                saved ? "bg-green-600 text-white shadow-green-600/20" : "bg-[#2563eb] text-white shadow-[#2563eb]/20 active:scale-95 hover:bg-[#004ac6]"
-              )}
+        }
+      >
+        <form id="change-password-form" onSubmit={handleSubmit} className="space-y-4">
+          <SettingsFormField label="Current password" htmlFor="current-password" required>
+            <Input
+              id="current-password"
+              type="password"
+              autoComplete="current-password"
+              value={current}
+              onChange={(event) => setCurrent(event.target.value)}
+              placeholder="••••••••"
+              required
+              disabled={status === "loading"}
+            />
+          </SettingsFormField>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <SettingsFormField
+              label="New password"
+              htmlFor="new-password"
+              required
+              description="At least 6 characters, including a letter and a number."
             >
-              {saving ? <><Shield className="h-4 w-4 animate-spin" /> Saving...</> : saved ? <><Check className="h-4 w-4" /> Saved</> : "Save Changes"}
-            </button>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={next}
+                onChange={(event) => setNext(event.target.value)}
+                placeholder="••••••••"
+                required
+                disabled={status === "loading"}
+              />
+              {next.length > 0 ? (
+                <ul className="mt-1.5 space-y-1 text-[11.5px]">
+                  {passwordChecks.length === 0 ? (
+                    <li className="flex items-center gap-1.5 text-emerald-700">
+                      <ShieldCheck className="h-3 w-3" /> Strong enough
+                    </li>
+                  ) : (
+                    passwordChecks.map((issue) => (
+                      <li key={issue} className="flex items-center gap-1.5 text-slate-500">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300" /> {issue}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              ) : null}
+            </SettingsFormField>
+            <SettingsFormField
+              label="Confirm new password"
+              htmlFor="confirm-password"
+              required
+              description={confirm.length > 0 && !confirmMatches ? "Passwords do not match." : undefined}
+              error={confirm.length > 0 && !confirmMatches ? "Passwords do not match." : null}
+            >
+              <Input
+                id="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(event) => setConfirm(event.target.value)}
+                placeholder="••••••••"
+                required
+                disabled={status === "loading"}
+                aria-invalid={confirm.length > 0 && !confirmMatches}
+                className={cn(
+                  confirm.length > 0 && !confirmMatches && "border-red-300 focus-visible:ring-red-500/20"
+                )}
+              />
+            </SettingsFormField>
           </div>
+          {status === "error" && isUnsupported(error) ? (
+            <UnsupportedCallout
+              title="Password changes aren't available yet"
+              description="The current backend does not expose a password change endpoint. Until it does, please sign out and use the signup flow to set a new password or contact your administrator."
+            />
+          ) : null}
+        </form>
+      </SettingsSection>
+
+      <SettingsSection
+        title="Active session"
+        description="The session attached to this browser. Log out when you finish."
+        icon={<Monitor className="h-4 w-4" />}
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            <p className="text-[12px] text-slate-500">
+              Sign out revokes this access token via /api/auth/logout.
+            </p>
+            <Button variant="outline" size="sm" onClick={handleSignOutCurrent}>
+              <LogOut className="h-3.5 w-3.5" />
+              Sign out of this device
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+          <SessionDetail label="Account" value={user?.email ?? "—"} icon={Shield} />
+          <SessionDetail label="Browser / OS" value={`${browser.name} · ${browser.os}`} icon={Laptop} />
+          <SessionDetail label="Signed in" value={accountAgeLabel} icon={Smartphone} />
+          <SessionDetail label="Token expires" value={`${expiryLabel} (${expiryRelative})`} icon={Lock} />
         </div>
-      </div>
+      </SettingsSection>
+
+      <SettingsSection
+        title="Account security status"
+        description="High-level signals from the active session."
+        icon={<ShieldCheck className="h-4 w-4" />}
+      >
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <SecurityRow
+            label="Authentication"
+            value="Password"
+            status="ok"
+            note="Issued access token is valid"
+          />
+          <SecurityRow
+            label="Two-factor authentication"
+            value="Not enabled"
+            status="warning"
+            note="No 2FA endpoint is exposed by the current backend"
+          />
+          <SecurityRow
+            label="Session token"
+            value={session ? "Active" : "Unknown"}
+            status={session ? "ok" : "muted"}
+            note={session ? "Decoded from the active JWT" : "Unable to decode session token"}
+          />
+          <SecurityRow
+            label="Other devices"
+            value="Not tracked"
+            status="muted"
+            note="The backend does not expose a session listing endpoint"
+          />
+        </ul>
+      </SettingsSection>
+
+      <SettingsSection
+        title="Revoke other sessions"
+        description="Invalidate access tokens held by other devices signed in to this account."
+        icon={<LogOut className="h-4 w-4" />}
+        footer={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <SettingsStatus
+              status={revokeStatus}
+              errorMessage={revokeError}
+              successLabel={revokeMessage ?? "Other sessions revoked"}
+              loadingLabel="Revoking other sessions…"
+            />
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleRevokeAll}
+              disabled={revokeStatus === "loading"}
+            >
+              {revokeStatus === "loading" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}
+              Revoke all other sessions
+            </Button>
+          </div>
+        }
+      >
+        <UnsupportedCallout
+          title="This action depends on a backend endpoint"
+          description="If the backend exposes /api/auth/sessions/revoke-all it will be invoked here. Otherwise the request fails safely and you'll see an explanatory error below — no other devices are affected."
+        />
+        {revokeStatus === "error" ? (
+          <p className="text-[12px] text-red-600">
+            {isUnsupported(revokeError)
+              ? "Revoking all sessions isn't supported by the current backend. Only this device can be signed out for now."
+              : revokeError}
+          </p>
+        ) : null}
+      </SettingsSection>
     </div>
+  );
+}
+
+function SessionDetail({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-[11.5px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="flex items-center gap-1.5 text-[12.5px] text-slate-700">
+        <Icon className="h-3.5 w-3.5 text-slate-400" />
+        <span className="truncate">{value}</span>
+      </p>
+    </div>
+  );
+}
+
+function SecurityRow({
+  label,
+  value,
+  status,
+  note,
+}: {
+  label: string;
+  value: string;
+  status: "ok" | "warning" | "error" | "muted";
+  note: string;
+}) {
+  return (
+    <li className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+      <div className="min-w-0">
+        <p className="text-[12.5px] font-semibold text-slate-800">{label}</p>
+        <p className="truncate text-[11.5px] text-slate-500">{note}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="text-[12px] font-medium text-slate-700">{value}</span>
+        <StatusPill status={status} />
+      </div>
+    </li>
   );
 }

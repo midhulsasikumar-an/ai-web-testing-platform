@@ -1,6 +1,7 @@
 # Backend Python dependencies (add to your venv)
 argon2-cffi
 bcrypt
+Pillow
 pydantic[email]
 groq
 pydantic-settings

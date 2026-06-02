@@ -1,4 +1,4 @@
-import { apiJson, apiFetch, API_BASE_URL } from "@/services/http";
+import { apiJson, apiFetch } from "@/services/http";
 
 export interface StartTestResponse {
   message: string;
@@ -14,6 +14,10 @@ export interface StartTestRequest {
   projectName?: string;
   testType?: string;
   aiPlan?: AIPlanResponse | null;
+  browser?: string;
+  device?: string;
+  coverageLevel?: string;
+  executionSettings?: Record<string, unknown>;
 }
 
 export interface AIPlanStep {
@@ -60,6 +64,9 @@ export interface TestApiResponse {
     test: string;
     status: "pass" | "fail" | "info";
     details?: string;
+    failure_category?: string | null;
+    root_cause?: string | null;
+    root_cause_confidence?: number | null;
   }>;
 
   summary?: {
@@ -87,6 +94,25 @@ export interface TestApiResponse {
   ai_summary?: string;
 
   ai_report?: Record<string, unknown>;
+  bug_lifecycle?: {
+    summary?: Record<string, number> | {
+      total_bugs?: number;
+      by_status?: Record<string, number>;
+      by_website?: Record<string, number>;
+      by_workflow_stage?: Record<string, number>;
+      recurring_bugs?: number;
+      regressed_bugs?: number;
+      records?: unknown[];
+    };
+    records?: Array<Record<string, unknown>>;
+    top_items?: Array<{
+      title: string;
+      status: string;
+      occurrences: number;
+      regression_count: number;
+      last_seen: string;
+    }>;
+  };
 
   artifacts?: Record<string, unknown>;
   bugs?: unknown[];
@@ -100,6 +126,7 @@ export interface TestApiResponse {
   }>;
 
   ai_plan?: AIPlanResponse;
+  screenshot_paths?: string[];
 
   screenshot?: {
     home?: string | null;
@@ -116,7 +143,6 @@ export async function startTest(
   testType?: string,
   aiPlan?: AIPlanResponse | null
 ): Promise<StartTestResponse> {
-  console.debug("[test-api] POST", `${API_BASE_URL}/api/tests/start`);
   const payload = typeof requestOrUrl === "string"
     ? {
         url: requestOrUrl,
@@ -131,6 +157,10 @@ export async function startTest(
         ...(requestOrUrl.projectName ? { project_name: requestOrUrl.projectName } : {}),
         ...(requestOrUrl.testType ? { test_type: requestOrUrl.testType } : {}),
         ...(requestOrUrl.aiPlan ? { ai_plan: requestOrUrl.aiPlan } : {}),
+        ...(requestOrUrl.browser ? { browser: requestOrUrl.browser } : {}),
+        ...(requestOrUrl.device ? { device: requestOrUrl.device } : {}),
+        ...(requestOrUrl.coverageLevel ? { coverage_level: requestOrUrl.coverageLevel } : {}),
+        ...(requestOrUrl.executionSettings ? { execution_settings: requestOrUrl.executionSettings } : {}),
       };
 
   const response = await apiFetch(`/api/tests/start`, {
@@ -142,7 +172,6 @@ export async function startTest(
 }
 
 export async function generateTestPlan(url: string, instruction: string, testType: string): Promise<AIPlanResponse> {
-  console.debug("[test-api] POST", `${API_BASE_URL}/ai/plan`);
   return apiJson<AIPlanResponse>(`/ai/plan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -150,19 +179,10 @@ export async function generateTestPlan(url: string, instruction: string, testTyp
   });
 }
 
-export async function getTestById(
-  testId: string,
-  token?: string
-): Promise<TestApiResponse> {
-  console.debug("[test-api] GET", `${API_BASE_URL}/api/tests/${testId}`);
-  return apiJson<TestApiResponse>(`/api/tests/${testId}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+export async function getTestById(testId: string): Promise<TestApiResponse> {
+  return apiJson<TestApiResponse>(`/api/tests/${testId}`);
 }
 
-export async function getAllTests(token?: string): Promise<TestApiResponse[]> {
-  console.debug("[test-api] GET", `${API_BASE_URL}/api/tests`);
-  return apiJson<TestApiResponse[]>(`/api/tests`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+export async function getAllTests(): Promise<TestApiResponse[]> {
+  return apiJson<TestApiResponse[]>(`/api/tests`);
 }

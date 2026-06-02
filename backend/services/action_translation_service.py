@@ -80,6 +80,15 @@ def translate_test_case(test_case: TestCase) -> Tuple[TestCase, List[Dict[str, A
                 target=selector or step.target,
                 selector=selector,
                 value=value,
+                feature_key=step.feature_key,
+                objective_id=step.objective_id,
+                objective_name=step.objective_name,
+                scenario_id=step.scenario_id,
+                scenario_name=step.scenario_name,
+                scenario_category=step.scenario_category,
+                coverage_level=step.coverage_level,
+                risk_score=step.risk_score,
+                risk_level=step.risk_level,
             )
         )
 
@@ -91,6 +100,15 @@ def translate_test_case(test_case: TestCase) -> Tuple[TestCase, List[Dict[str, A
                 "target": selector or step.target,
                 "selector": selector,
                 "value": value,
+                "feature_key": step.feature_key,
+                "objective_id": step.objective_id,
+                "objective_name": step.objective_name,
+                "scenario_id": step.scenario_id,
+                "scenario_name": step.scenario_name,
+                "scenario_category": step.scenario_category,
+                "coverage_level": step.coverage_level,
+                "risk_score": step.risk_score,
+                "risk_level": step.risk_level,
             }
         )
 
@@ -98,5 +116,17 @@ def translate_test_case(test_case: TestCase) -> Tuple[TestCase, List[Dict[str, A
         title=test_case.title,
         expected=test_case.expected,
         steps=translated_steps,
+        objective_id=test_case.objective_id,
+        objective_name=test_case.objective_name,
+        feature_key=test_case.feature_key,
+        coverage_level=test_case.coverage_level,
+        scenario_id=test_case.scenario_id,
+        scenario_name=test_case.scenario_name,
+        scenario_category=test_case.scenario_category,
+        risk_score=test_case.risk_score,
+        risk_level=test_case.risk_level,
+        objective_tracking=test_case.objective_tracking,
+        plan_metrics=test_case.plan_metrics,
+        scenario_tree=test_case.scenario_tree,
     )
     return translated, logs

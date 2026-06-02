@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
 import type { Bug, DashboardStats, AIFinding } from "@/types";
-import {sampleAIFindings } from "@/lib/data";
 import { getAllTests } from "@/services/test-api";
 import type { TestApiResponse } from "@/services/test-api";
 import { getAllBugs, type BugApiResponse } from "@/services/bugs-api";
@@ -28,10 +27,10 @@ const BugContext = createContext<BugContextType | undefined>(undefined);
 // ── Provider ───────────────────────────────────────────────────────
 
 export function BugProvider({ children }: { children: React.ReactNode }) {
-  const { isReady, token } = useAuth();
+  const { isReady } = useAuth();
   const [backendBugs, setBackendBugs] = useState<Bug[]>([]);
   const [testResults, setTestResults] = useState<TestApiResponse[]>([]);
-  const [aiFindings] = useState<AIFinding[]>(sampleAIFindings);
+  const [aiFindings] = useState<AIFinding[]>([]);
 
   const mapBugSeverity = useCallback((value?: string): Bug["severity"] => {
     const normalized = (value ?? "").toLowerCase();
@@ -107,7 +106,7 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
   }, [mapBugSeverity, mapBugStatus]);
 
   useEffect(() => {
-    if (!isReady || !token) {
+    if (!isReady) {
       return;
     }
 
@@ -116,8 +115,8 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     async function loadTests() {
       try {
         const [tests, bugs] = await Promise.all([
-          getAllTests(token ?? undefined),
-          getAllBugs(token ?? undefined),
+          getAllTests(),
+          getAllBugs(),
         ]);
 
         if (active) {
@@ -134,13 +133,13 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [isReady, token]);
+  }, [isReady]);
 
   const visibleTestResults = useMemo(
-    () => (isReady && token ? testResults : []),
-    [isReady, token, testResults]
+    () => (isReady ? testResults : []),
+    [isReady, testResults]
   );
-  const bugs = useMemo(() => (isReady && token ? backendBugs : []), [isReady, token, backendBugs]);
+  const bugs = useMemo(() => (isReady ? backendBugs : []), [isReady, backendBugs]);
 
   const addBug = useCallback((bug: Bug) => {
     setBackendBugs((prev) => [bug, ...prev]);

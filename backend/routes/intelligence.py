@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import FileResponse
 
 from backend.core.models.intelligence_models import ExportRequest, RunComparisonRequest
 from backend.services.bug_lifecycle_service import list_bug_lifecycle, summarize_bug_lifecycle
-from backend.services.report_export_service import export_report_to_pdf, list_report_exports
+from backend.services.report_export_service import export_report, list_report_exports
 from backend.services.run_comparison_service import compare_runs, list_run_comparisons
 from backend.services.auth import get_current_user
 
@@ -53,11 +55,10 @@ def get_run_comparison(baseline_run_id: str, comparison_run_id: str, current_use
 
 @router.post("/reports/{report_id}/export")
 def post_report_export(report_id: str, payload: ExportRequest, current_user: dict = Depends(get_current_user)):
-    if payload.format.lower() != "pdf":
-        raise HTTPException(status_code=400, detail="Only PDF export is supported")
     try:
-        return export_report_to_pdf(
+        return export_report(
             report_id,
+            format=payload.format,
             user_id=current_user["user_id"],
             include_screenshots=payload.include_screenshots,
             include_comparison=payload.include_comparison,
@@ -84,4 +85,12 @@ def download_report_export(report_id: str, export_id: str, current_user: dict = 
     file_path = export.get("file_path")
     if not file_path:
         raise HTTPException(status_code=404, detail="Export file not available")
-    return FileResponse(file_path, media_type="application/pdf", filename=f"{export.get('title', 'report')}.pdf")
+    media_type = export.get("media_type") or {
+        "pdf": "application/pdf",
+        "json": "application/json",
+        "markdown": "text/markdown",
+        "md": "text/markdown",
+        "csv": "text/csv",
+    }.get(str(export.get("format") or "pdf").lower(), "application/octet-stream")
+    filename = Path(file_path).name if file_path else f"{export.get('title', 'report')}.pdf"
+    return FileResponse(file_path, media_type=media_type, filename=filename)

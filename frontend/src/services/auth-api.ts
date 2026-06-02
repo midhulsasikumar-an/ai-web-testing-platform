@@ -1,8 +1,10 @@
-import { API_BASE_URL, API_HEALTH_PATH, AUTH_TIMEOUT_MS, buildApiUrl } from "@/config/api";
-import { type AuthSession } from "@/services/http";
+import { API_HEALTH_PATH, AUTH_TIMEOUT_MS, buildApiUrl } from "@/config/api";
+import { ApiHttpError, apiFetch } from "@/services/http";
 
 export type SignupResponse = {
   token: string;
+  access_token?: string;
+  refresh_token?: string;
   user: {
     id: string;
     name: string;
@@ -20,9 +22,10 @@ type MeResponse = {
   };
 };
 
-type ApiErrorBody = {
-  detail?: string;
-  message?: string;
+export type AuthSession = {
+  token: string;
+  refreshToken: string | null;
+  user: MeResponse["user"];
 };
 
 export class AuthApiError extends Error {
@@ -57,19 +60,6 @@ export class AuthApiError extends Error {
 let lastHealthCheckMs = 0;
 const HEALTH_CHECK_TTL_MS = 15000;
 
-async function parseResponseBodySafe(response: Response): Promise<ApiErrorBody | unknown> {
-  const raw = await response.text();
-  if (!raw) {
-    return {};
-  }
-
-  try {
-    return JSON.parse(raw) as unknown;
-  } catch {
-    return { message: raw };
-  }
-}
-
 function withTimeoutSignal(timeoutMs: number): { signal: AbortSignal; cleanup: () => void } {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
@@ -77,6 +67,38 @@ function withTimeoutSignal(timeoutMs: number): { signal: AbortSignal; cleanup: (
     signal: controller.signal,
     cleanup: () => window.clearTimeout(timeoutId),
   };
+}
+
+function isBackendUnavailableError(error: unknown): boolean {
+  return error instanceof TypeError || (error instanceof DOMException && error.name === "AbortError");
+}
+
+function normalizeAuthApiError(error: unknown, fallbackMessage: string, url?: string): AuthApiError {
+  if (error instanceof AuthApiError) {
+    return error;
+  }
+
+  if (error instanceof ApiHttpError) {
+    if (error.status === 401) {
+      return new AuthApiError("UNAUTHORIZED", "Unauthorized", { status: error.status, url: error.url, cause: error });
+    }
+
+    if (error.status === 409) {
+      return new AuthApiError("CONFLICT", error.body || fallbackMessage, { status: error.status, url: error.url, cause: error });
+    }
+
+    if (error.status >= 500) {
+      return new AuthApiError("SERVER_ERROR", "Authentication service unavailable.", { status: error.status, url: error.url, cause: error });
+    }
+
+    return new AuthApiError("SERVER_ERROR", error.body || fallbackMessage, { status: error.status, url: error.url, cause: error });
+  }
+
+  if (isBackendUnavailableError(error)) {
+    return new AuthApiError("BACKEND_UNAVAILABLE", fallbackMessage, { url, cause: error });
+  }
+
+  return new AuthApiError("SERVER_ERROR", fallbackMessage, { url, cause: error });
 }
 
 export async function checkBackendHealth(force = false): Promise<void> {
@@ -87,8 +109,6 @@ export async function checkBackendHealth(force = false): Promise<void> {
 
   const healthUrl = buildApiUrl(API_HEALTH_PATH);
   const { signal, cleanup } = withTimeoutSignal(Math.min(AUTH_TIMEOUT_MS, 5000));
-
-  console.info("[auth-api] health request", { url: healthUrl });
 
   try {
     const response = await fetch(healthUrl, {
@@ -106,7 +126,6 @@ export async function checkBackendHealth(force = false): Promise<void> {
     }
 
     lastHealthCheckMs = now;
-    console.info("[auth-api] health response", { url: healthUrl, status: response.status });
   } catch (error) {
     if (error instanceof AuthApiError) {
       throw error;
@@ -132,50 +151,19 @@ async function authRequest<T>(path: string, body: Record<string, string>, method
   const url = buildApiUrl(path);
   const { signal, cleanup } = withTimeoutSignal(AUTH_TIMEOUT_MS);
 
-  console.info("[auth-api] request", { method, url, apiBaseUrl: API_BASE_URL });
-
   try {
-    const response = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
+    const response = await apiFetch(
+      path,
+      {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: method === "GET" ? undefined : JSON.stringify(body),
+        signal,
       },
-      body: method === "GET" ? undefined : JSON.stringify(body),
-      signal,
-    });
-
-    console.info("[auth-api] response", { method, url, status: response.status, ok: response.ok });
-
-    if (!response.ok) {
-      const errorBody = (await parseResponseBodySafe(response)) as ApiErrorBody;
-      const detail = errorBody.detail || errorBody.message || "Authentication request failed.";
-
-      if (response.status === 401) {
-        throw new AuthApiError("INVALID_CREDENTIALS", "Invalid credentials.", {
-          status: response.status,
-          url,
-        });
-      }
-
-      if (response.status === 409) {
-        throw new AuthApiError("CONFLICT", detail, {
-          status: response.status,
-          url,
-        });
-      }
-
-      if (response.status >= 500) {
-        throw new AuthApiError("SERVER_ERROR", "Authentication service unavailable.", {
-          status: response.status,
-          url,
-        });
-      }
-
-      throw new AuthApiError("SERVER_ERROR", detail, {
-        status: response.status,
-        url,
-      });
-    }
+      { auth: false }
+    );
 
     try {
       return (await response.json()) as T;
@@ -187,33 +175,7 @@ async function authRequest<T>(path: string, body: Record<string, string>, method
       });
     }
   } catch (error) {
-    if (error instanceof AuthApiError) {
-      throw error;
-    }
-
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new AuthApiError("TIMEOUT", "Authentication service unavailable (request timed out).", {
-        url,
-        cause: error,
-      });
-    }
-
-    if (error instanceof TypeError) {
-      // Log the original TypeError for debugging (network/CORS/timeouts)
-      // Keep minimal diagnostics to avoid leaking sensitive info.
-      // eslint-disable-next-line no-console
-      console.error("[auth-api] network-typeerror", { url, error });
-      throw new AuthApiError(
-        "NETWORK_ERROR",
-        "Network error: Unable to reach authentication service. Check API URL, CORS, and backend status.",
-        { url, cause: error }
-      );
-    }
-
-    throw new AuthApiError("SERVER_ERROR", "Authentication request failed.", {
-      url,
-      cause: error,
-    });
+    throw normalizeAuthApiError(error, "Authentication request failed.", url);
   } finally {
     cleanup();
   }
@@ -232,8 +194,10 @@ export function toAuthErrorMessage(error: unknown): string {
 export async function signupWithBackend(name: string, email: string, password: string): Promise<AuthSession> {
   await checkBackendHealth();
   const data = await authRequest<SignupResponse>("/api/auth/signup", { name, email, password });
+  const accessToken = (data.access_token || data.token || "").trim();
   return {
-    token: data.token,
+    token: accessToken,
+    refreshToken: (data.refresh_token || "").trim() || null,
     user: {
       id: data.user.id,
       name: data.user.name,
@@ -246,8 +210,10 @@ export async function signupWithBackend(name: string, email: string, password: s
 export async function loginWithBackend(email: string, password: string): Promise<AuthSession> {
   await checkBackendHealth();
   const data = await authRequest<SignupResponse>("/api/auth/login", { email, password });
+  const accessToken = (data.access_token || data.token || "").trim();
   return {
-    token: data.token,
+    token: accessToken,
+    refreshToken: (data.refresh_token || "").trim() || null,
     user: {
       id: data.user.id,
       name: data.user.name,
@@ -257,54 +223,45 @@ export async function loginWithBackend(email: string, password: string): Promise
   };
 }
 
-export async function getCurrentUser(token: string): Promise<MeResponse["user"]> {
+export async function getCurrentUser(token?: string): Promise<MeResponse["user"]> {
   const url = buildApiUrl("/api/auth/me");
   const { signal, cleanup } = withTimeoutSignal(AUTH_TIMEOUT_MS);
   let response: Response;
   try {
-    response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
+    response = await apiFetch(
+      "/api/auth/me",
+      {
+        method: "GET",
+        signal,
       },
-      signal,
-    });
+      { auth: false, authToken: token ?? null }
+    );
   } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new AuthApiError("TIMEOUT", "Authentication service unavailable (request timed out).", {
-        url,
-      });
-    }
-    if (error instanceof TypeError) {
-      throw new AuthApiError("NETWORK_ERROR", "Network error: Unable to validate session.", {
-        url,
-      });
-    }
-    throw error;
+    throw normalizeAuthApiError(error, "Unable to validate session.", url);
   } finally {
     cleanup();
   }
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new AuthApiError("UNAUTHORIZED", "Unauthorized", {
-        status: response.status,
-        url,
-      });
-    }
-
-    const body = await parseResponseBodySafe(response);
-    console.error("[auth-api] API error", {
-      url,
-      status: response.status,
-      body,
-    });
-    throw new AuthApiError("SERVER_ERROR", `Session validation failed: ${response.status}`, {
-      status: response.status,
-      url,
-    });
-  }
-
   const data = (await response.json()) as MeResponse;
   return data.user;
+}
+
+export async function logoutWithBackend(token?: string): Promise<void> {
+  const url = buildApiUrl("/api/auth/logout");
+  const { signal, cleanup } = withTimeoutSignal(AUTH_TIMEOUT_MS);
+
+  try {
+    await apiFetch(
+      "/api/auth/logout",
+      {
+        method: "POST",
+        signal,
+      },
+      { auth: false, authToken: token ?? null, skipAuthRefresh: true }
+    );
+  } catch (error) {
+    throw normalizeAuthApiError(error, "Unable to complete logout.", url);
+  } finally {
+    cleanup();
+  }
 }

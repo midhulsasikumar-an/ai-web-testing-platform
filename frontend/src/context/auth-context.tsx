@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { AuthApiError, getCurrentUser, loginWithBackend, signupWithBackend, toAuthErrorMessage } from "@/services/auth-api";
-import { clearAuthSession, getStoredAuthSession, storeAuthSession, type AuthSession } from "@/services/http";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { AuthApiError, getCurrentUser, loginWithBackend, logoutWithBackend, signupWithBackend, toAuthErrorMessage } from "@/services/auth-api";
+import { clearAuthToken, clearRefreshToken, getStoredAuthToken, onAuthTokenCleared, storeAuthToken, storeRefreshToken } from "@/services/http";
 
 export interface User {
   id: string;
@@ -30,14 +30,47 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type AuthSession = {
+  token: string;
+  user: User;
+};
+
 function toUser(session: AuthSession | null): User | null {
-  if (!session) return null;
-  return {
-    id: session.user.id,
-    name: session.user.name,
-    email: session.user.email,
-    role: session.user.role,
-  };
+  return session ? session.user : null;
+}
+
+function decodeJwtFallbackUser(token: string): User | null {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) {
+      return null;
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+    const payloadJson = atob(`${normalized}${padding}`);
+    const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+    const expiresAt = typeof payload.exp === "number" ? payload.exp * 1000 : null;
+    if (expiresAt && expiresAt <= Date.now()) {
+      return null;
+    }
+
+    const id = String(payload.id || payload.user_id || payload.sub || "").trim();
+    const email = String(payload.email || "").trim();
+    const name = String(payload.name || email || id || "").trim();
+    if (!id || !email) {
+      return null;
+    }
+
+    return {
+      id,
+      name,
+      email,
+      role: String(payload.role || "user"),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -49,11 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let active = true;
 
     async function init() {
-      const hydrated = getStoredAuthSession();
+      const token = getStoredAuthToken();
 
-      // ── Case 1: No token in storage ──────────────────────────────────
-      if (!hydrated?.token) {
-        console.info("[auth] No stored session found. Starting as unauthenticated.");
+      if (!token) {
         if (active) {
           setSession(null);
           setIsReady(true);
@@ -61,50 +92,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // ── Case 2: Token exists — validate it against backend ────────────
-      console.info("[auth] Stored session token found. Validating...");
-
       try {
-        const currentUser = await getCurrentUser(hydrated.token);
-
-        const restored: AuthSession = {
-          token: hydrated.token,
-          user: {
-            id: currentUser.id,
-            name: currentUser.name,
-            email: currentUser.email,
-            role: currentUser.role,
-          },
-        };
-        storeAuthSession(restored);
+        const currentUser = await getCurrentUser(token);
+        const restored: AuthSession = { token, user: currentUser };
+        storeAuthToken(token);
 
         if (active) {
           setSession(restored);
           setInitWarning(null);
-          console.info("[auth] Session validated successfully.");
         }
       } catch (error) {
         if (error instanceof AuthApiError) {
           switch (error.code) {
-            // ── Token invalid / expired — clear it ──────────────────────
             case "UNAUTHORIZED":
-              console.info("[auth] Token expired or invalid. Clearing session.");
-              clearAuthSession();
+              clearAuthToken();
+              clearRefreshToken();
               if (active) {
                 setSession(null);
                 setInitWarning(null);
               }
               break;
 
-            // ── Backend not reachable — keep token, degrade gracefully ──
             case "BACKEND_UNAVAILABLE":
             case "NETWORK_ERROR":
-            case "ENDPOINT_NOT_FOUND":
-              console.warn("[auth] Backend unreachable during init. Keeping stored token for next attempt.",
-                { code: error.code, message: error.message }
-              );
               if (active) {
-                setSession(null);
+                const fallbackUser = decodeJwtFallbackUser(token);
+                setSession(fallbackUser ? { token, user: fallbackUser } : null);
                 setInitWarning({
                   code: error.code as InitWarning["code"],
                   message: error.message,
@@ -112,13 +125,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
               break;
 
-            // ── Request timed out — keep token, degrade gracefully ──────
-            case "TIMEOUT":
-              console.warn("[auth] Session validation timed out. Keeping stored token for next attempt.",
-                { code: error.code, message: error.message }
-              );
+            case "SERVER_ERROR":
+              clearAuthToken();
+              clearRefreshToken();
               if (active) {
                 setSession(null);
+                setInitWarning({
+                  code: "BACKEND_UNAVAILABLE",
+                  message: error.message,
+                });
+              }
+              break;
+
+            case "TIMEOUT":
+              if (active) {
+                const fallbackUser = decodeJwtFallbackUser(token);
+                setSession(fallbackUser ? { token, user: fallbackUser } : null);
                 setInitWarning({
                   code: "TIMEOUT",
                   message: error.message,
@@ -126,12 +148,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
               break;
 
-            // ── Server error or unexpected failure — clear to be safe ────
             default:
-              console.error("[auth] Unexpected AuthApiError during init. Clearing session.",
-                { code: error.code, message: error.message }
-              );
-              clearAuthSession();
+              clearAuthToken();
+              clearRefreshToken();
               if (active) {
                 setSession(null);
                 setInitWarning(null);
@@ -139,9 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               break;
           }
         } else {
-          // Non-AuthApiError (shouldn't happen, but be safe)
-          console.error("[auth] Non-auth error during session init. Clearing session.", error);
-          clearAuthSession();
+          clearAuthToken();
+          clearRefreshToken();
           if (active) {
             setSession(null);
             setInitWarning(null);
@@ -154,19 +172,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     init();
 
+    const removeAuthListener = onAuthTokenCleared(() => {
+      if (active) {
+        setSession(null);
+        setInitWarning(null);
+      }
+    });
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "auth_token" && !event.newValue && active) {
+        setSession(null);
+        setInitWarning(null);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
     return () => {
       active = false;
+      removeAuthListener();
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<void> => {
     try {
       const nextSession = await loginWithBackend(email, password);
-      storeAuthSession(nextSession);
+      storeAuthToken(nextSession.token);
+      if (nextSession.refreshToken) {
+        storeRefreshToken(nextSession.refreshToken);
+      }
       setSession(nextSession);
       setInitWarning(null);
     } catch (error) {
-      console.error("Login failed", error);
       throw new Error(toAuthErrorMessage(error));
     }
   }, []);
@@ -174,20 +212,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = useCallback(async (name: string, email: string, password: string): Promise<void> => {
     try {
       const nextSession = await signupWithBackend(name, email, password);
-      storeAuthSession(nextSession);
+      storeAuthToken(nextSession.token);
+      if (nextSession.refreshToken) {
+        storeRefreshToken(nextSession.refreshToken);
+      }
       setSession(nextSession);
       setInitWarning(null);
     } catch (error) {
-      console.error("Signup failed", error);
       throw new Error(toAuthErrorMessage(error));
     }
   }, []);
 
   const logout = useCallback(() => {
-    clearAuthSession();
+    const token = session?.token ?? getStoredAuthToken();
+    if (token) {
+      void logoutWithBackend(token).catch(() => undefined);
+    }
+    clearRefreshToken();
+    clearAuthToken();
     setSession(null);
     setInitWarning(null);
-  }, []);
+  }, [session?.token]);
 
   const clearInitWarning = useCallback(() => {
     setInitWarning(null);

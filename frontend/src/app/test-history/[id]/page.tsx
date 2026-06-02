@@ -2,25 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
-import { Header } from "@/components/layout/header";
-import { useBugContext } from "@/context/bug-context";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MetadataField } from "@/components/shared/metadata-field";
-import { formatDateLong, formatTime } from "@/lib/formatters";
-import { DEFAULT_TEST_TYPE_CONFIG, resolveTestTypeConfig } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-import { API_BASE_URL } from "@/services/http";
-import { getTestById as fetchTestById } from "@/services/test-api";
-import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
   Calendar,
-  CheckCircle,
   CheckCircle2,
   ChevronRight,
   Clock,
@@ -28,16 +16,27 @@ import {
   ExternalLink,
   FileText,
   Globe,
-  Image as ImageIcon,
-  Lightbulb,
-  Maximize2,
   Play,
-  ShieldAlert,
   Sparkles,
   Terminal,
-  X,
   XCircle,
 } from "lucide-react";
+
+import { Header } from "@/components/layout/header";
+import { DashboardSection } from "@/components/shared/dashboard-section";
+import { ScreenshotGallery } from "@/components/shared/screenshot-gallery";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MetadataField } from "@/components/shared/metadata-field";
+import { useBugContext } from "@/context/bug-context";
+import { formatDateLong, formatTime } from "@/lib/formatters";
+import { DEFAULT_TEST_TYPE_CONFIG, resolveTestTypeConfig } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "@/services/http";
+import { getTestById as fetchTestById } from "@/services/test-api";
+
+const RERUN_CONFIG_KEY = "test_history_rerun_config";
 
 type TestRecord = Record<string, any>;
 
@@ -47,6 +46,9 @@ type DetailResult = {
   status?: string;
   error?: string;
   step?: { action?: string; target?: string; value?: unknown };
+  failure_category?: string | null;
+  root_cause?: string | null;
+  root_cause_confidence?: number | null;
 };
 
 type ScreenshotEvidence = {
@@ -59,11 +61,48 @@ type Finding = {
   text: string;
 };
 
+type ScenarioCoverage = {
+  scenario_id?: string;
+  scenario_name?: string;
+  generated_steps?: number;
+  executed_steps?: number;
+  passed_steps?: number;
+  failed_steps?: number;
+  execution_status?: string;
+  coverage_profile?: string;
+};
+
+type ResultViewMode = "human" | "json";
+type SectionKey =
+  | "summary"
+  | "results"
+  | "coverage"
+  | "scenarioTree"
+  | "riskSummary"
+  | "screenshots"
+  | "findings"
+  | "lifecycle"
+  | "bugs"
+  | "recommendations"
+  | "priorityIssues"
+  | "logs"
+  | "artifacts";
+
 function normalizeArtifactUrl(value: string): string {
   if (!value) return "";
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
   if (value.startsWith("/")) return `${API_BASE_URL}${value}`;
   return `${API_BASE_URL}/${value}`;
+}
+
+function readArtifactUrl(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const candidate = record.artifact_url ?? record.path ?? record.url;
+    if (typeof candidate === "string") return candidate;
+  }
+  return "";
 }
 
 function stringifyValue(value: unknown): string {
@@ -74,6 +113,53 @@ function stringifyValue(value: unknown): string {
   } catch {
     return String(value);
   }
+}
+
+function buildHumanReadableResult(result: DetailResult): string[] {
+  const lines: string[] = [];
+  const details = result.details && typeof result.details === "object" ? (result.details as Record<string, unknown>) : null;
+  const source = details ?? (result as Record<string, unknown>);
+
+  const urlChanged = source.url_changed;
+  if (typeof urlChanged === "boolean") {
+    lines.push(urlChanged ? "✓ URL changed successfully" : "✗ URL did not change");
+  }
+
+  const errorDetected = source.error_detected;
+  if (typeof errorDetected === "boolean") {
+    lines.push(errorDetected ? "✗ Error detected" : "✓ No errors detected");
+  }
+
+  const expectedMatched = source.expected_matched;
+  if (typeof expectedMatched === "boolean") {
+    lines.push(expectedMatched ? "✓ Expected result matched" : "✗ Expected result did not match");
+  }
+
+  const title = source.title;
+  if (typeof title === "string" && title.trim()) {
+    lines.push(`✓ Page title verified: ${title.trim()}`);
+  }
+
+  const url = source.url;
+  if (typeof url === "string" && url.trim()) {
+    lines.push(`✓ Final URL: ${url.trim()}`);
+  }
+
+  if (!lines.length && result.error) {
+    lines.push(`✗ ${result.error}`);
+  }
+
+  if (!lines.length) {
+    if (result.status === "pass") {
+      lines.push("✓ Step passed successfully");
+    } else if (result.status === "fail") {
+      lines.push("✗ Step failed");
+    } else {
+      lines.push("• No structured summary available");
+    }
+  }
+
+  return lines;
 }
 
 function downloadTextFile(filename: string, content: string): void {
@@ -91,12 +177,7 @@ function buildScreenshotEvidence(test: TestRecord): ScreenshotEvidence[] {
   const evidence: ScreenshotEvidence[] = [];
   const seen = new Set<string>();
   const add = (label: string, raw: unknown) => {
-    let path = "";
-    if (typeof raw === "string") {
-      path = raw;
-    } else if (raw && typeof raw === "object" && "path" in raw) {
-      path = String((raw as { path?: unknown }).path ?? "");
-    }
+    const path = readArtifactUrl(raw);
     const url = normalizeArtifactUrl(path);
     if (url && !seen.has(url)) {
       evidence.push({ label, url });
@@ -119,7 +200,7 @@ function buildScreenshotEvidence(test: TestRecord): ScreenshotEvidence[] {
   const streamLogs = Array.isArray(test.stream_logs) ? test.stream_logs : [];
   for (let i = 0; i < streamLogs.length; i += 1) {
     const log = streamLogs[i] as Record<string, unknown>;
-    const details = (log.details && typeof log.details === "object") ? (log.details as Record<string, unknown>) : undefined;
+    const details = log.details && typeof log.details === "object" ? (log.details as Record<string, unknown>) : undefined;
     const screenshot = details?.screenshot ?? log.screenshot;
     if (screenshot) add(`Stream ${i + 1}`, screenshot);
   }
@@ -181,14 +262,40 @@ function buildRecommendations(test: TestRecord, results: DetailResult[], screens
   return fallback;
 }
 
+function formatLifecycleStatus(value: string): string {
+  return value.toLowerCase().split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
+
+function formatRootCause(value: string): string {
+  return value.toLowerCase().split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
+
 export default function TestDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { getTestById } = useBugContext();
   const test = getTestById(params.id as string) as TestRecord | null;
-  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const { token } = useAuth();
   const [remoteTest, setRemoteTest] = useState<TestRecord | null>(null);
   const [loadingRemote, setLoadingRemote] = useState(false);
+  const [resultViewModes, setResultViewModes] = useState<Record<number, ResultViewMode>>({});
+  const [compactMode, setCompactMode] = useState(true);
+  const [visibleResultCount, setVisibleResultCount] = useState(24);
+  const [visibleLogCount, setVisibleLogCount] = useState(24);
+  const [sectionOpen, setSectionOpen] = useState<Record<SectionKey, boolean>>({
+    summary: true,
+    results: false,
+    coverage: false,
+    scenarioTree: false,
+    riskSummary: false,
+    screenshots: false,
+    findings: false,
+    lifecycle: false,
+    bugs: false,
+    recommendations: false,
+    priorityIssues: false,
+    logs: false,
+    artifacts: false,
+  });
 
   const activeTest = test ?? remoteTest;
   const testRecord = activeTest ?? {};
@@ -207,22 +314,40 @@ export default function TestDetailPage() {
     return "";
   }, [activeTest]);
 
-  const results = useMemo<DetailResult[]>(() => {
-    return Array.isArray(activeTest?.results) ? (activeTest?.results as DetailResult[]) : [];
+  const lifecycleOverview = useMemo(() => {
+    const lifecycle = activeTest?.bug_lifecycle && typeof activeTest.bug_lifecycle === "object" ? (activeTest.bug_lifecycle as Record<string, unknown>) : null;
+    const summary = lifecycle?.summary && typeof lifecycle.summary === "object" ? (lifecycle.summary as Record<string, unknown>) : null;
+    const byStatus = summary?.by_status && typeof summary.by_status === "object" ? (summary.by_status as Record<string, unknown>) : null;
+    const overviewSource = byStatus ?? summary ?? null;
+    return {
+      active: Number((overviewSource?.active ?? overviewSource?.Active) || 0),
+      resolved: Number((overviewSource?.resolved ?? overviewSource?.Resolved) || 0),
+      regressed: Number((overviewSource?.regressed ?? overviewSource?.Regressed) || 0),
+      flaky: Number((overviewSource?.flaky ?? overviewSource?.Flaky) || 0),
+      monitoring: Number((overviewSource?.monitoring ?? overviewSource?.Monitoring) || 0),
+    };
   }, [activeTest]);
 
+  const results = useMemo<DetailResult[]>(() => Array.isArray(activeTest?.results) ? (activeTest?.results as DetailResult[]) : [], [activeTest]);
+  const riskSummary = useMemo<Record<string, unknown> | null>(() => {
+    const fromTest = activeTest?.risk_summary && typeof activeTest.risk_summary === "object" ? (activeTest.risk_summary as Record<string, unknown>) : null;
+    const fromReport = activeTest?.ai_report?.risk_summary && typeof activeTest.ai_report.risk_summary === "object" ? (activeTest.ai_report.risk_summary as Record<string, unknown>) : null;
+    return fromTest ?? fromReport ?? null;
+  }, [activeTest]);
   const screenshotEvidence = useMemo(() => buildScreenshotEvidence(testRecord), [testRecord]);
   const findings = useMemo(() => buildFindings(testRecord, results, summaryText), [results, summaryText, testRecord]);
   const recommendations = useMemo(() => buildRecommendations(testRecord, results, screenshotEvidence.length), [results, screenshotEvidence.length, testRecord]);
+  const visibleResults = useMemo(() => results.slice(0, visibleResultCount), [results, visibleResultCount]);
+  const streamLogs = Array.isArray(activeTest?.stream_logs) ? activeTest.stream_logs : [];
+  const visibleLogs = useMemo(() => streamLogs.slice(0, visibleLogCount) as Array<{ time?: string; level?: string; msg?: string; message?: string }>, [streamLogs, visibleLogCount]);
+  const artifacts = activeTest?.artifacts && typeof activeTest.artifacts === "object" ? (activeTest.artifacts as Record<string, unknown>) : null;
+  const aiPlan = activeTest?.ai_plan ?? null;
 
   const typeConfig = resolveTestTypeConfig(activeTest?.test_type);
   const TypeIcon = typeConfig.icon ?? DEFAULT_TEST_TYPE_CONFIG.icon;
   const typeLabel = typeConfig.label ?? DEFAULT_TEST_TYPE_CONFIG.label;
   const statusLabel = activeTest?.overall_status ?? activeTest?.status ?? "unknown";
-  const aiPlan = activeTest?.ai_plan ?? null;
-  const streamLogs = Array.isArray(activeTest?.stream_logs) ? activeTest.stream_logs : [];
-  const artifacts = activeTest?.artifacts && typeof activeTest.artifacts === "object" ? (activeTest.artifacts as Record<string, unknown>) : null;
-  const previewShot = previewIndex !== null ? screenshotEvidence[previewIndex] ?? null : null;
+  const mainStatus = statusLabel === "pass" ? "pass" : statusLabel === "warning" ? "warning" : statusLabel === "fail" ? "fail" : "unknown";
 
   const downloadReport = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-report.txt`, reportText || summaryText || "No report available");
   const downloadLogs = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-logs.json`, JSON.stringify(streamLogs, null, 2));
@@ -230,12 +355,12 @@ export default function TestDetailPage() {
 
   useEffect(() => {
     const id = String(params.id || "");
-    if (!id || test || !token) return;
+    if (!id || test) return;
 
     let active = true;
     setLoadingRemote(true);
 
-    fetchTestById(id, token)
+    fetchTestById(id)
       .then((t) => {
         if (!active) return;
         setRemoteTest(t as TestRecord);
@@ -247,255 +372,310 @@ export default function TestDetailPage() {
         if (active) setLoadingRemote(false);
       });
 
-    return () => { active = false; };
-  }, [params.id, test, token]);
+    return () => {
+      active = false;
+    };
+  }, [params.id, test]);
+
+  const handleRerun = () => {
+    const historicalPlan = activeTest?.ai_plan && typeof activeTest.ai_plan === "object" ? (activeTest.ai_plan as Record<string, unknown>) : null;
+    const rerunConfig = {
+      targetUrl: String(activeTest?.target_url || activeTest?.url || ""),
+      testName: String(activeTest?.test_name || activeTest?.name || ""),
+      goal: String(activeTest?.goal || historicalPlan?.instruction || activeTest?.ai_summary || summaryText || ""),
+      testType: String(activeTest?.test_type || activeTest?.run_type || "e2e"),
+      browser: String(activeTest?.browser || activeTest?.execution_settings?.browser || ""),
+      device: String(activeTest?.device || activeTest?.execution_settings?.device || ""),
+      coverageLevel: String(activeTest?.coverage_level || activeTest?.execution_settings?.coverage_level || historicalPlan?.coverage_level || ""),
+      executionSettings: activeTest?.execution_settings || historicalPlan?.execution_settings || null,
+      aiPlan: activeTest?.ai_plan ?? null,
+    };
+
+    window.localStorage.setItem(RERUN_CONFIG_KEY, JSON.stringify(rerunConfig));
+    router.push("/run-test");
+  };
 
   if (!activeTest && loadingRemote) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <Terminal className="h-10 w-10 text-muted-foreground/30" />
-        <p className="text-muted-foreground font-medium">Loading test...</p>
-        <Link href="/test-history" className={cn(buttonVariants({ variant: "outline" }))}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to History
-        </Link>
-      </div>
-    );
+    return <div className="flex h-[60vh] items-center justify-center p-8 text-sm text-slate-500">Loading test...</div>;
   }
 
   if (!activeTest) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <Terminal className="h-10 w-10 text-muted-foreground/30" />
-        <p className="text-muted-foreground font-medium">Test not found.</p>
-        <Link href="/test-history" className={cn(buttonVariants({ variant: "outline" }))}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to History
-        </Link>
-      </div>
-    );
+    return <div className="flex h-[60vh] items-center justify-center p-8 text-sm text-slate-500">Test not found.</div>;
   }
-
-  const mainStatus = statusLabel === "pass" ? "pass" : statusLabel === "warning" ? "warning" : statusLabel === "fail" ? "fail" : "unknown";
 
   return (
     <>
-      <Header title="Test Log Details">
+      <Header title="Test Log Details" eyebrow="Results">
         <Link href="/test-history" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Link>
-        <Link href="/run-test" className={cn(buttonVariants({ size: "sm" }))}>
-          <Play className="h-4 w-4 mr-2" />
+        <button type="button" onClick={handleRerun} className={cn(buttonVariants({ size: "sm" }))}>
+          <Play className="mr-2 h-4 w-4" />
           Re-run
-        </Link>
+        </button>
       </Header>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] items-start">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-white p-3 shadow-xs-token">
+        <Badge variant={mainStatus === "pass" ? "secondary" : mainStatus === "warning" ? "outline" : "destructive"}>{statusLabel}</Badge>
+        <Badge variant="outline">Duration {typeof activeTest?.duration !== "undefined" ? String(activeTest?.duration) : "—"}</Badge>
+        <Badge variant="outline">Passed {results.filter((step) => step.status === "pass").length}</Badge>
+        <Badge variant="outline">Failed {results.filter((step) => step.status === "fail").length}</Badge>
+        <Badge variant="outline">Bugs {Array.isArray(activeTest?.priority_issues) ? activeTest.priority_issues.length : 0}</Badge>
+
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setCompactMode((current) => !current)} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+            {compactMode ? "Dense View" : "Compact View"}
+          </button>
+          <button type="button" onClick={downloadReport} className={cn(buttonVariants({ size: "sm" }))}>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </button>
+        </div>
+      </div>
+
+      <div className={cn("grid items-start gap-6", compactMode ? "xl:grid-cols-[minmax(0,1fr)_320px]" : "xl:grid-cols-[minmax(0,1fr)_360px]") }>
         <div className="min-w-0 space-y-6">
-          <Card className={
-            mainStatus === "pass"
-              ? "border-green-500/30 bg-gradient-to-r from-green-50/50 to-transparent"
-              : mainStatus === "warning"
-              ? "border-yellow-500/30 bg-gradient-to-r from-yellow-50/50 to-transparent"
-              : "border-red-500/30 bg-gradient-to-r from-red-50/50 to-transparent"
-          }>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-xl shrink-0 ${mainStatus === "pass" ? "bg-green-100" : "bg-red-100"}`}>
-                  {mainStatus === "pass" ? (
-                    <CheckCircle2 className="h-6 w-6 text-green-600" />
-                  ) : mainStatus === "warning" ? (
-                    <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                  ) : (
-                    <XCircle className="h-6 w-6 text-red-600" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-bold">
-                      {mainStatus === "pass" ? "Test Passed" : mainStatus === "warning" ? "Test Warning" : "Test Failed"}
-                    </h2>
-                    <Badge variant={mainStatus === "pass" ? "secondary" : "destructive"}>{statusLabel}</Badge>
+          <Card className="border-border shadow-sm">
+            <CardContent className="space-y-4 pt-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={mainStatus === "pass" ? "secondary" : mainStatus === "warning" ? "outline" : "destructive"}>{statusLabel}</Badge>
+                    <Badge variant="outline">{typeLabel}</Badge>
+                    <Badge variant="outline">{activeTest?.test_type ?? "full"}</Badge>
                   </div>
-
-                  <div className="mt-3 rounded-lg border border-border bg-background/60 p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <p className="text-sm font-semibold">AI Executive Summary</p>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      {stringifyValue(activeTest?.ai_summary || summaryText || "No AI summary available")}
-                    </p>
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">{activeTest?.test_name || activeTest?.name || "Test Run"}</h1>
+                    <p className="mt-1 max-w-3xl break-words text-sm text-slate-500">{activeTest?.website || activeTest?.url || "No website recorded"}</p>
                   </div>
+                  <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{stringifyValue(activeTest?.ai_summary || summaryText || "No AI summary available").slice(0, 600)}</p>
                 </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  ["Generated", activeTest?.created_at || "—"],
+                  ["Related Test", activeTest?.related_test_id || "-"],
+                  ["Related Bug", activeTest?.related_bug_id || "-"],
+                  ["Health Score", `${activeTest?.health_score ?? 0}/100`],
+                ].map(([label, value]) => (
+                  <div key={label as string} className="rounded-lg border border-border bg-white p-4">
+                    <p className="text-eyebrow">{label}</p>
+                    <p className="mt-2 break-words text-sm font-semibold text-slate-900">{String(value)}</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Test Results</CardTitle>
-            </CardHeader>
+          <DashboardSection
+            id="results"
+            title="Test Results"
+            description="Step-by-step execution output with human and JSON views."
+            compact={compactMode}
+            defaultOpen={sectionOpen.results}
+            open={sectionOpen.results}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, results: open }))}
+            storageKey="test-history-detail:results"
+            className="shadow-sm"
+            contentClassName={cn("space-y-3", compactMode ? "max-h-[42rem] overflow-y-auto pr-1" : "max-h-[34rem] overflow-y-auto pr-1")}
+          >
+            {results.length > 0 ? (
+              <>
+                {visibleResults.map((result, index) => (
+                  <div key={index} className="overflow-hidden rounded-lg border border-border bg-white">
+                    <div className="flex flex-col gap-3 border-b border-border bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 break-words">{stringifyValue(result.test || result.step?.action || result.error || `Step ${index + 1}`)}</p>
+                        <p className="text-xs text-slate-500">Result {index + 1}</p>
+                      </div>
 
-            <CardContent className="space-y-3">
-              {results.length > 0 ? (
-                results.map((result, index) => (
-                  <div key={index} className="flex items-start justify-between gap-4 border rounded-lg p-3">
-                    <div className="min-w-0">
-                      <p className="font-medium break-words">
-                        {stringifyValue(result.test || result.step?.action || result.error || `Step ${index + 1}`)}
-                      </p>
-                      {Boolean(result.details) && (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
-                          {typeof result.details === "string" ? result.details : stringifyValue(result.details)}
-                        </p>
-                      )}
-                      {!Boolean(result.details) && Boolean(result.error) && (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{result.error}</p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Badge variant={result.status === "pass" ? "secondary" : result.status === "fail" ? "destructive" : "outline"}>{result.status || "info"}</Badge>
+                        <div className="inline-flex rounded-full border border-border bg-white p-1 text-xs">
+                          {["human", "json"].map((mode) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setResultViewModes((current) => ({ ...current, [index]: mode as ResultViewMode }))}
+                              className={cn(
+                                "rounded-full px-3 py-1.5 font-medium transition-colors",
+                                (resultViewModes[index] ?? "human") === mode ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                              )}
+                            >
+                              {mode === "human" ? "Human Readable" : "JSON"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
-                    <Badge variant={result.status === "pass" ? "secondary" : result.status === "fail" ? "destructive" : "outline"}>
-                      {result.status || "info"}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-lg border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">
-                  No test results available.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5 text-primary" />
-                Screenshot Evidence
-              </CardTitle>
-              {screenshotEvidence.length > 0 && (
-                <button className="text-sm font-medium text-primary hover:underline" onClick={() => setPreviewIndex(0)}>
-                  View All ({screenshotEvidence.length})
-                </button>
-              )}
-            </CardHeader>
-
-            <CardContent>
-              {screenshotEvidence.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
-                  {screenshotEvidence.map((shot, index) => (
-                    <button
-                      key={`${shot.url}-${index}`}
-                      className="group w-56 shrink-0 snap-start overflow-hidden rounded-xl border border-border bg-muted/20 text-left"
-                      onClick={() => setPreviewIndex(index)}
-                    >
-                      <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
-                        <img src={shot.url} alt={shot.label} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                      </div>
-                      <div className="flex items-center justify-between gap-2 p-2">
-                        <span className="text-xs font-medium truncate">{shot.label}</span>
-                        <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-xl border border-dashed border-border bg-muted/10 p-6 text-sm text-muted-foreground">
-                  No screenshots captured during this run.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-emerald-500" />
-                AI Findings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {findings.map((item, index) => (
-                <div key={index} className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3">
-                  {item.tone === "success" ? (
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
-                  ) : item.tone === "warning" ? (
-                    <AlertCircle className="mt-0.5 h-4 w-4 text-amber-500" />
-                  ) : (
-                    <AlertTriangle className="mt-0.5 h-4 w-4 text-slate-400" />
-                  )}
-                  <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">{item.text}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-yellow-500" />
-                Recommendations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {recommendations.map((recommendation, index) => (
-                <div key={index} className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3">
-                  <ChevronRight className="mt-0.5 h-4 w-4 text-blue-500" />
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{recommendation}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Download className="h-5 w-5 text-primary" />
-                Artifacts
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={downloadReport}>
-                <FileText className="mr-2 h-4 w-4" />
-                Download Report
-              </button>
-              <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={downloadLogs}>
-                <Terminal className="mr-2 h-4 w-4" />
-                Download Logs
-              </button>
-              <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={downloadScreenshots}>
-                <ImageIcon className="mr-2 h-4 w-4" />
-                Download Screenshots
-              </button>
-            </CardContent>
-          </Card>
-
-          {Array.isArray(activeTest?.priority_issues) && activeTest.priority_issues.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5 text-red-500" />
-                  Priority Issues
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {activeTest.priority_issues.map((issue: { level?: string; issue?: string }, index: number) => (
-                  <div key={index} className="rounded-lg border border-border p-4 bg-muted/20">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-medium break-words">{issue.issue || "Priority issue detected"}</p>
-                      <Badge variant={issue.level === "critical" ? "destructive" : issue.level === "moderate" ? "outline" : "secondary"}>
-                        {issue.level || "info"}
-                      </Badge>
+                    <div className="px-4 py-4">
+                      {(resultViewModes[index] ?? "human") === "json" ? (
+                        <pre className="max-h-72 overflow-auto rounded-lg border border-border bg-slate-950 px-4 py-3 text-xs leading-relaxed text-slate-100 whitespace-pre-wrap break-words">{JSON.stringify(result, null, 2)}</pre>
+                      ) : (
+                        <div className="space-y-2">
+                          {buildHumanReadableResult(result).map((line, lineIndex) => (
+                            <div key={lineIndex} className="flex items-start gap-3 rounded-lg border border-border bg-slate-50 px-3 py-2">
+                              <span className="mt-0.5 text-sm">{line.startsWith("✗") ? "✗" : "✓"}</span>
+                              <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">{line.replace(/^[✓✗•]\s*/, "")}</p>
+                            </div>
+                          ))}
+                          {result.status === "fail" ? (
+                            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 space-y-2">
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                <div>
+                                  <p className="text-eyebrow text-amber-700">Failure Category</p>
+                                  <p className="mt-1 text-sm font-medium text-slate-800">{formatLifecycleStatus(String((result as DetailResult).failure_category || "UNKNOWN"))}</p>
+                                </div>
+                                <div>
+                                  <p className="text-eyebrow text-amber-700">Root Cause</p>
+                                  <p className="mt-1 text-sm font-medium text-slate-800">{formatRootCause(String((result as DetailResult).root_cause || "UNKNOWN"))}</p>
+                                </div>
+                                <div>
+                                  <p className="text-eyebrow text-amber-700">Confidence</p>
+                                  <p className="mt-1 text-sm font-medium text-slate-800">{Math.round(((result as DetailResult).root_cause_confidence || 0) * 100)}%</p>
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-          )}
+
+                {visibleResultCount < results.length ? (
+                  <div className="flex justify-center pt-1">
+                    <button type="button" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={() => setVisibleResultCount((current) => current + 24)}>
+                      Show more steps ({results.length - visibleResultCount})
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">No test results available.</div>
+            )}
+          </DashboardSection>
+
+
+
+          <DashboardSection
+            id="riskSummary"
+            title="Risk Summary"
+            description="Aggregated risk signals captured for this run."
+            compact={compactMode}
+            defaultOpen={sectionOpen.riskSummary}
+            open={sectionOpen.riskSummary}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, riskSummary: open }))}
+            storageKey="test-history-detail:risk-summary"
+            className="shadow-sm"
+            contentClassName={cn("space-y-2", compactMode ? "max-h-[20rem] overflow-y-auto pr-1" : "max-h-[18rem] overflow-y-auto pr-1")}
+          >
+            {riskSummary ? (
+              Object.entries(riskSummary)
+                .filter(([, value]) => Boolean(value))
+                .map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between rounded-lg border border-border bg-slate-50 px-3 py-2 text-sm">
+                    <span className="text-slate-600 capitalize">{key.replace(/_/g, " ")}</span>
+                    <span className="font-semibold text-slate-900">{String(value)}</span>
+                  </div>
+                ))
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">No risk summary available for this run.</div>
+            )}
+          </DashboardSection>
+
+          <DashboardSection
+            id="screenshots"
+            title="Screenshot Collections"
+            description="Grid-based evidence gallery with lazy loading and a lightbox preview."
+            compact={compactMode}
+            defaultOpen={sectionOpen.screenshots}
+            open={sectionOpen.screenshots}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, screenshots: open }))}
+            storageKey="test-history-detail:screenshots"
+            className="shadow-sm"
+            contentClassName={cn(compactMode ? "max-h-[28rem] overflow-y-auto pr-1" : "max-h-[24rem] overflow-y-auto pr-1")}
+          >
+            <ScreenshotGallery
+              items={screenshotEvidence}
+              title="Screenshot Evidence"
+              description="Grid-based evidence gallery with lazy loading and a lightbox preview."
+              compact={compactMode}
+              initialVisibleCount={compactMode ? 8 : 12}
+              loadMoreStep={compactMode ? 8 : 12}
+              className="shadow-sm"
+              maxBodyClassName="max-h-none overflow-visible p-0"
+              emptyText="No screenshots captured during this run."
+              showHeader={false}
+            />
+          </DashboardSection>
+
+          <DashboardSection
+            id="findings"
+            title="AI Findings"
+            description="Concise AI-generated observations from this run."
+            compact={compactMode}
+            defaultOpen={sectionOpen.findings}
+            open={sectionOpen.findings}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, findings: open }))}
+            storageKey="test-history-detail:findings"
+            className="shadow-sm"
+            contentClassName={cn("space-y-2", compactMode ? "max-h-[18rem] overflow-y-auto pr-1" : "max-h-[16rem] overflow-y-auto pr-1")}
+          >
+            {findings.map((item, index) => (
+              <div key={index} className="flex items-start gap-3 rounded-lg border border-border bg-slate-50/60 p-3">
+                {item.tone === "success" ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" /> : item.tone === "warning" ? <AlertCircle className="mt-0.5 h-4 w-4 text-amber-500" /> : <AlertTriangle className="mt-0.5 h-4 w-4 text-slate-400" />}
+                <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">{item.text}</p>
+              </div>
+            ))}
+          </DashboardSection>
+
+
+
+          <DashboardSection
+            id="recommendations"
+            title="Recommendations"
+            description="Lower-priority follow-up actions and remediation hints."
+            compact={compactMode}
+            defaultOpen={sectionOpen.recommendations}
+            open={sectionOpen.recommendations}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, recommendations: open }))}
+            storageKey="test-history-detail:recommendations"
+            className="shadow-sm"
+            contentClassName={cn("space-y-2", compactMode ? "max-h-[16rem] overflow-y-auto pr-1" : "max-h-[14rem] overflow-y-auto pr-1")}
+          >
+            {recommendations.map((recommendation, index) => (
+              <div key={index} className="flex items-start gap-3 rounded-lg border border-border bg-slate-50/60 p-3">
+                <ChevronRight className="mt-0.5 h-4 w-4 text-primary" />
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{recommendation}</p>
+              </div>
+            ))}
+          </DashboardSection>
+
+          <DashboardSection
+            id="priorityIssues"
+            title="Priority Issues"
+            description="High-signal issues worth addressing first."
+            compact={compactMode}
+            defaultOpen={sectionOpen.priorityIssues}
+            open={sectionOpen.priorityIssues}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, priorityIssues: open }))}
+            storageKey="test-history-detail:priority-issues"
+            className="shadow-sm"
+            contentClassName={cn("space-y-3", compactMode ? "max-h-[14rem] overflow-y-auto pr-1" : "max-h-[12rem] overflow-y-auto pr-1")}
+          >
+            {Array.isArray(activeTest?.priority_issues) && activeTest.priority_issues.length > 0 ? activeTest.priority_issues.map((issue: { level?: string; issue?: string }, index: number) => (
+              <div key={index} className="rounded-lg border border-border p-4 bg-slate-50/60">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium break-words">{issue.issue || "Priority issue detected"}</p>
+                  <Badge variant={issue.level === "critical" ? "destructive" : issue.level === "moderate" ? "outline" : "secondary"}>{issue.level || "info"}</Badge>
+                </div>
+              </div>
+            )) : <div className="rounded-lg border border-dashed border-border bg-slate-50 p-6 text-sm text-muted-foreground">No priority issues captured for this run.</div>}
+          </DashboardSection>
         </div>
 
         <div className="space-y-4 self-start sticky top-4">
@@ -504,141 +684,94 @@ export default function TestDetailPage() {
               <CardTitle className="text-sm font-semibold">Test Metadata</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <MetadataField icon={Terminal} label="Test ID">
-                <p className="text-sm font-mono font-medium break-all">{activeTest?.test_id}</p>
-              </MetadataField>
-
-              <MetadataField icon={Globe} label="Target URL">
-                <a href={activeTest?.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 break-all">
-                  {activeTest?.url}
-                  <ExternalLink className="h-3 w-3 shrink-0" />
-                </a>
-              </MetadataField>
-
-              <MetadataField icon={TypeIcon} label="Test Type">
-                <div className="flex items-center gap-1.5">
-                  <TypeIcon className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-sm font-medium">{typeLabel}</span>
-                </div>
-              </MetadataField>
-
-              <MetadataField icon={Clock} label="Health Score">
-                <p className="text-sm font-mono font-medium">{activeTest?.health_score ?? 0}/100</p>
-              </MetadataField>
-
-              <MetadataField icon={Calendar} label="Timestamp">
-                <div className="text-sm">
-                  <p>{formatDateLong(activeTest?.created_at || "")}</p>
-                  <p className="text-xs text-muted-foreground">{formatTime(activeTest?.created_at || "")}</p>
-                </div>
-              </MetadataField>
-
-              <MetadataField icon={Clock} label="Duration">
-                <p className="text-sm font-mono font-medium">{typeof activeTest?.duration !== "undefined" ? String(activeTest?.duration) : "—"}</p>
-              </MetadataField>
-
-              <MetadataField icon={mainStatus === "pass" ? CheckCircle2 : XCircle} label="Result">
-                <Badge variant={mainStatus === "pass" ? "secondary" : "destructive"}>{statusLabel}</Badge>
-              </MetadataField>
+              <MetadataField icon={Terminal} label="Test ID"><p className="text-sm font-mono font-medium break-all">{activeTest?.test_id}</p></MetadataField>
+              <MetadataField icon={Globe} label="Target URL"><a href={activeTest?.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 break-all text-xs text-primary hover:underline">{activeTest?.url}<ExternalLink className="h-3 w-3 shrink-0" /></a></MetadataField>
+              <MetadataField icon={TypeIcon} label="Test Type"><div className="flex items-center gap-1.5"><TypeIcon className="h-3.5 w-3.5 text-primary" /><span className="text-sm font-medium">{typeLabel}</span></div></MetadataField>
+              <MetadataField icon={Clock} label="Health Score"><p className="text-sm font-mono font-medium">{activeTest?.health_score ?? 0}/100</p></MetadataField>
+              <MetadataField icon={Calendar} label="Timestamp"><div className="text-sm"><p>{formatDateLong(activeTest?.created_at || "")}</p><p className="text-xs text-muted-foreground">{formatTime(activeTest?.created_at || "")}</p></div></MetadataField>
+              <MetadataField icon={Clock} label="Duration"><p className="text-sm font-mono font-medium">{typeof activeTest?.duration !== "undefined" ? String(activeTest?.duration) : "—"}</p></MetadataField>
+              <MetadataField icon={mainStatus === "pass" ? CheckCircle2 : XCircle} label="Result"><Badge variant={mainStatus === "pass" ? "secondary" : "destructive"}>{statusLabel}</Badge></MetadataField>
             </CardContent>
           </Card>
 
           {aiPlan && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  AI Plan
-                </CardTitle>
+                <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />AI Plan</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="max-h-[16rem] space-y-2 overflow-y-auto pr-1">
                 <p className="text-sm font-medium leading-relaxed">{stringifyValue(aiPlan.summary)}</p>
                 <p className="text-xs text-muted-foreground whitespace-pre-wrap">{stringifyValue(aiPlan.instruction)}</p>
               </CardContent>
             </Card>
           )}
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-primary" />
-                Execution Logs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {streamLogs.length > 0 ? (
-                <div className="max-h-[360px] overflow-y-auto pr-1 space-y-2">
-                  {streamLogs.map((log: { time?: string; level?: string; msg?: string; message?: string }, index: number) => (
-                    <div key={index} className="rounded-lg border border-border bg-muted/20 p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-mono text-muted-foreground">{log.time || ""}</p>
-                        <Badge variant={log.level === "error" ? "destructive" : log.level === "warn" ? "outline" : "secondary"}>
-                          {log.level || "info"}
-                        </Badge>
-                      </div>
-                      <p className="mt-2 text-sm whitespace-pre-line break-words">{log.msg || log.message || "Log entry"}</p>
+          <DashboardSection
+            id="logs"
+            title="Execution Logs"
+            description="Raw execution logs, kept collapsed by default to preserve space."
+            compact={compactMode}
+            defaultOpen={sectionOpen.logs}
+            open={sectionOpen.logs}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, logs: open }))}
+            storageKey="test-history-detail:logs"
+            className="border-slate-800 bg-[#0b1220] shadow-[0_16px_40px_rgba(2,6,23,0.18)]"
+            contentClassName="p-0"
+          >
+            {streamLogs.length > 0 ? (
+              <div className="max-h-[22rem] space-y-2 overflow-y-auto px-4 py-4 pr-2 font-mono text-sm text-slate-200">
+                {visibleLogs.map((log, index) => (
+                  <div key={index} className="rounded-lg border border-slate-800/80 bg-slate-950/70 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-mono text-slate-400">{log.time || ""}</p>
+                      <Badge variant={log.level === "error" ? "destructive" : log.level === "warn" ? "outline" : "secondary"}>{log.level || "info"}</Badge>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-xl border border-dashed border-border bg-muted/10 p-6 text-sm text-muted-foreground">
-                  No execution logs captured.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <p className="mt-2 text-sm whitespace-pre-line break-words text-slate-200">{log.msg || log.message || "Log entry"}</p>
+                  </div>
+                ))}
+                {visibleLogCount < streamLogs.length ? <button type="button" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={() => setVisibleLogCount((current) => current + 24)}>Show more logs ({streamLogs.length - visibleLogCount})</button> : null}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border bg-muted/10 p-6 text-sm text-muted-foreground">No execution logs captured.</div>
+            )}
+          </DashboardSection>
+
+          <DashboardSection
+            id="artifacts"
+            title="Artifacts"
+            description="Export the report, logs, or screenshot manifest."
+            compact={compactMode}
+            defaultOpen={sectionOpen.artifacts}
+            open={sectionOpen.artifacts}
+            onOpenChange={(open) => setSectionOpen((current) => ({ ...current, artifacts: open }))}
+            storageKey="test-history-detail:artifacts"
+            className="shadow-sm"
+          >
+            <div className="flex flex-wrap gap-2">
+              <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={downloadReport}><FileText className="mr-2 h-4 w-4" />Download Report</button>
+              <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={downloadLogs}><Terminal className="mr-2 h-4 w-4" />Download Logs</button>
+              <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={downloadScreenshots}><FileText className="mr-2 h-4 w-4" />Download Screenshots</button>
+            </div>
+          </DashboardSection>
 
           {artifacts && Object.keys(artifacts).length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">Artifacts Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-xs whitespace-pre-wrap break-words rounded-lg border border-border bg-muted/20 p-3 max-h-64 overflow-auto">
-                  {JSON.stringify(artifacts, null, 2)}
-                </pre>
-              </CardContent>
-            </Card>
+            <DashboardSection
+              id="artifacts-preview"
+              title="Artifacts Preview"
+              description="Raw artifact JSON, collapsed by default."
+              compact={compactMode}
+              defaultOpen={sectionOpen.artifacts}
+              open={sectionOpen.artifacts}
+              onOpenChange={(open) => setSectionOpen((current) => ({ ...current, artifacts: open }))}
+              storageKey="test-history-detail:artifacts-preview"
+              className="shadow-sm"
+              contentClassName="p-0"
+            >
+              <pre className="max-h-64 overflow-auto rounded-lg border border-border bg-muted/20 p-3 text-xs whitespace-pre-wrap break-words">{JSON.stringify(artifacts, null, 2)}</pre>
+            </DashboardSection>
           )}
         </div>
       </div>
-
-      {previewShot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setPreviewIndex(null)}>
-          <div className="relative w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">Screenshot Preview</p>
-                <p className="text-xs text-muted-foreground">{previewShot.label}</p>
-              </div>
-              <button className={cn(buttonVariants({ variant: "ghost", size: "sm" }))} onClick={() => setPreviewIndex(null)}>
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_220px]">
-              <div className="flex min-h-[52vh] items-center justify-center overflow-hidden rounded-2xl bg-slate-100 p-3">
-                <img src={previewShot.url} alt={previewShot.label} className="max-h-[78vh] w-auto rounded-xl border border-border object-contain" />
-              </div>
-
-              <div className="max-h-[78vh] overflow-y-auto space-y-2 pr-1">
-                {screenshotEvidence.map((shot, index) => (
-                  <button
-                    key={`${shot.url}-${index}`}
-                    className={`w-full overflow-hidden rounded-xl border text-left transition ${index === previewIndex ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
-                    onClick={() => setPreviewIndex(index)}
-                  >
-                    <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
-                      <img src={shot.url} alt={shot.label} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="px-3 py-2 text-xs font-medium truncate">{shot.label}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

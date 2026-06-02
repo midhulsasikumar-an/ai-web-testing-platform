@@ -3,129 +3,176 @@
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { AIHealthWidget } from "@/components/dashboard/ai-health-widget";
-import { WorkflowSuccessRateChart } from "@/components/dashboard/workflow-success-rate-chart";
+import { TestSuccessRateChart } from "@/components/dashboard/test-success-rate-chart";
 import { LiveTelemetryTerminal } from "@/components/dashboard/live-telemetry-terminal";
 import { LiveActivityFeed } from "@/components/dashboard/live-activity-feed";
 import { LatestTestRunsTable } from "@/components/dashboard/latest-test-runs-table";
 import { useAuth } from "@/context/auth-context";
-import { 
-  Activity, 
-  AlertTriangle, 
-  Scale, 
-  ShieldCheck 
+import {
+  Activity,
+  AlertTriangle,
+  Scale,
+  ShieldCheck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getDashboardStats, DashboardStatsResponse } from "@/services/dashboard-api";
 
+function formatRiskLevel(value: string | undefined | null): string {
+  if (!value) return "Unknown";
+  const normalized = value.toLowerCase();
+  if (normalized === "unknown") return "Unknown";
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function riskLevelColor(value: string | undefined | null): string {
+  const normalized = (value || "").toLowerCase();
+  if (normalized === "high") return "text-red-600";
+  if (normalized === "medium") return "text-amber-600";
+  if (normalized === "low") return "text-emerald-600";
+  return "text-slate-500";
+}
+
+function getStabilityGrade(health?: number | null) {
+  if (typeof health !== 'number' || Number.isNaN(health) || health <= 0) return "—";
+  if (health >= 95) return "A+";
+  if (health >= 90) return "A";
+  if (health >= 85) return "A-";
+  if (health >= 80) return "B+";
+  if (health >= 75) return "B";
+  if (health >= 70) return "C";
+  return "D";
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isReady, token } = useAuth();
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const { isReady } = useAuth();
 
   useEffect(() => {
-    if (!isReady || !token) {
+    if (!isReady) {
       return;
     }
+
+    let active = true;
 
     async function loadStats() {
       try {
         setLoading(true);
-        const data = await getDashboardStats(token ?? undefined);
-        setStats(data);
+        setLoadError(null);
+        const data = await getDashboardStats();
+        if (active) {
+          setStats(data);
+        }
       } catch (err) {
+        if (active) {
+          setLoadError(err instanceof Error ? err.message : "Failed to load dashboard stats");
+        }
         if (err instanceof Error && err.message.includes("401 Unauthorized")) {
-          setStats(null);
+          if (active) setStats(null);
           return;
         }
         console.error("Failed to load dashboard stats", err);
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
     loadStats();
-  }, [isReady, token]);
+    return () => {
+      active = false;
+    };
+  }, [isReady]);
 
-  if (!isReady || !token) {
+  if (!isReady || loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center py-20">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
       </div>
     );
   }
 
-  if (loading || !stats) {
+  if (loadError) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex flex-col gap-5">
+        <Header title="AI Testing Command Center" description="Real-time health, risk, and activity across your test runs." eyebrow="Overview" />
+        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-[13px] text-red-700">
+          <p className="font-semibold">Dashboard metrics are unavailable.</p>
+          <p className="mt-1 break-words">{loadError}</p>
+        </div>
       </div>
     );
   }
 
-  // Calculate some derived metrics based on the design
-  const workflowSuccessRate = stats.total_tests > 0 
-    ? (stats.passed / stats.total_tests) * 100 
-    : 96.4; // Fallback if no tests
+  if (!stats) {
+    return (
+      <div className="flex flex-col gap-5">
+        <Header title="AI Testing Command Center" description="Real-time health, risk, and activity across your test runs." eyebrow="Overview" />
+        <div className="rounded-xl border border-border bg-slate-50 p-5 text-[13px] text-slate-500">
+          Dashboard metrics are not available right now.
+        </div>
+      </div>
+    );
+  }
 
-  // Derive letter grade for stability
-  const getStabilityGrade = (health: number) => {
-    if (health >= 95) return "A+";
-    if (health >= 90) return "A";
-    if (health >= 85) return "A-";
-    if (health >= 80) return "B+";
-    if (health >= 75) return "B";
-    if (health >= 70) return "C";
-    return "D";
-  };
+  const testSuccessRate = stats.total_tests > 0
+    ? (stats.passed / stats.total_tests) * 100
+    : null;
+
+  const riskLevel = stats.ai_summary?.risk_level ?? null;
+  const stabilityGrade = getStabilityGrade(stats.average_health ?? null);
 
   return (
-    <div className="bg-white min-h-screen pb-10">
-      <Header title="AI Testing Command Center" />
+    <div className="flex flex-col gap-5">
+      <Header
+        title="AI Testing Command Center"
+        description="Real-time health, risk, and activity across your test runs."
+        eyebrow="Overview"
+      />
 
-      <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-        {/* Top Section - Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <AIHealthWidget score={Math.round(stats.average_health || 88)} />
-          
-          <div className="grid grid-cols-2 gap-4 col-span-1 lg:col-span-2">
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <AIHealthWidget score={typeof stats.average_health === "number" && stats.average_health > 0 ? Math.round(stats.average_health) : null} />
+
+          <div className="grid grid-cols-2 gap-3 col-span-1 lg:col-span-2">
             <StatCard
               title="Total Executions"
-              value={stats.total_tests || 14208}
+              value={stats.total_tests ?? "—"}
               icon={Activity}
-              trend="Last 30 days"
+              trend={stats.total_tests > 0 ? "From recorded runs" : "No runs yet"}
             />
             <StatCard
               title="Active Failures"
-              value={stats.open_bugs || 24}
+              value={stats.open_bugs ?? "—"}
               icon={AlertTriangle}
-              trend="Requires attention"
-              trendColor="text-red-500"
-              className="text-red-600"
+              trend={stats.open_bugs > 0 ? "Requires attention" : "No active bugs"}
+              trendColor={stats.open_bugs > 0 ? "text-red-500" : "text-slate-500"}
+              className={stats.open_bugs > 0 ? "text-red-600" : undefined}
             />
             <StatCard
               title="Stability Index"
-              value={getStabilityGrade(stats.average_health || 88)}
+              value={stabilityGrade}
               icon={Scale}
-              trend="High confidence"
+              trend={stabilityGrade === "—" ? "Awaiting health scores" : `Based on ${stats.average_health}/100`}
             />
             <StatCard
               title="AI Risk Level"
-              value={stats.ai_summary?.risk_level === 'high' ? 'High Risk' : stats.ai_summary?.risk_level === 'medium' ? 'Medium Risk' : 'Low Risk'}
+              value={`${formatRiskLevel(riskLevel)} Risk`}
               icon={ShieldCheck}
-              trend=" " // spacing
-              trendColor={stats.ai_summary?.risk_level === 'high' ? 'text-red-500' : 'text-blue-600'}
-              trendIcon={ShieldCheck} // Re-using as indicator
+              trend={stats.ai_summary?.summary || "No summary available"}
+              trendColor={riskLevelColor(riskLevel)}
             />
           </div>
 
-          <WorkflowSuccessRateChart 
-            rate={workflowSuccessRate} 
-            data={stats.test_activity} 
+          <TestSuccessRateChart
+            rate={testSuccessRate}
+            data={stats.test_activity}
           />
         </div>
 
-        {/* Middle Section - Live Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <LiveTelemetryTerminal logs={stats.ai_logs} />
           </div>
@@ -134,7 +181,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Bottom Section - Table */}
         <div className="grid grid-cols-1">
           <LatestTestRunsTable tests={stats.recent_tests} />
         </div>

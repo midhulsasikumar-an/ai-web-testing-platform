@@ -1,0 +1,70 @@
+{
+  "test_id": "032cf14b-b95f-475a-9dc8-3d66e09e7501",
+  "user_id": "30221fe5-08b4-4237-a3a4-d3914ef51ed1",
+  "duration_s": 301.43715357780457,
+  "mongo_first_terminal_at_s": 18.914470195770264,
+  "mongo_first_terminal_status": "failed",
+  "api_first_terminal_at_s": 18.914470195770264,
+  "api_first_terminal_status": "failed",
+  "final_mongo_status": "failed",
+  "final_failure_reason": "legacy_execution_exception",
+  "final_stream_logs_count": 0,
+  "events": [
+    {
+      "ts_ms": 1780417053568,
+      "ts_iso": "2026-06-02T16:17:33.568256Z",
+      "category": "signup",
+      "status": 200,
+      "body": "{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDIyMWZlNS0wOGI0LTQyMzctYTNhNC1kMzkxNGVmNTFlZDEiLCJpZCI6IjMwMjIxZmU1LTA4YjQtNDIzNy1hM2E0LWQzOTE0ZWY1MWVkMSIsInVzZXJfaWQiOiIzMDIyMWZlNS0wOGI0L"
+    },
+    {
+      "ts_ms": 1780417053929,
+      "ts_iso": "2026-06-02T16:17:33.929531Z",
+      "category": "test_start",
+      "status": 200,
+      "body": "{\"message\":\"Test started successfully\",\"test_id\":\"032cf14b-b95f-475a-9dc8-3d66e09e7501\",\"status\":\"running\"}"
+    },
+    {
+      "ts_ms": 1780417055938,
+      "ts_iso": "2026-06-02T16:17:35.938498Z",
+      "category": "mongo_status_change",
+      "elapsed_s": 0.0,
+      "new_status": "running",
+      "failure_reason": null,
+      "logs_count": 0,
+      "last_log": "(empty)",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417055938,
+      "ts_iso": "2026-06-02T16:17:35.938498Z",
+      "category": "api_status_change",
+      "elapsed_s": 0.0,
+      "new_status": "running",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417073828,
+      "ts_iso": "2026-06-02T16:17:53.828498Z",
+      "category": "mongo_status_change",
+      "elapsed_s": 18.9,
+      "new_status": "failed",
+      "failure_reason": "legacy_execution_exception",
+      "logs_count": 0,
+      "last_log": "(empty)",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417073829,
+      "ts_iso": "2026-06-02T16:17:53.829480Z",
+      "category": "api_status_change",
+      "elapsed_s": 18.9,
+      "new_status": "failed",
+      "api_logs_count": 0,
+      "http": 200
+    }
+  ]
+}

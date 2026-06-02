@@ -3,9 +3,11 @@
 import { AuthProvider } from "@/context/auth-context";
 import { BugProvider } from "@/context/bug-context";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNav, MobileMenuButton } from "@/components/layout/mobile-nav";
+import { AppHeader } from "@/components/layout/app-header";
 import { useAuth } from "@/context/auth-context";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function AppGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -14,6 +16,7 @@ function AppGuard({ children }: { children: React.ReactNode }) {
 
   const publicRoutes = new Set(["/", "/login", "/signup"]);
   const isPublicRoute = publicRoutes.has(pathname);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     if (!isReady) {
@@ -31,7 +34,14 @@ function AppGuard({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, isPublicRoute, isReady, router]);
 
   if (!isReady) {
-    return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Loading session...</div>;
+    return (
+      <div className="grid min-h-screen place-items-center bg-[var(--shell-bg)] text-sm text-slate-500">
+        <div className="flex items-center gap-2.5">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+          Loading session…
+        </div>
+      </div>
+    );
   }
 
   if (isPublicRoute) {
@@ -39,13 +49,21 @@ function AppGuard({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="shell-bg flex min-h-screen text-slate-900">
       <Sidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-          {children}
-        </div>
-      </main>
+      <MobileNav />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AppHeader
+          showMobileMenuButton
+          onOpenMobileNav={() => setMobileNavOpen(true)}
+        />
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-[1400px] px-4 pb-10 pt-5 sm:px-6 lg:px-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

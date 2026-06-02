@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import csv
+import io
+import json
 import os
 import uuid
 from datetime import datetime
@@ -21,6 +24,14 @@ from backend.services.run_comparison_service import compare_runs
 
 REPORT_COLLECTION = db["reports"]
 
+EXPORT_MEDIA_TYPES = {
+    "pdf": "application/pdf",
+    "json": "application/json",
+    "markdown": "text/markdown",
+    "md": "text/markdown",
+    "csv": "text/csv",
+}
+
 
 def export_report_to_pdf(
     report_id: str,
@@ -31,30 +42,62 @@ def export_report_to_pdf(
     comparison_run_id: Optional[str] = None,
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
+    return export_report(
+        report_id,
+        format="pdf",
+        user_id=user_id,
+        include_screenshots=include_screenshots,
+        include_comparison=include_comparison,
+        comparison_run_id=comparison_run_id,
+        title=title,
+    )
+
+
+def export_report(
+    report_id: str,
+    *,
+    format: str = "pdf",
+    user_id: Optional[str] = None,
+    include_screenshots: bool = True,
+    include_comparison: bool = False,
+    comparison_run_id: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
     report = _load_report(report_id, user_id=user_id)
+    export_format = _normalize_export_format(format)
     comparison = None
-    if include_comparison and comparison_run_id:
+    if include_comparison and comparison_run_id and export_format == "pdf":
         comparison = compare_runs(_report_run_id(report, report_id), comparison_run_id, user_id=user_id, persist=False)
 
     export_id = str(uuid.uuid4())
     export_title = title or f"Report {report.get('report_id') or report_id}"
     export_root = Path(__file__).resolve().parents[2] / "artifacts" / "exports" / (report.get("report_id") or report_id)
     export_root.mkdir(parents=True, exist_ok=True)
-    pdf_path = export_root / f"{_slugify(export_title)}.pdf"
+    export_path = export_root / f"{_slugify(export_title)}.{_export_extension(export_format)}"
 
-    _build_pdf(pdf_path, report, title=export_title, include_screenshots=include_screenshots, comparison=comparison)
+    if export_format == "pdf":
+        _build_pdf(export_path, report, title=export_title, include_screenshots=include_screenshots, comparison=comparison)
+    elif export_format == "json":
+        _build_json(export_path, report, export_title=export_title, include_comparison=include_comparison, comparison_run_id=comparison_run_id, user_id=user_id)
+    elif export_format in {"markdown", "md"}:
+        _build_markdown(export_path, report, export_title=export_title, include_comparison=include_comparison, comparison_run_id=comparison_run_id, user_id=user_id)
+    elif export_format == "csv":
+        _build_csv(export_path, report, export_title=export_title)
+    else:
+        raise ValueError(f"Unsupported export format: {format}")
 
     record = {
         "export_id": export_id,
         "report_id": report.get("report_id") or report_id,
         "user_id": user_id or report.get("user_id") or "",
-        "format": "pdf",
-        "file_path": str(pdf_path),
+        "format": export_format,
+        "file_path": str(export_path),
         "title": export_title,
         "include_screenshots": include_screenshots,
         "include_comparison": include_comparison,
         "comparison_run_id": comparison_run_id,
-        "file_size_bytes": pdf_path.stat().st_size if pdf_path.exists() else 0,
+        "file_size_bytes": export_path.stat().st_size if export_path.exists() else 0,
+        "media_type": EXPORT_MEDIA_TYPES.get(export_format, "application/octet-stream"),
         "created_at": datetime.utcnow(),
     }
     report_export_collection.insert_one(jsonable_encoder(record))
@@ -67,6 +110,109 @@ def list_report_exports(report_id: str, user_id: Optional[str] = None) -> List[D
     if user_id:
         query["user_id"] = user_id
     return list(report_export_collection.find(query, {"_id": 0}).sort("created_at", -1))
+
+
+def _normalize_export_format(value: str) -> str:
+    normalized = str(value or "pdf").strip().lower()
+    if normalized == "markdown":
+        return "markdown"
+    if normalized in {"pdf", "json", "csv", "md"}:
+        return normalized
+    return normalized
+
+
+def _export_extension(format: str) -> str:
+    if format in {"markdown", "md"}:
+        return "md"
+    return format
+
+
+def _build_json(
+    path: Path,
+    report: Dict[str, Any],
+    *,
+    export_title: str,
+    include_comparison: bool,
+    comparison_run_id: Optional[str],
+    user_id: Optional[str],
+) -> None:
+    payload: Dict[str, Any] = {
+        "title": export_title,
+        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "report": report,
+    }
+    if include_comparison and comparison_run_id:
+        payload["comparison"] = compare_runs(_report_run_id(report, report.get("report_id", "")), comparison_run_id, user_id=user_id, persist=False)
+
+    path.write_text(json.dumps(jsonable_encoder(payload), indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _build_markdown(
+    path: Path,
+    report: Dict[str, Any],
+    *,
+    export_title: str,
+    include_comparison: bool,
+    comparison_run_id: Optional[str],
+    user_id: Optional[str],
+) -> None:
+    summary = report.get("summary") or _extract_narrative(report) or "No summary available."
+    metrics = report.get("execution_summary", {}) if isinstance(report.get("execution_summary"), dict) else {}
+    lines = [
+        f"# {export_title}",
+        "",
+        f"- Report ID: {report.get('report_id', '')}",
+        f"- Report Type: {report.get('report_type', '')}",
+        f"- Status: {report.get('status', '')}",
+        f"- Website: {report.get('website', '')}",
+        f"- Generated: {datetime.utcnow().isoformat()}Z",
+        "",
+        "## Summary",
+        str(summary),
+        "",
+        "## Key Metrics",
+        f"- Website Health: {report.get('website_health_score', 0)} / 100",
+        f"- Workflow Completion: {float(report.get('workflow_completion', 0.0) or 0.0):.2%}",
+        f"- Success Rate: {float(metrics.get('success_rate', 0.0) or 0.0):.2%}",
+        f"- Pages Visited: {metrics.get('pages_visited', 0)}",
+        f"- Actions Executed: {metrics.get('actions_executed', 0)}",
+    ]
+
+    bugs = _extract_bugs(report)[:10]
+    lines.extend(["", "## Detected Bugs"])
+    if bugs:
+        for bug in bugs:
+            lines.append(f"- {bug.get('severity', 'medium')}: {bug.get('title') or bug.get('description') or bug.get('issue_type') or 'Untitled'}")
+    else:
+        lines.append("- No bugs were detected.")
+
+    if include_comparison and comparison_run_id:
+        comparison = compare_runs(_report_run_id(report, report.get("report_id", "")), comparison_run_id, user_id=user_id, persist=False)
+        lines.extend(["", "## Run Comparison", f"- Verdict: {comparison.get('verdict', 'unknown')}", f"- Summary: {comparison.get('summary', '')}"])
+
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _build_csv(path: Path, report: Dict[str, Any], *, export_title: str) -> None:
+    metrics = report.get("execution_summary", {}) if isinstance(report.get("execution_summary"), dict) else {}
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["report_title", "report_id", "report_type", "status", "website", "generated_at", "website_health_score", "workflow_completion", "success_rate", "pages_visited", "actions_executed", "duration_seconds"])
+    writer.writerow([
+        export_title,
+        report.get("report_id", ""),
+        report.get("report_type", ""),
+        report.get("status", ""),
+        report.get("website", ""),
+        datetime.utcnow().isoformat() + "Z",
+        report.get("website_health_score", 0),
+        float(report.get("workflow_completion", 0.0) or 0.0),
+        float(metrics.get("success_rate", 0.0) or 0.0),
+        metrics.get("pages_visited", 0),
+        metrics.get("actions_executed", 0),
+        float(metrics.get("duration_seconds", 0.0) or 0.0),
+    ])
+    path.write_text(buffer.getvalue(), encoding="utf-8")
 
 
 def _build_pdf(path: Path, report: Dict[str, Any], *, title: str, include_screenshots: bool, comparison: Optional[Dict[str, Any]]) -> None:

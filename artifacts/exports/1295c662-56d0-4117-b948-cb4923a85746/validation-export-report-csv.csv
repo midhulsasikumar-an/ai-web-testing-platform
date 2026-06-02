@@ -1,0 +1,2 @@
+report_title,report_id,report_type,status,website,generated_at,website_health_score,workflow_completion,success_rate,pages_visited,actions_executed,duration_seconds
+Validation Export Report (csv),1295c662-56d0-4117-b948-cb4923a85746,ai,completed,https://example.com,2026-05-28T17:14:29.113275Z,92,0.98,0.95,4,12,42.1

@@ -1,17 +1,10 @@
 import { cn } from "@/lib/utils";
 
-// ── Types ──────────────────────────────────────────────────────────
-
 interface AvatarCircleProps {
-  /** Full name to extract initials from */
   name: string;
-  /** Size variant */
   size?: "xs" | "sm" | "md" | "lg";
-  /** Additional className */
   className?: string;
 }
-
-// ── Size map ───────────────────────────────────────────────────────
 
 const sizeClasses: Record<string, string> = {
   xs: "h-5 w-5 text-[0.5rem]",
@@ -20,7 +13,21 @@ const sizeClasses: Record<string, string> = {
   lg: "h-8 w-8 text-xs",
 };
 
-// ── Component ──────────────────────────────────────────────────────
+const gradientByName = (name: string): string => {
+  const gradients = [
+    "from-blue-500 to-indigo-600",
+    "from-violet-500 to-fuchsia-600",
+    "from-emerald-500 to-teal-600",
+    "from-amber-500 to-orange-600",
+    "from-rose-500 to-pink-600",
+    "from-sky-500 to-cyan-600",
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i += 1) {
+    hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  }
+  return gradients[Math.abs(hash) % gradients.length];
+};
 
 export function AvatarCircle({
   name,
@@ -35,9 +42,10 @@ export function AvatarCircle({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white font-bold",
+        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-white font-semibold ring-2 ring-white",
+        gradientByName(name),
         sizeClasses[size],
-        className
+        className,
       )}
     >
       {initials}

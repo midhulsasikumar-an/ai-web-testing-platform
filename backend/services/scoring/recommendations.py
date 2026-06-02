@@ -32,6 +32,16 @@ def generate_recommendations(insights):
                 "Optimize images, scripts, and backend response time to improve loading speed and performance."
             )
 
+        if "console error" in issue_lower:
+            recommendations.append(
+                "Review browser console issues and fix runtime errors to improve application stability."
+            )
+
+        if "network request failures" in issue_lower or "failed network request" in issue_lower:
+            recommendations.append(
+                "Check failed API and resource requests to ensure the application can load its dependencies reliably."
+            )
+
     for issue in insights.get("minor", []):
         issue_lower = issue.lower()
 
@@ -45,4 +55,4 @@ def generate_recommendations(insights):
                 "Improve user engagement by adding clear buttons or call-to-action elements."
             )
 
-    return list(set(recommendations))
+    return list(dict.fromkeys(recommendations))

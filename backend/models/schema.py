@@ -8,6 +8,10 @@ class TestRequest(BaseModel):
     project_name: Optional[str] = None
     test_type: Optional[str] = None
     ai_plan: Optional[Dict[str, Any]] = None
+    browser: Optional[str] = None
+    device: Optional[str] = None
+    coverage_level: Optional[str] = None
+    execution_settings: Optional[Dict[str, Any]] = None
 
 class SignupRequest(BaseModel):
     name: str
@@ -18,3 +22,7 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str

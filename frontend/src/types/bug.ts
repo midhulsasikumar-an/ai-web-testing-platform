@@ -19,6 +19,7 @@ export interface Bug {
   assignedTo?: string;
   environment?: string;
   logs?: LogEntry[];
+  evidence?: Record<string, unknown>;
 }
 
 export interface LogEntry {

@@ -1,5 +1,6 @@
 from playwright.async_api import async_playwright
 from typing import Dict, Any
+from backend.services.asyncio_windows import ensure_windows_event_loop_policy
 
 
 async def extract_page_elements(url: str) -> Dict[str, Any]:
@@ -7,6 +8,7 @@ async def extract_page_elements(url: str) -> Dict[str, Any]:
     cannot be launched (e.g., environment restrictions), fall back to a
     lightweight HTML fetch using requests + BeautifulSoup.
     """
+    ensure_windows_event_loop_policy()
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)

@@ -23,6 +23,32 @@ import {
 
 type FilterStatus = "all" | "passed" | "failed" | "warning";
 
+function formatDuration(test: { updated_at?: string; created_at?: string; runtime_ms?: number }): string {
+  if (typeof test.runtime_ms === "number" && Number.isFinite(test.runtime_ms) && test.runtime_ms >= 0) {
+    const seconds = test.runtime_ms / 1000;
+    if (seconds < 1) {
+      return `${Math.max(1, Math.round(test.runtime_ms))}ms`;
+    }
+    if (seconds < 60) {
+      return `${seconds.toFixed(1)}s`;
+    }
+    const minutes = Math.floor(seconds / 60);
+    const remainder = Math.round(seconds % 60);
+    return `${minutes}m ${remainder}s`;
+  }
+  const start = test.created_at ? new Date(test.created_at).getTime() : NaN;
+  const end = test.updated_at ? new Date(test.updated_at).getTime() : NaN;
+  if (Number.isFinite(start) && Number.isFinite(end) && end >= start) {
+    const seconds = (end - start) / 1000;
+    if (seconds < 1) return `${Math.max(1, Math.round(end - start))}ms`;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainder = Math.round(seconds % 60);
+    return `${minutes}m ${remainder}s`;
+  }
+  return "—";
+}
+
 export default function TestHistoryPage() {
   const { testResults } = useBugContext();
 
@@ -58,6 +84,7 @@ export default function TestHistoryPage() {
       <Header
         title="Test History"
         description="Browse and revisit logs from all previously tested websites."
+        eyebrow="Results"
       >
         <Link href="/run-test" className={cn(buttonVariants({ size: "sm" }))}>
           <Play className="h-4 w-4 mr-2" />
@@ -65,18 +92,16 @@ export default function TestHistoryPage() {
         </Link>
       </Header>
 
-      {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <MiniStatCard icon={Terminal} value={testResults.length} label="Total Runs" color="blue" />
-        <MiniStatCard icon={CheckCircle2} value={passedCount} label="Passed" color="green" borderColor="border-green-500/20" />
-        <MiniStatCard icon={XCircle} value={failedCount} label="Failed" color="red" borderColor="border-red-500/20" />
+        <MiniStatCard icon={CheckCircle2} value={passedCount} label="Passed" color="green" borderColor="border-emerald-200" />
+        <MiniStatCard icon={XCircle} value={failedCount} label="Failed" color="red" borderColor="border-red-200" />
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="py-3 px-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-eyebrow">
               <Filter className="h-3.5 w-3.5" /> Filters
             </div>
             <div className="flex items-center gap-2">
@@ -189,7 +214,7 @@ export default function TestHistoryPage() {
                               {test.ai_summary || "No summary available"}
                             </TableCell>
                             <TableCell className="text-xs font-mono">
-                              NA
+                              {formatDuration(test)}
                             </TableCell>
                             <TableCell>
                               <div className="text-xs text-muted-foreground">

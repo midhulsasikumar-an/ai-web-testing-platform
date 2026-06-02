@@ -277,23 +277,14 @@ def _run_id_from_report(report: Dict[str, Any], fallback: str) -> str:
 
 
 def fingerprint_bug_from_record(bug: Dict[str, Any]) -> str:
-    title = str(bug.get("title") or bug.get("description") or bug.get("technical_explanation") or bug.get("issue_type") or bug.get("bug_type") or "")
-    description = str(bug.get("description") or bug.get("details") or bug.get("technical_explanation") or "")
-    severity = str(bug.get("severity") or bug.get("risk_level") or "medium")
-    workflow_stage = str(bug.get("workflow_stage") or bug.get("workflow") or bug.get("page_type") or "unknown")
-    url = str(bug.get("url") or bug.get("artifact_url") or "")
-    selector = str(bug.get("selector") or bug.get("locator") or bug.get("target") or "")
-    issue_type = str(bug.get("issue_type") or bug.get("bug_type") or bug.get("category") or "unknown")
-    component = str(bug.get("affected_component") or bug.get("component") or workflow_stage or "unknown")
-    evidence = bug.get("evidence") if isinstance(bug.get("evidence"), dict) else {}
-    return fingerprint_bug(
-        title=title,
-        description=description,
-        severity=severity,
-        workflow_stage=workflow_stage,
-        url=url,
-        selector=selector,
-        issue_type=issue_type,
-        component=component,
-        evidence=evidence,
-    )
+    return fingerprint_bug({
+        "title": bug.get("title") or bug.get("description") or bug.get("technical_explanation") or bug.get("issue_type") or bug.get("bug_type") or "",
+        "description": bug.get("description") or bug.get("details") or bug.get("technical_explanation") or "",
+        "severity": bug.get("severity") or bug.get("risk_level") or "medium",
+        "workflow_stage": bug.get("workflow_stage") or bug.get("workflow") or bug.get("page_type") or "unknown",
+        "url": bug.get("url") or bug.get("artifact_url") or "",
+        "selector": bug.get("selector") or bug.get("locator") or bug.get("target") or "",
+        "issue_type": bug.get("issue_type") or bug.get("bug_type") or bug.get("category") or "unknown",
+        "component": bug.get("affected_component") or bug.get("component") or bug.get("workflow_stage") or bug.get("workflow") or "unknown",
+        "evidence": bug.get("evidence") if isinstance(bug.get("evidence"), dict) else {},
+    })

@@ -35,7 +35,7 @@ from backend.agent.memory_service import AgentMemory
 from backend.agent.observer import BrowserObserver
 from backend.agent.outcome import OutcomeValidator
 from backend.agent.planner import PlannerContext, PlannerOrchestrator
-from backend.agent.recovery import RecoveryEngine
+from backend.agent.recovery import RecoveryDecision, RecoveryEngine
 from backend.agent.safety import SafetyPolicy
 from backend.core.models.actions import ActionResult
 from backend.core.models.agent_state import AgentRunState, AgentStep
@@ -746,31 +746,43 @@ class AutonomousAgentLoopV2:
             )
 
             # ─── RECOVERY ───
+            execution_artifacts = list(result.artifacts)
             if not result.success:
-                recovered_observation, recovery_results, recovery_decision = await self.recovery.recover(
-                    page=page, failed_result=result,
-                    observation=refreshed, memory=memory,
-                    run_id=run_id, step=step_number, credentials=credentials,
-                )
+                try:
+                    recovered_observation, recovery_results, recovery_decision = await self.recovery.recover(
+                        page=page, failed_result=result,
+                        observation=refreshed, memory=memory,
+                        run_id=run_id, step=step_number, credentials=credentials,
+                    )
+                except Exception as exc:
+                    recovered_observation = refreshed
+                    recovery_results = []
+                    recovery_decision = RecoveryDecision(strategy="recovery_failed", reason=str(exc), exhausted=True)
                 step.recovery_actions = recovery_results
                 step.recovery_decision = recovery_decision.model_dump(mode="json")
                 for recovery_result in recovery_results:
                     memory.remember_result(recovery_result, step_number)
+                    execution_artifacts.extend(recovery_result.artifacts)
                 step.observation = recovered_observation
+                recovery_succeeded = any(item.success for item in recovery_results)
+                if recovery_succeeded:
+                    result = next(item for item in reversed(recovery_results) if item.success)
+                    step.result = result
 
                 self.slogger.warning(
                     "recovery_executed", step=step_number,
                     strategy=recovery_decision.strategy,
                     reason=recovery_decision.reason,
+                    success=recovery_succeeded,
                 )
-                await publish_event(
-                    ExecutionEventType.BUG_DETECTED,
-                    self.live_reasoning.narrate_issue(result.failure_type.value, result.error or recovery_decision.reason),
-                    severity=result.failure_type.value,
-                    failure_type=result.failure_type.value,
-                    selector=result.selector_used,
-                )
-            run.steps.append(step)
+                if not recovery_succeeded:
+                    await publish_event(
+                        ExecutionEventType.BUG_DETECTED,
+                        self.live_reasoning.narrate_issue(result.failure_type.value, result.error or recovery_decision.reason),
+                        severity=result.failure_type.value,
+                        failure_type=result.failure_type.value,
+                        selector=result.selector_used,
+                    )
             # Authentication memory tracking: capture auth attempts, signups, and session evidence
             try:
                 act = step.action
@@ -796,7 +808,7 @@ class AutonomousAgentLoopV2:
                 pass
 
             run.steps.append(step)
-            run.artifacts.extend(result.artifacts)
+            run.artifacts.extend(execution_artifacts)
             if step.skill_used and step.skill_used not in run.skills_used:
                 run.skills_used.append(step.skill_used)
 
@@ -880,6 +892,17 @@ class AutonomousAgentLoopV2:
         if success_score.get("success") and run.status in {"max_steps_reached", "running"}:
             run.status = "completed"
 
+        total_tasks = len(run.steps)
+        failed_tasks = len([step for step in run.steps if step.result and not step.result.success])
+        completed_tasks = len([step for step in run.steps if step.result and step.result.success])
+        recovery_attempts = sum(len(step.recovery_actions) for step in run.steps)
+        successful_recoveries = sum(
+            1 for step in run.steps
+            if any(recovery_result.success for recovery_result in step.recovery_actions)
+        )
+        if run.status == "completed" and failed_tasks:
+            run.status = "completed_with_failures"
+
         run.summary |= {
             "visited_urls": len(memory.visited_urls),
             "steps": len(run.steps),
@@ -890,6 +913,13 @@ class AutonomousAgentLoopV2:
             "frontier_remaining": len([
                 c for c in self.frontier.state.discovered_routes.values() if not c.visited
             ]),
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "successful_tasks": completed_tasks,
+            "failed_tasks": failed_tasks,
+            "skipped_tasks": 0,
+            "recovery_attempts": recovery_attempts,
+            "successful_recoveries": successful_recoveries,
             "world_model_nodes": self.world_graph.node_count,
             "world_model_edges": self.world_graph.edge_count,
             "skills_used": run.skills_used,
@@ -1078,3 +1108,4 @@ async def run_agent_loop_v2(
         agent_name=agent_name,
     )
     return run.model_dump(mode="json")
+

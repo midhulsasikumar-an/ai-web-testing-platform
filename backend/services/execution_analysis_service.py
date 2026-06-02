@@ -29,6 +29,15 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
     actions_executed = len([s for s in steps if s.get("action")])
     failures = [s for s in steps if s.get("result") and not s["result"].get("success")]
     recoveries = sum(1 for s in steps if s.get("recovery_actions"))
+    recovery_attempts = 0
+    recovery_successful = 0
+    steps_saved_by_recovery = 0
+    for step in steps:
+        recovery_actions = step.get("recovery_actions") if isinstance(step.get("recovery_actions"), list) else []
+        recovery_attempts += len(recovery_actions)
+        recovery_successful += sum(1 for action in recovery_actions if isinstance(action, dict) and action.get("success"))
+        if step.get("recovery_success"):
+            steps_saved_by_recovery += 1
     pages_visited = len({s.get("observation", {}).get("url") for s in steps if s.get("observation")})
 
     success_rate = 1.0 - (len(failures) / actions_executed) if actions_executed else 0.0
@@ -68,6 +77,7 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
     visual_bug_summary = list(summary_data.get("visual_bug_summary", []) or [])
     workflow_stability_summary = dict(summary_data.get("workflow_stability_summary", {}) or {})
     success_scoring = dict(summary_data.get("success_scoring", {}) or {})
+    objective_coverage = list(run.get("objective_coverage", []) or [])
 
     # failure analysis
     failure_types = {}
@@ -90,7 +100,7 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
     visual_findings = _collect_visual_findings(steps)
     bug_cards = _build_bug_cards(grouped_failures, console_findings, network_findings, visual_findings, steps)
     authentication_analysis = _build_authentication_analysis(run, steps, bug_cards)
-    base_coverage_summary = _build_coverage_summary(run, steps)
+    base_coverage_summary = _build_coverage_summary(run, steps, objective_coverage=objective_coverage)
     if coverage_summary:
         base_coverage_summary.update(coverage_summary)
     coverage_summary = base_coverage_summary
@@ -176,6 +186,11 @@ def analyze_execution(run: Dict[str, Any]) -> Dict[str, Any]:
 
     analysis_payload = {
         "summary": summary,
+        "recovery_summary": {
+            "recoveries_attempted": recovery_attempts,
+            "recoveries_successful": recovery_successful,
+            "steps_saved_by_recovery": steps_saved_by_recovery,
+        },
         "workflow": workflow,
         "failure_analysis": failure_analysis,
         "timeline": timeline,
@@ -502,7 +517,7 @@ def _build_authentication_analysis(run: Dict[str, Any], steps: List[Dict[str, An
     }
 
 
-def _build_coverage_summary(run: Dict[str, Any], steps: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _build_coverage_summary(run: Dict[str, Any], steps: List[Dict[str, Any]], objective_coverage: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
     page_types = [step.get("observation", {}).get("page_type") for step in steps if step.get("observation")]
     unique_pages = [page for page in dict.fromkeys(page_types) if page]
     explored_modules = [page for page in unique_pages if page not in {"login_page", "signup_page", "oauth_page", "forgot_password_page"}]
@@ -522,7 +537,7 @@ def _build_coverage_summary(run: Dict[str, Any], steps: List[Dict[str, Any]]) ->
         "console" if any(step.get("observation", {}).get("console_errors") for step in steps) else None,
     ]
     risky_areas = [item for item in risky_areas if item]
-    return {
+    coverage = {
         "explored_modules": explored_modules,
         "tested_workflows": tested_workflows,
         "auth_coverage": 1.0 if run.get("summary", {}).get("authenticated") else 0.5,
@@ -532,6 +547,38 @@ def _build_coverage_summary(run: Dict[str, Any], steps: List[Dict[str, Any]]) ->
         "exploration_depth": exploration_depth,
         "confidence_score": round(min(0.99, 0.4 + exploration_depth / 20.0), 2),
     }
+
+    if objective_coverage:
+        total_objectives = len(objective_coverage)
+        passed_objectives = sum(1 for item in objective_coverage if str(item.get("execution_status") or "").lower() in {"passed", "completed"} and int(item.get("failed_scenarios", 0) or 0) == 0)
+        failed_objectives = total_objectives - passed_objectives
+        total_scenarios = sum(int(item.get("executed_scenarios", 0) or 0) for item in objective_coverage)
+        passed_scenarios = sum(int(item.get("passed_scenarios", 0) or 0) for item in objective_coverage)
+        failed_scenarios = sum(int(item.get("failed_scenarios", 0) or 0) for item in objective_coverage)
+        critical_objective_failures = sum(1 for item in objective_coverage if int(item.get("failed_scenarios", 0) or 0) > 0 and bool(item.get("critical")))
+
+        objective_pass_rate = round(passed_objectives / total_objectives, 4) if total_objectives else 0.0
+        scenario_pass_rate = round(passed_scenarios / total_scenarios, 4) if total_scenarios else 0.0
+        coverage_score = round(min(100.0, objective_pass_rate * 60.0 + scenario_pass_rate * 40.0), 2)
+        confidence_score = round(min(0.99, 0.5 + min(0.25, total_objectives / (total_objectives + 4.0) * 0.15) + min(0.25, total_scenarios / (total_scenarios + 8.0) * 0.15)), 2)
+
+        coverage.update(
+            {
+                "objective_pass_rate": objective_pass_rate,
+                "scenario_pass_rate": scenario_pass_rate,
+                "critical_objective_failures": critical_objective_failures,
+                "coverage_score": coverage_score,
+                "confidence_score": confidence_score,
+                "total_objectives": total_objectives,
+                "passed_objectives": passed_objectives,
+                "failed_objectives": failed_objectives,
+                "total_scenarios": total_scenarios,
+                "passed_scenarios": passed_scenarios,
+                "failed_scenarios": failed_scenarios,
+            }
+        )
+
+    return coverage
 
 
 def _build_workflow_analysis(run: Dict[str, Any], steps: List[Dict[str, Any]], grouped_failures: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -626,7 +673,11 @@ def _build_screenshot_intelligence(steps: List[Dict[str, Any]], bug_cards: List[
 def _build_overall_health_assessment(summary: ExecutionSummary, bug_cards: List[Dict[str, Any]], coverage_summary: Dict[str, Any], authentication_analysis: Dict[str, Any]) -> Dict[str, Any]:
     critical = sum(1 for card in bug_cards if card.get("severity") == "critical")
     high = sum(1 for card in bug_cards if card.get("severity") == "high")
-    score = int(max(0, min(100, 100 * summary.success_rate - critical * 22 - high * 10 + (10 if authentication_analysis.get("session_validated") else 0))))
+    objective_coverage_score = float(coverage_summary.get("coverage_score", 0.0) or 0.0)
+    critical_objective_failures = int(coverage_summary.get("critical_objective_failures", 0) or 0)
+    objective_bonus = objective_coverage_score * 0.55 if objective_coverage_score else 0.0
+    step_bonus = 100 * summary.success_rate * 0.45
+    score = int(max(0, min(100, objective_bonus + step_bonus - critical_objective_failures * 12 - critical * 18 - high * 8 + (10 if authentication_analysis.get("session_validated") else 0))))
     return {
         "health_score": score,
         "status": "healthy" if score >= 80 else "degraded" if score >= 55 else "critical",

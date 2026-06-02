@@ -23,25 +23,26 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <div className={cn("bg-[#F8FAFC] rounded-2xl p-6 flex flex-col justify-between shadow-sm border border-slate-100", className)}>
+    <div
+      className={cn(
+        "shell-surface rounded-xl border border-border p-5 shadow-xs-token flex flex-col justify-between gap-3",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between">
-        <h3 className="text-[13px] font-semibold text-slate-700">{title}</h3>
+        <h3 className="text-eyebrow">{title}</h3>
         <Icon className="h-4 w-4 text-slate-400" />
       </div>
-      
-      <div className="mt-4">
-        <div className="text-3xl font-bold tracking-tight text-slate-900">
-          {typeof value === 'number' ? value.toLocaleString() : value}
+
+      <div className="space-y-1.5">
+        <div className="text-h1 tracking-tight text-slate-900">
+          {typeof value === "number" ? value.toLocaleString() : value}
         </div>
-        
+
         {trend && (
-          <div className={cn("flex flex-col mt-2", trendColor)}>
-            {TrendIcon && (
-              <div className="flex items-center mb-1">
-                <TrendIcon className="h-4 w-4" />
-              </div>
-            )}
-            <span className="text-[12px]">{trend}</span>
+          <div className={cn("flex items-start gap-1.5", trendColor)}>
+            {TrendIcon && <TrendIcon className="h-3.5 w-3.5 mt-0.5 shrink-0" />}
+            <span className="text-[12px] leading-snug">{trend}</span>
           </div>
         )}
       </div>

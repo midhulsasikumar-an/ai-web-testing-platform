@@ -1,4 +1,4 @@
-import { apiJson, API_BASE_URL } from "@/services/http";
+import { apiJson } from "@/services/http";
 
 export interface BugApiResponse {
   bug_id: string;
@@ -17,18 +17,13 @@ export interface BugApiResponse {
   url?: string;
   test_name?: string;
   created_at?: string;
+  evidence?: Record<string, unknown>;
 }
 
-export async function getAllBugs(token?: string): Promise<BugApiResponse[]> {
-  console.debug("[bugs-api] GET", `${API_BASE_URL}/api/bugs`);
-  return apiJson<BugApiResponse[]>("/api/bugs", {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+export async function getAllBugs(): Promise<BugApiResponse[]> {
+  return apiJson<BugApiResponse[]>("/api/bugs");
 }
 
-export async function getBugById(bugId: string, token?: string): Promise<BugApiResponse> {
-  console.debug("[bugs-api] GET", `${API_BASE_URL}/api/bugs/${bugId}`);
-  return apiJson<BugApiResponse>(`/api/bugs/${bugId}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+export async function getBugById(bugId: string): Promise<BugApiResponse> {
+  return apiJson<BugApiResponse>(`/api/bugs/${bugId}`);
 }

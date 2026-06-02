@@ -26,6 +26,7 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
         workflow = analysis["workflow"]
         timeline = analysis["timeline"]
         issues = analysis["issues"]
+        recovery_summary = analysis.get("recovery_summary", {})
         executive_summary = analysis.get("executive_summary", "")
         overall_health_assessment = analysis.get("overall_health_assessment", {})
         workflow_analysis = analysis.get("workflow_analysis", {})
@@ -61,6 +62,12 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
         visual_bug_summary = analysis.get("visual_bug_summary", [])
         workflow_stability_summary = analysis.get("workflow_stability_summary", {})
         success_scoring = analysis.get("success_scoring", {})
+        objective_coverage = list(run_data.get("objective_coverage", []) or [])
+        discovery = dict(run_data.get("discovery", {}) or {})
+        discovery_status = str(run_data.get("discovery_status") or "ready")
+        discovery_error = run_data.get("discovery_error")
+        risk_summary = dict(run_data.get("risk_summary", {}) or {})
+        scenario_tree = dict(run_data.get("scenario_tree", {}) or {})
 
         base_narrative = _build_narrative(
             run_data,
@@ -82,6 +89,10 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
             visual_bug_summary=visual_bug_summary,
             workflow_stability_summary=workflow_stability_summary,
             success_scoring=success_scoring,
+            discovery_status=discovery_status,
+            discovery_error=discovery_error,
+            risk_summary=risk_summary,
+            scenario_tree=scenario_tree,
         )
 
         enhanced = None
@@ -99,6 +110,8 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
             "success_rate": summary.success_rate,
             "workflow_completion": workflow_analysis.get("workflow_completion", 0.0),
             "semantic_navigation_summary": semantic_navigation_summary,
+            "recovery_summary": recovery_summary,
+            "objective_coverage": objective_coverage,
         }
 
         ai_report = {
@@ -128,6 +141,13 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
             "visual_bug_summary": visual_bug_summary,
             "workflow_stability_summary": workflow_stability_summary,
             "success_scoring": success_scoring,
+            "recovery_summary": recovery_summary,
+            "objective_coverage": objective_coverage,
+            "discovery": discovery,
+            "discovery_status": discovery_status,
+            "discovery_error": discovery_error,
+            "risk_summary": risk_summary,
+            "scenario_tree": scenario_tree,
             "authentication_summary": _build_authentication_summary(run_data, authentication_strategy, authentication_result, authentication_confidence),
             "interaction_narrative": narrative,
             "execution_timeline": timeline,
@@ -179,6 +199,11 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
             "execution_summary": execution_summary,
             "debug_data": run_data,
             "summary": summary.model_dump(mode="json"),
+            "discovery": discovery,
+            "discovery_status": discovery_status,
+            "discovery_error": discovery_error,
+            "risk_summary": risk_summary,
+            "scenario_tree": scenario_tree,
             "report_sections": {
                 "executive_summary": executive_summary,
                 "overall_health_assessment": overall_health_assessment,
@@ -204,6 +229,12 @@ def generate_report(run_data: Dict[str, Any], use_llm: bool = True, user_id: str
                 "visual_bug_summary": visual_bug_summary,
                 "workflow_stability_summary": workflow_stability_summary,
                 "success_scoring": success_scoring,
+                "objective_coverage": objective_coverage,
+                "discovery": discovery,
+                "discovery_status": discovery_status,
+                "discovery_error": discovery_error,
+                "risk_summary": risk_summary,
+                "scenario_tree": scenario_tree,
             },
         }
 
@@ -290,6 +321,10 @@ def _build_narrative(
     visual_bug_summary: list[dict] | None = None,
     workflow_stability_summary: Dict[str, Any] | None = None,
     success_scoring: Dict[str, Any] | None = None,
+    discovery_status: str = "ready",
+    discovery_error: Any = None,
+    risk_summary: Dict[str, Any] | None = None,
+    scenario_tree: Dict[str, Any] | None = None,
 ) -> str:
     parts = []
     if executive_summary:
@@ -348,6 +383,25 @@ def _build_narrative(
     if success_scoring:
         parts.append(
             f"Final success score: {success_scoring.get('overall_score', 0):.2f} ({success_scoring.get('confidence', 'low')} confidence)."
+        )
+    if discovery_status and discovery_status != "ready":
+        parts.append(f"Discovery status: {discovery_status}.")
+    if discovery_error:
+        parts.append(f"Discovery fallback engaged because {discovery_error}.")
+    if risk_summary:
+        parts.append(
+            "Risk summary: "
+            + ", ".join(
+                f"{key.replace('_', ' ')}={value}"
+                for key, value in risk_summary.items()
+                if value
+            )
+            + "."
+        )
+    if scenario_tree and scenario_tree.get("summary"):
+        summary = scenario_tree.get("summary", {})
+        parts.append(
+            f"Scenario tree includes {summary.get('planned_objectives', 0)} objectives and {summary.get('generated_scenarios', 0)} scenarios."
         )
     if issues:
         parts.append(f"Detected {len(issues)} issues during execution, including {', '.join({i.issue_type for i in issues})}.")

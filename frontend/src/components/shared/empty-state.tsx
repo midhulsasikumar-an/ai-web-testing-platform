@@ -1,26 +1,23 @@
 import type { LucideIcon } from "lucide-react";
-
-// ── Types ──────────────────────────────────────────────────────────
+import type { ReactNode } from "react";
 
 interface EmptyStateProps {
-  /** Icon displayed in the empty state */
   icon: LucideIcon;
-  /** Primary message */
   title: string;
-  /** Optional secondary description */
-  description?: string;
+  description?: ReactNode;
+  action?: ReactNode;
+  className?: string;
 }
 
-// ── Component ──────────────────────────────────────────────────────
-
-export function EmptyState({ icon: Icon, title, description }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
   return (
-    <div className="py-12 text-center text-muted-foreground">
-      <Icon className="h-8 w-8 mx-auto mb-3 opacity-40" />
-      <p className="font-medium">{title}</p>
-      {description && (
-        <p className="text-sm mt-1">{description}</p>
-      )}
+    <div className={`py-6 text-center text-muted-foreground ${className ?? ""}`}>
+      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+        <Icon className="h-5 w-5 text-slate-400" />
+      </div>
+      <p className="text-h4 text-slate-700">{title}</p>
+      {description ? <p className="text-muted-sm mt-1">{description}</p> : null}
+      {action ? <div className="mt-3 flex justify-center">{action}</div> : null}
     </div>
   );
 }

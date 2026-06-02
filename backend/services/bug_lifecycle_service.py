@@ -15,8 +15,21 @@ from pymongo.collection import Collection
 
 from backend.core.models.intelligence_models import BugLifecycleEvent
 from backend.database.mongo import db
+from backend.services.root_cause_classifier import classify_root_cause
 
 BUG_LIFECYCLE_COLLECTION = db["bug_lifecycle"]
+
+
+def _ensure_bug_lifecycle_indexes() -> None:
+    try:
+        BUG_LIFECYCLE_COLLECTION.create_index("fingerprint", unique=True, sparse=True)
+        BUG_LIFECYCLE_COLLECTION.create_index([("user_id", 1), ("status", 1)])
+        BUG_LIFECYCLE_COLLECTION.create_index([("user_id", 1), ("updated_at", -1)])
+    except Exception:
+        pass
+
+
+_ensure_bug_lifecycle_indexes()
 
 
 def fingerprint_bug(bug: Dict[str, Any]) -> str:
@@ -99,28 +112,41 @@ def _extract_bug_events(run_data: Dict[str, Any], report_data: Optional[Dict[str
         raw_bugs.extend(_as_list(report_data.get("ai_report", {}).get("visual_findings")))
         raw_bugs.extend(_as_list(report_data.get("report_sections", {}).get("detected_bugs")))
         raw_bugs.extend(_as_list(report_data.get("report_sections", {}).get("visual_bug_summary")))
+        raw_bugs.extend(_bugs_from_results(_as_list(report_data.get("debug_data", {}).get("results")), goal, start_url, run_id, report_id, user_id))
     raw_bugs.extend(_as_list(run_data.get("detected_bugs")))
     raw_bugs.extend(_as_list(run_data.get("visual_bug_summary")))
+    raw_bugs.extend(_bugs_from_results(_as_list(run_data.get("results")), goal, start_url, run_id, report_id, user_id))
 
     events: List[Dict[str, Any]] = []
     for index, bug in enumerate(raw_bugs):
         if not isinstance(bug, dict):
             continue
-            normalized = _normalize_bug(
-                bug,
-                index=index,
-                goal=goal,
-                start_url=start_url,
-                run_id=run_id,
-                report_id=report_id,
-                user_id=user_id,
-            )
+        normalized = _normalize_bug(
+            bug,
+            index=index,
+            goal=goal,
+            start_url=start_url,
+            run_id=run_id,
+            report_id=report_id,
+            user_id=user_id,
+        )
         if not normalized:
             continue
         if not normalized.get("screenshot_path") and normalized.get("workflow_stage") in screenshots:
             normalized["screenshot_path"] = screenshots[normalized["workflow_stage"]]
         events.append(normalized)
-    return events
+
+    deduped: List[Dict[str, Any]] = []
+    seen_fingerprints = set()
+    for event in events:
+        fingerprint = str(event.get("fingerprint") or "")
+        if fingerprint and fingerprint in seen_fingerprints:
+            continue
+        if fingerprint:
+            seen_fingerprints.add(fingerprint)
+        deduped.append(event)
+
+    return deduped
 
 
 def _normalize_bug(
@@ -157,6 +183,22 @@ def _normalize_bug(
     evidence.setdefault("issue_type", issue_type)
     evidence.setdefault("run_id", run_id)
     evidence.setdefault("report_id", report_id)
+    root_cause = str(bug.get("root_cause") or evidence.get("root_cause") or "").strip().upper()
+    root_cause_confidence = float(bug.get("root_cause_confidence") or evidence.get("root_cause_confidence") or 0.0)
+    if root_cause not in {"SELECTOR_CHANGED", "ELEMENT_NOT_VISIBLE", "ELEMENT_NOT_FOUND", "NAVIGATION_REDIRECT", "NETWORK_FAILURE", "API_FAILURE", "AUTHENTICATION_FAILURE", "TIMEOUT", "PAGE_CRASH", "JAVASCRIPT_ERROR", "UNKNOWN"}:
+        root_cause_result = classify_root_cause(
+            action=bug.get("action") or title,
+            category=bug.get("failure_category") or bug.get("issue_type") or "",
+            error=bug.get("error") or description or bug.get("details") or "",
+            console_errors=evidence.get("console_errors"),
+            network_failures=evidence.get("network_failures"),
+            selector_used=selector,
+            validation=evidence,
+        )
+        root_cause = str(root_cause_result["root_cause"]).upper()
+        root_cause_confidence = float(root_cause_result["confidence"])
+    evidence.setdefault("root_cause", root_cause)
+    evidence.setdefault("root_cause_confidence", root_cause_confidence)
     fingerprint = _fingerprint_bug(
         title=title,
         description=description,
@@ -181,6 +223,8 @@ def _normalize_bug(
         url=url,
         screenshot_path=screenshot_path,
         screenshot_hash=screenshot_hash,
+        root_cause=root_cause,
+        root_cause_confidence=root_cause_confidence,
         evidence={**evidence, "user_id": user_id},
     ).model_dump(mode="json")
 
@@ -192,6 +236,10 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
     similarity = _best_screenshot_similarity(existing, screenshot_hash) if screenshot_hash else None
     next_status = _derive_status(existing, event, similarity)
     now = datetime.utcnow()
+    root_cause = str(event.get("root_cause") or "UNKNOWN").strip().upper() or "UNKNOWN"
+    root_cause_counts = Counter(existing.get("root_cause_counts", {})) if existing else Counter()
+    root_cause_counts[root_cause] += 1
+    most_common_root_cause = root_cause_counts.most_common(1)[0][0] if root_cause_counts else root_cause
     history_entry = {
         "run_id": event.get("run_id"),
         "report_id": event.get("report_id"),
@@ -202,6 +250,8 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
         "screenshot_path": event.get("screenshot_path"),
         "screenshot_hash": event.get("screenshot_hash"),
         "similarity_to_previous": similarity,
+        "root_cause": root_cause,
+        "root_cause_confidence": event.get("root_cause_confidence"),
         "created_at": now,
     }
 
@@ -212,6 +262,8 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
         record.setdefault("screenshot_hashes", [])
         record.setdefault("history", [])
         record.setdefault("evidence", {})
+        record.setdefault("root_cause_counts", {})
+        record.setdefault("most_common_root_cause", "UNKNOWN")
         record["title"] = event.get("title", record.get("title", ""))
         record["description"] = event.get("description", record.get("description", ""))
         record["severity"] = _max_severity(record.get("severity", "medium"), event.get("severity", "medium"))
@@ -236,6 +288,10 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
         if screenshot_hash and screenshot_hash not in record["screenshot_hashes"]:
             record["screenshot_hashes"].append(screenshot_hash)
         record["evidence"].update({k: v for k, v in event.get("evidence", {}).items() if v is not None})
+        record["root_cause"] = root_cause
+        record["root_cause_confidence"] = event.get("root_cause_confidence", 0.0)
+        record["root_cause_counts"] = dict(root_cause_counts)
+        record["most_common_root_cause"] = most_common_root_cause
         record["history"].append(history_entry)
         record["updated_at"] = now
         BUG_LIFECYCLE_COLLECTION.replace_one({"_id": existing["_id"]}, record)
@@ -258,6 +314,10 @@ def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
         "regression_count": 0,
         "resolved_count": 0,
         "flaky_count": 0,
+        "root_cause": root_cause,
+        "root_cause_confidence": event.get("root_cause_confidence", 0.0),
+        "root_cause_counts": dict(root_cause_counts),
+        "most_common_root_cause": most_common_root_cause,
         "affected_components": [value for value in [event.get("workflow_stage"), event.get("evidence", {}).get("goal")] if value],
         "affected_urls": [event.get("url")] if event.get("url") else [],
         "screenshot_hashes": [event.get("screenshot_hash")] if event.get("screenshot_hash") else [],
@@ -402,6 +462,69 @@ def _extract_website(url: str) -> str:
         return "unknown"
     parsed = urlparse(url)
     return parsed.netloc or parsed.path or "unknown"
+
+
+def _bugs_from_results(results: List[Dict[str, Any]], goal: str, start_url: str, run_id: str, report_id: str, user_id: str) -> List[Dict[str, Any]]:
+    bugs: List[Dict[str, Any]] = []
+    for index, result in enumerate(results or []):
+        if not isinstance(result, dict):
+            continue
+        status = str(result.get("status") or "").lower()
+        if status not in {"fail", "failed"}:
+            continue
+
+        step = result.get("step") if isinstance(result.get("step"), dict) else {}
+        evidence = deepcopy(result.get("validation") or {}) if isinstance(result.get("validation"), dict) else {}
+        evidence.setdefault("goal", goal)
+        evidence.setdefault("run_id", run_id)
+        evidence.setdefault("report_id", report_id)
+        evidence.setdefault("selector", result.get("selector_used") or step.get("selector") or "")
+        evidence.setdefault("issue_type", result.get("failure_category") or "unknown")
+        bugs.append({
+            "title": str(result.get("test") or step.get("action") or f"Failed Step {index + 1}"),
+            "description": str(result.get("error") or result.get("details") or step.get("target") or "").strip(),
+            "severity": "medium",
+            "workflow_stage": str(step.get("action") or "unknown"),
+            "url": start_url,
+            "selector": str(result.get("selector_used") or step.get("selector") or ""),
+            "issue_type": str(result.get("failure_category") or "unknown"),
+            "bug_type": str(result.get("failure_category") or "unknown"),
+            "category": str(result.get("failure_category") or "unknown"),
+            "root_cause": result.get("root_cause") or "UNKNOWN",
+            "root_cause_confidence": result.get("root_cause_confidence") or 0.0,
+            "evidence": evidence,
+        })
+    return bugs
+
+
+def _normalize_lifecycle_status(value: Any) -> str:
+    status = str(value or "monitoring").strip().lower()
+    if status in {"active", "resolved", "regressed", "flaky", "monitoring"}:
+        return status
+    return "monitoring"
+
+
+def _format_lifecycle_datetime(value: Any) -> str:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if value is None:
+        return ""
+    return str(value)
+
+
+def _normalize_lifecycle_status(value: Any) -> str:
+    status = str(value or "monitoring").strip().lower()
+    if status in {"active", "resolved", "regressed", "flaky", "monitoring"}:
+        return status
+    return "monitoring"
+
+
+def _format_lifecycle_datetime(value: Any) -> str:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if value is None:
+        return ""
+    return str(value)
 
 
 def _normalize_text(value: Any) -> str:

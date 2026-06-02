@@ -1,0 +1,5416 @@
+{
+  "test_id": "saucedemo-orchestration-validation",
+  "user_id": "runtime-validation",
+  "status": "failed",
+  "results": [
+    {
+      "error": "'url'"
+    }
+  ],
+  "stream_logs": [],
+  "raw_ai_plan": {
+    "title": "SauceDemo Orchestration Validation",
+    "expected": "Validate login, inventory, cart, and checkout with shared browser state.",
+    "steps": [
+      {
+        "action": "input",
+        "target": "username input",
+        "selector": "username input",
+        "value": "standard_user",
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_7",
+        "objective_name": "Login Success",
+        "scenario_id": "obj_7_s1",
+        "scenario_name": "Login Success - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 76,
+        "risk_level": "high"
+      },
+      {
+        "action": "input",
+        "target": "password input",
+        "selector": "password input",
+        "value": "secret_sauce",
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_7",
+        "objective_name": "Login Success",
+        "scenario_id": "obj_7_s1",
+        "scenario_name": "Login Success - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 76,
+        "risk_level": "high"
+      },
+      {
+        "action": "click",
+        "target": "login button",
+        "selector": "login button",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_7",
+        "objective_name": "Login Success",
+        "scenario_id": "obj_7_s1",
+        "scenario_name": "Login Success - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 76,
+        "risk_level": "high"
+      },
+      {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_7",
+        "objective_name": "Login Success",
+        "scenario_id": "obj_7_s1",
+        "scenario_name": "Login Success - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 76,
+        "risk_level": "high"
+      },
+      {
+        "action": "click",
+        "target": "add to cart",
+        "selector": "add to cart",
+        "value": null,
+        "feature_key": "INVENTORY",
+        "objective_id": "obj_8",
+        "objective_name": "Inventory",
+        "scenario_id": "obj_8_s1",
+        "scenario_name": "Inventory - Inventory Load",
+        "scenario_category": "inventory_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 68,
+        "risk_level": "medium"
+      },
+      {
+        "action": "verify",
+        "target": "cart badge",
+        "selector": "cart badge",
+        "value": null,
+        "feature_key": "INVENTORY",
+        "objective_id": "obj_8",
+        "objective_name": "Inventory",
+        "scenario_id": "obj_8_s1",
+        "scenario_name": "Inventory - Inventory Load",
+        "scenario_category": "inventory_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 68,
+        "risk_level": "medium"
+      },
+      {
+        "action": "click",
+        "target": "cart link",
+        "selector": "cart link",
+        "value": null,
+        "feature_key": "INVENTORY",
+        "objective_id": "obj_8",
+        "objective_name": "Inventory",
+        "scenario_id": "obj_8_s1",
+        "scenario_name": "Inventory - Inventory Load",
+        "scenario_category": "inventory_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 68,
+        "risk_level": "medium"
+      },
+      {
+        "action": "verify",
+        "target": "cart page",
+        "selector": "cart page",
+        "value": null,
+        "feature_key": "INVENTORY",
+        "objective_id": "obj_8",
+        "objective_name": "Inventory",
+        "scenario_id": "obj_8_s1",
+        "scenario_name": "Inventory - Inventory Load",
+        "scenario_category": "inventory_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 68,
+        "risk_level": "medium"
+      },
+      {
+        "action": "click",
+        "target": "cart link",
+        "selector": "cart link",
+        "value": null,
+        "feature_key": "CART",
+        "objective_id": "obj_9",
+        "objective_name": "Cart",
+        "scenario_id": "obj_9_s1",
+        "scenario_name": "Cart - Cart Load",
+        "scenario_category": "cart_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 72,
+        "risk_level": "high"
+      },
+      {
+        "action": "verify",
+        "target": "cart page",
+        "selector": "cart page",
+        "value": null,
+        "feature_key": "CART",
+        "objective_id": "obj_9",
+        "objective_name": "Cart",
+        "scenario_id": "obj_9_s1",
+        "scenario_name": "Cart - Cart Load",
+        "scenario_category": "cart_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 72,
+        "risk_level": "high"
+      },
+      {
+        "action": "verify",
+        "target": "selected item",
+        "selector": "selected item",
+        "value": null,
+        "feature_key": "CART",
+        "objective_id": "obj_9",
+        "objective_name": "Cart",
+        "scenario_id": "obj_9_s1",
+        "scenario_name": "Cart - Cart Load",
+        "scenario_category": "cart_load",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 72,
+        "risk_level": "high"
+      },
+      {
+        "action": "click",
+        "target": "cart link",
+        "selector": "cart link",
+        "value": null,
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "click",
+        "target": "checkout button",
+        "selector": "checkout button",
+        "value": null,
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "input",
+        "target": "first name input",
+        "selector": "first name input",
+        "value": "Test",
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "input",
+        "target": "last name input",
+        "selector": "last name input",
+        "value": "User",
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "input",
+        "target": "zip/postal input",
+        "selector": "zip/postal input",
+        "value": "12345",
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "click",
+        "target": "continue button",
+        "selector": "continue button",
+        "value": null,
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "click",
+        "target": "finish button",
+        "selector": "finish button",
+        "value": null,
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      },
+      {
+        "action": "verify",
+        "target": "order confirmation",
+        "selector": "order confirmation",
+        "value": null,
+        "feature_key": "CHECKOUT",
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high"
+      }
+    ],
+    "objective_tracking": [
+      {
+        "objective_id": "obj_7",
+        "objective_name": "Login Success",
+        "feature_key": "AUTHENTICATION",
+        "feature_name": "Login Success",
+        "feature_type": "AUTHENTICATION",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "priority_score": 100,
+        "risk_score": 100,
+        "risk_level": "critical",
+        "risk_factors": [
+          "base_authentication_risk",
+          "coverage_deep",
+          "explicit_objective_requested",
+          "forms_present",
+          "validation_requirements_present"
+        ],
+        "generated_scenarios": 1,
+        "generated_steps": 4,
+        "execution_status": "pending",
+        "scenarios": [
+          {
+            "scenario_id": "obj_7_s1",
+            "scenario_name": "Login Success - Valid Input",
+            "category": "valid_input",
+            "coverage_level": "deep",
+            "risk_score": 76,
+            "risk_level": "high",
+            "generated_steps": 4,
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authenticated_session",
+              "authentication_success",
+              "login_success_success"
+            ],
+            "required_page": "login"
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_8",
+        "objective_name": "Inventory",
+        "feature_key": "INVENTORY",
+        "feature_name": "Inventory",
+        "feature_type": "INVENTORY",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "priority_score": 85,
+        "risk_score": 85,
+        "risk_level": "critical",
+        "risk_factors": [
+          "base_inventory_risk",
+          "coverage_deep",
+          "explicit_objective_requested"
+        ],
+        "generated_scenarios": 1,
+        "generated_steps": 4,
+        "execution_status": "pending",
+        "scenarios": [
+          {
+            "scenario_id": "obj_8_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "category": "inventory_load",
+            "coverage_level": "deep",
+            "risk_score": 68,
+            "risk_level": "medium",
+            "generated_steps": 4,
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "inventory_loaded",
+              "inventory_ready",
+              "inventory_ready"
+            ],
+            "required_page": "inventory"
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_9",
+        "objective_name": "Cart",
+        "feature_key": "CART",
+        "feature_name": "Cart",
+        "feature_type": "CART",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "priority_score": 92,
+        "risk_score": 92,
+        "risk_level": "critical",
+        "risk_factors": [
+          "base_cart_risk",
+          "coverage_deep",
+          "explicit_objective_requested",
+          "validation_requirements_present"
+        ],
+        "generated_scenarios": 1,
+        "generated_steps": 3,
+        "execution_status": "pending",
+        "scenarios": [
+          {
+            "scenario_id": "obj_9_s1",
+            "scenario_name": "Cart - Cart Load",
+            "category": "cart_load",
+            "coverage_level": "deep",
+            "risk_score": 72,
+            "risk_level": "high",
+            "generated_steps": 3,
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "produces_state": [
+              "cart_ready",
+              "cart_ready",
+              "cart_ready"
+            ],
+            "required_page": "cart"
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "feature_key": "CHECKOUT",
+        "feature_name": "Checkout",
+        "feature_type": "CHECKOUT",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "priority_score": 94,
+        "risk_score": 94,
+        "risk_level": "critical",
+        "risk_factors": [
+          "base_checkout_risk",
+          "coverage_deep",
+          "validation_requirements_present"
+        ],
+        "generated_scenarios": 1,
+        "generated_steps": 8,
+        "execution_status": "pending",
+        "scenarios": [
+          {
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "category": "complete_workflow",
+            "coverage_level": "deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "generated_steps": 8,
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_ready"
+            ],
+            "required_page": "checkout"
+          }
+        ]
+      }
+    ],
+    "plan_metrics": {
+      "requested_objectives": 4,
+      "planned_objectives": 4,
+      "generated_scenarios": 4,
+      "generated_steps": 19,
+      "coverage_profile_counts": {
+        "minimal": 0,
+        "standard": 4,
+        "deep": 7,
+        "aggressive": 0
+      },
+      "feature_type_counts": {
+        "CHECKOUT": 2,
+        "AUTHENTICATION": 2,
+        "CART": 2,
+        "INVENTORY": 2,
+        "FORMS": 1,
+        "TABLES": 2
+      },
+      "risk_level_counts": {
+        "critical": 6,
+        "high": 2,
+        "medium": 3
+      },
+      "focused_features": [],
+      "risk_summary": {
+        "critical_features": 6,
+        "high_features": 2,
+        "medium_features": 3,
+        "low_features": 0,
+        "critical_scenarios": 9,
+        "high_scenarios": 16,
+        "medium_scenarios": 13,
+        "low_scenarios": 0
+      },
+      "dependency_graph": {
+        "nodes": [
+          "obj_10_s4",
+          "obj_6_s4",
+          "obj_10_s3",
+          "obj_7_s5",
+          "obj_1_s5",
+          "obj_6_s3",
+          "obj_10_s2",
+          "obj_10_s1",
+          "obj_7_s6",
+          "obj_6_s2",
+          "obj_7_s4",
+          "obj_1_s6",
+          "obj_6_s1",
+          "obj_7_s2",
+          "obj_1_s4",
+          "obj_1_s2",
+          "obj_9_s3",
+          "obj_7_s3",
+          "obj_9_s2",
+          "obj_1_s3",
+          "obj_7_s1",
+          "obj_8_s2",
+          "obj_1_s1",
+          "obj_9_s1",
+          "obj_8_s3",
+          "obj_4_s2",
+          "obj_8_s1",
+          "obj_3_s2",
+          "obj_2_s3",
+          "obj_4_s1",
+          "obj_2_s2",
+          "obj_11_s4",
+          "obj_2_s4",
+          "obj_2_s1",
+          "obj_3_s1",
+          "obj_11_s3",
+          "obj_11_s2",
+          "obj_11_s1"
+        ],
+        "edges": [
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s4"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s4"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s4"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s4"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s4"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s4"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s3"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s3"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s3"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s3"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s2"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s1"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_7_s6"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s2"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_1_s6"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s1"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_9_s3"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_9_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_9_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_9_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_8_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_9_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_9_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_8_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_4_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_4_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_8_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_3_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_4_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_4_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_3_s1"
+          }
+        ]
+      }
+    },
+    "scenario_tree": {
+      "coverage_levels": [
+        "minimal",
+        "standard",
+        "deep",
+        "aggressive"
+      ],
+      "coverage_profiles": {
+        "minimal": "Smoke",
+        "standard": "Standard",
+        "deep": "Deep",
+        "aggressive": "Exhaustive"
+      },
+      "default_coverage_level": "standard",
+      "focus_overrides": {},
+      "features": [
+        {
+          "objective_id": "obj_10",
+          "feature_key": "CHECKOUT",
+          "feature_name": "Checkout Flows On Saucedemo",
+          "feature_type": "CHECKOUT",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 100,
+          "risk_level": "critical",
+          "metadata": {
+            "feature_type": "CHECKOUT",
+            "evidence": [
+              "Checkout Flows On Saucedemo"
+            ],
+            "sources": [
+              "instruction_requested"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "recovery_state",
+              "transaction_integrity"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_10_s1",
+              "scenario_name": "Checkout Flows On Saucedemo - Complete Workflow",
+              "category": "complete_workflow",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "minimal",
+              "risk_score": 85,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "order_confirmation",
+                "checkout_state"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_flows_on_saucedemo_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            },
+            {
+              "scenario_id": "obj_10_s2",
+              "scenario_name": "Checkout Flows On Saucedemo - Validation Failures",
+              "category": "validation_failures",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 87,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "payment_errors",
+                "required_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_flows_on_saucedemo_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            },
+            {
+              "scenario_id": "obj_10_s3",
+              "scenario_name": "Checkout Flows On Saucedemo - Partial Completion",
+              "category": "partial_completion",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 90,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "state_preserved",
+                "no_duplicate_order"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_flows_on_saucedemo_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            },
+            {
+              "scenario_id": "obj_10_s4",
+              "scenario_name": "Checkout Flows On Saucedemo - Recovery Scenarios",
+              "category": "recovery_scenarios",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 92,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "resume_flow",
+                "cart_preserved"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_flows_on_saucedemo_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_7",
+          "feature_key": "AUTHENTICATION",
+          "feature_name": "Login Success",
+          "feature_type": "AUTHENTICATION",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 100,
+          "risk_level": "critical",
+          "metadata": {
+            "feature_type": "AUTHENTICATION",
+            "evidence": [
+              "Login Success"
+            ],
+            "sources": [
+              "instruction_requested"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [
+              {
+                "page_url": "https://www.saucedemo.com/",
+                "page_title": "Swag Labs",
+                "page_type": "auth_page",
+                "form_index": 0,
+                "name": "form-1",
+                "action": "",
+                "method": "",
+                "fields": [
+                  {
+                    "index": 0,
+                    "name": "user-name",
+                    "type": "text",
+                    "placeholder": "Username",
+                    "aria_label": ""
+                  },
+                  {
+                    "index": 1,
+                    "name": "password",
+                    "type": "password",
+                    "placeholder": "Password",
+                    "aria_label": ""
+                  },
+                  {
+                    "index": 2,
+                    "name": "login-button",
+                    "type": "submit",
+                    "placeholder": "",
+                    "aria_label": ""
+                  }
+                ]
+              }
+            ],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "authorization_boundary",
+              "error_messages",
+              "format_validation",
+              "logout_state",
+              "required_fields",
+              "session_state"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_7_s1",
+              "scenario_name": "Login Success - Valid Input",
+              "category": "valid_input",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "minimal",
+              "risk_score": 76,
+              "risk_level": "high",
+              "validation_requirements": [
+                "success_state",
+                "session_created"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authenticated_session",
+                "authentication_success",
+                "login_success_success"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_7_s2",
+              "scenario_name": "Login Success - Invalid Input",
+              "category": "invalid_input",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 82,
+              "risk_level": "high",
+              "validation_requirements": [
+                "error_message",
+                "no_session"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authentication_rejected",
+                "authentication_rejected"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_7_s3",
+              "scenario_name": "Login Success - Empty Fields",
+              "category": "empty_fields",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 79,
+              "risk_level": "high",
+              "validation_requirements": [
+                "required_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authentication_rejected",
+                "authentication_rejected"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_7_s4",
+              "scenario_name": "Login Success - Boundary Values",
+              "category": "boundary_values",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 84,
+              "risk_level": "high",
+              "validation_requirements": [
+                "field_limits",
+                "safe_error"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authentication_rejected",
+                "authentication_rejected"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_7_s5",
+              "scenario_name": "Login Success - Session Handling",
+              "category": "session_handling",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 90,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "session_persistence",
+                "protected_route"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authenticated_session",
+                "authentication_success",
+                "login_success_success"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_7_s6",
+              "scenario_name": "Login Success - Logout Validation",
+              "category": "logout_validation",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 85,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "session_destroyed",
+                "protected_route_denied"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "logged_out_session",
+                "authentication_logged_out"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_1",
+          "feature_key": "AUTHENTICATION",
+          "feature_name": "User Management",
+          "feature_type": "AUTHENTICATION",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 96,
+          "risk_level": "critical",
+          "metadata": {
+            "feature_type": "AUTHENTICATION",
+            "evidence": [
+              "Password for all users:",
+              "Login",
+              "form-1",
+              "instruction"
+            ],
+            "sources": [
+              "discovery_feature_map",
+              "form_metadata",
+              "instruction"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [
+              {
+                "page_url": "https://www.saucedemo.com/",
+                "page_title": "Swag Labs",
+                "page_type": "auth_page",
+                "form_index": 0,
+                "name": "form-1",
+                "action": "",
+                "method": "",
+                "fields": [
+                  {
+                    "index": 0,
+                    "name": "user-name",
+                    "type": "text",
+                    "placeholder": "Username",
+                    "aria_label": ""
+                  },
+                  {
+                    "index": 1,
+                    "name": "password",
+                    "type": "password",
+                    "placeholder": "Password",
+                    "aria_label": ""
+                  },
+                  {
+                    "index": 2,
+                    "name": "login-button",
+                    "type": "submit",
+                    "placeholder": "",
+                    "aria_label": ""
+                  }
+                ]
+              }
+            ],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "authorization_boundary",
+              "error_messages",
+              "format_validation",
+              "logout_state",
+              "required_fields",
+              "session_state"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_1_s1",
+              "scenario_name": "User Management - Valid Input",
+              "category": "valid_input",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "minimal",
+              "risk_score": 74,
+              "risk_level": "high",
+              "validation_requirements": [
+                "success_state",
+                "session_created"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authenticated_session",
+                "authentication_success",
+                "user_management_success"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_1_s2",
+              "scenario_name": "User Management - Invalid Input",
+              "category": "invalid_input",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 81,
+              "risk_level": "high",
+              "validation_requirements": [
+                "error_message",
+                "no_session"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authentication_rejected",
+                "authentication_rejected"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_1_s3",
+              "scenario_name": "User Management - Empty Fields",
+              "category": "empty_fields",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 77,
+              "risk_level": "high",
+              "validation_requirements": [
+                "required_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authentication_rejected",
+                "authentication_rejected"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_1_s4",
+              "scenario_name": "User Management - Boundary Values",
+              "category": "boundary_values",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 82,
+              "risk_level": "high",
+              "validation_requirements": [
+                "field_limits",
+                "safe_error"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authentication_rejected",
+                "authentication_rejected"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_1_s5",
+              "scenario_name": "User Management - Session Handling",
+              "category": "session_handling",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 88,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "session_persistence",
+                "protected_route"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "authenticated_session",
+                "authentication_success",
+                "user_management_success"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_1_s6",
+              "scenario_name": "User Management - Logout Validation",
+              "category": "logout_validation",
+              "feature_type": "AUTHENTICATION",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 83,
+              "risk_level": "high",
+              "validation_requirements": [
+                "session_destroyed",
+                "protected_route_denied"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "logged_out_session",
+                "authentication_logged_out"
+              ],
+              "required_page": "login",
+              "generated_steps": 4
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_6",
+          "feature_key": "CHECKOUT",
+          "feature_name": "Checkout",
+          "feature_type": "CHECKOUT",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 94,
+          "risk_level": "critical",
+          "metadata": {
+            "feature_type": "CHECKOUT",
+            "evidence": [
+              "instruction"
+            ],
+            "sources": [
+              "instruction"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "recovery_state",
+              "transaction_integrity"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_6_s1",
+              "scenario_name": "Checkout - Complete Workflow",
+              "category": "complete_workflow",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "minimal",
+              "risk_score": 82,
+              "risk_level": "high",
+              "validation_requirements": [
+                "order_confirmation",
+                "checkout_state"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            },
+            {
+              "scenario_id": "obj_6_s2",
+              "scenario_name": "Checkout - Validation Failures",
+              "category": "validation_failures",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 84,
+              "risk_level": "high",
+              "validation_requirements": [
+                "payment_errors",
+                "required_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            },
+            {
+              "scenario_id": "obj_6_s3",
+              "scenario_name": "Checkout - Partial Completion",
+              "category": "partial_completion",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 87,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "state_preserved",
+                "no_duplicate_order"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            },
+            {
+              "scenario_id": "obj_6_s4",
+              "scenario_name": "Checkout - Recovery Scenarios",
+              "category": "recovery_scenarios",
+              "feature_type": "CHECKOUT",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 90,
+              "risk_level": "critical",
+              "validation_requirements": [
+                "resume_flow",
+                "cart_preserved"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded",
+                "cart_ready"
+              ],
+              "produces_state": [
+                "checkout_ready",
+                "checkout_ready",
+                "checkout_ready"
+              ],
+              "required_page": "checkout",
+              "generated_steps": 8
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_9",
+          "feature_key": "CART",
+          "feature_name": "Cart",
+          "feature_type": "CART",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 92,
+          "risk_level": "critical",
+          "metadata": {
+            "feature_type": "CART",
+            "evidence": [
+              "Cart"
+            ],
+            "sources": [
+              "instruction_requested"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "cart_integrity",
+              "selection_state"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_9_s1",
+              "scenario_name": "Cart - Cart Load",
+              "category": "cart_load",
+              "feature_type": "CART",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "minimal",
+              "risk_score": 72,
+              "risk_level": "high",
+              "validation_requirements": [
+                "cart_items_visible"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "produces_state": [
+                "cart_ready",
+                "cart_ready",
+                "cart_ready"
+              ],
+              "required_page": "cart",
+              "generated_steps": 3
+            },
+            {
+              "scenario_id": "obj_9_s2",
+              "scenario_name": "Cart - Cart State Preservation",
+              "category": "state_preservation",
+              "feature_type": "CART",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 77,
+              "risk_level": "high",
+              "validation_requirements": [
+                "selected_item",
+                "state_preserved"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "produces_state": [
+                "cart_ready",
+                "cart_ready",
+                "cart_ready"
+              ],
+              "required_page": "cart",
+              "generated_steps": 3
+            },
+            {
+              "scenario_id": "obj_9_s3",
+              "scenario_name": "Cart - Checkout Progression",
+              "category": "checkout_progression",
+              "feature_type": "CART",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 80,
+              "risk_level": "high",
+              "validation_requirements": [
+                "checkout_state",
+                "continue_state"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "produces_state": [
+                "cart_ready",
+                "cart_ready",
+                "cart_ready"
+              ],
+              "required_page": "cart",
+              "generated_steps": 3
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_8",
+          "feature_key": "INVENTORY",
+          "feature_name": "Inventory",
+          "feature_type": "INVENTORY",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 85,
+          "risk_level": "critical",
+          "metadata": {
+            "feature_type": "INVENTORY",
+            "evidence": [
+              "Inventory"
+            ],
+            "sources": [
+              "instruction_requested"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": []
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_8_s1",
+              "scenario_name": "Inventory - Inventory Load",
+              "category": "inventory_load",
+              "feature_type": "INVENTORY",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "minimal",
+              "risk_score": 68,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "products_visible"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "inventory_loaded",
+                "inventory_ready",
+                "inventory_ready"
+              ],
+              "required_page": "inventory",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_8_s2",
+              "scenario_name": "Inventory - Add To Cart Progression",
+              "category": "cart_progression",
+              "feature_type": "INVENTORY",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 75,
+              "risk_level": "high",
+              "validation_requirements": [
+                "cart_badge",
+                "state_preserved"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "inventory_loaded",
+                "inventory_ready",
+                "inventory_ready"
+              ],
+              "required_page": "inventory",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_8_s3",
+              "scenario_name": "Inventory - Product Detail View",
+              "category": "detail_view",
+              "feature_type": "INVENTORY",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 71,
+              "risk_level": "high",
+              "validation_requirements": [
+                "product_detail_visible"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "inventory_loaded",
+                "inventory_ready",
+                "inventory_ready"
+              ],
+              "required_page": "inventory",
+              "generated_steps": 4
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_4",
+          "feature_key": "CART",
+          "feature_name": "Cart",
+          "feature_type": "CART",
+          "coverage_level": "standard",
+          "coverage_profile": "Standard",
+          "risk_score": 76,
+          "risk_level": "high",
+          "metadata": {
+            "feature_type": "CART",
+            "evidence": [
+              "instruction"
+            ],
+            "sources": [
+              "instruction"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "cart_integrity",
+              "selection_state"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_4_s1",
+              "scenario_name": "Cart - Cart Load",
+              "category": "cart_load",
+              "feature_type": "CART",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "minimal",
+              "risk_score": 65,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "cart_items_visible"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "produces_state": [
+                "cart_ready",
+                "cart_ready",
+                "cart_ready"
+              ],
+              "required_page": "cart",
+              "generated_steps": 3
+            },
+            {
+              "scenario_id": "obj_4_s2",
+              "scenario_name": "Cart - Cart State Preservation",
+              "category": "state_preservation",
+              "feature_type": "CART",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "standard",
+              "risk_score": 69,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "selected_item",
+                "state_preserved"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "required_state": [
+                "authenticated_session",
+                "inventory_loaded"
+              ],
+              "produces_state": [
+                "cart_ready",
+                "cart_ready",
+                "cart_ready"
+              ],
+              "required_page": "cart",
+              "generated_steps": 3
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_2",
+          "feature_key": "FORMS",
+          "feature_name": "Forms",
+          "feature_type": "FORMS",
+          "coverage_level": "standard",
+          "coverage_profile": "Standard",
+          "risk_score": 73,
+          "risk_level": "high",
+          "metadata": {
+            "feature_type": "FORMS",
+            "evidence": [
+              "form-1",
+              "https://www.saucedemo.com/",
+              "1 form(s)"
+            ],
+            "sources": [
+              "discovery_feature_map",
+              "workflow",
+              "forms"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [
+              {
+                "page_url": "https://www.saucedemo.com/",
+                "page_title": "Swag Labs",
+                "page_type": "auth_page",
+                "form_index": 0,
+                "name": "form-1",
+                "action": "",
+                "method": "",
+                "fields": [
+                  {
+                    "index": 0,
+                    "name": "user-name",
+                    "type": "text",
+                    "placeholder": "Username",
+                    "aria_label": ""
+                  },
+                  {
+                    "index": 1,
+                    "name": "password",
+                    "type": "password",
+                    "placeholder": "Password",
+                    "aria_label": ""
+                  },
+                  {
+                    "index": 2,
+                    "name": "login-button",
+                    "type": "submit",
+                    "placeholder": "",
+                    "aria_label": ""
+                  }
+                ]
+              }
+            ],
+            "tables": [],
+            "workflows": [
+              {
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "validation_requirements": [
+              "error_messages",
+              "format_validation",
+              "required_fields",
+              "state_transition",
+              "workflow_completion"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_2_s1",
+              "scenario_name": "Forms - Required Fields",
+              "category": "required_fields",
+              "feature_type": "FORMS",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "minimal",
+              "risk_score": 61,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "required_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "forms_ready",
+                "forms_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 2
+            },
+            {
+              "scenario_id": "obj_2_s2",
+              "scenario_name": "Forms - Invalid Formats",
+              "category": "invalid_formats",
+              "feature_type": "FORMS",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "standard",
+              "risk_score": 65,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "format_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "forms_ready",
+                "forms_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 3
+            },
+            {
+              "scenario_id": "obj_2_s3",
+              "scenario_name": "Forms - Empty Submission",
+              "category": "empty_submission",
+              "feature_type": "FORMS",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "standard",
+              "risk_score": 66,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "submission_blocked"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "forms_ready",
+                "forms_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 2
+            },
+            {
+              "scenario_id": "obj_2_s4",
+              "scenario_name": "Forms - Partial Submission",
+              "category": "partial_submission",
+              "feature_type": "FORMS",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "standard",
+              "risk_score": 64,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "missing_field_errors"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "forms_ready",
+                "forms_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 3
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_3",
+          "feature_key": "INVENTORY",
+          "feature_name": "Inventory",
+          "feature_type": "INVENTORY",
+          "coverage_level": "standard",
+          "coverage_profile": "Standard",
+          "risk_score": 69,
+          "risk_level": "medium",
+          "metadata": {
+            "feature_type": "INVENTORY",
+            "evidence": [
+              "instruction"
+            ],
+            "sources": [
+              "instruction"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": []
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_3_s1",
+              "scenario_name": "Inventory - Inventory Load",
+              "category": "inventory_load",
+              "feature_type": "INVENTORY",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "minimal",
+              "risk_score": 61,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "products_visible"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "inventory_loaded",
+                "inventory_ready",
+                "inventory_ready"
+              ],
+              "required_page": "inventory",
+              "generated_steps": 4
+            },
+            {
+              "scenario_id": "obj_3_s2",
+              "scenario_name": "Inventory - Add To Cart Progression",
+              "category": "cart_progression",
+              "feature_type": "INVENTORY",
+              "coverage_level": "standard",
+              "coverage_profile": "Standard",
+              "min_coverage_level": "standard",
+              "risk_score": 67,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "cart_badge",
+                "state_preserved"
+              ],
+              "execution_status": "pending",
+              "depends_on": [
+                "authenticated_session"
+              ],
+              "required_state": [
+                "authenticated_session"
+              ],
+              "produces_state": [
+                "inventory_loaded",
+                "inventory_ready",
+                "inventory_ready"
+              ],
+              "required_page": "inventory",
+              "generated_steps": 4
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_11",
+          "feature_key": "TABLES",
+          "feature_name": "Reuse Browser State Between Dependent Scenarios",
+          "feature_type": "TABLES",
+          "coverage_level": "deep",
+          "coverage_profile": "Deep",
+          "risk_score": 66,
+          "risk_level": "medium",
+          "metadata": {
+            "feature_type": "TABLES",
+            "evidence": [
+              "Reuse Browser State Between Dependent Scenarios"
+            ],
+            "sources": [
+              "instruction_requested"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "data_order",
+              "row_state"
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "obj_11_s1",
+              "scenario_name": "Reuse Browser State Between Dependent Scenarios - Pagination",
+              "category": "pagination",
+              "feature_type": "TABLES",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 53,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "page_changes",
+                "row_count_stable"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "tables_ready",
+                "reuse_browser_state_between_dependent_scenarios_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 2
+            },
+            {
+              "scenario_id": "obj_11_s2",
+              "scenario_name": "Reuse Browser State Between Dependent Scenarios - Sorting",
+              "category": "sorting",
+              "feature_type": "TABLES",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "standard",
+              "risk_score": 54,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "order_changes"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "tables_ready",
+                "reuse_browser_state_between_dependent_scenarios_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 2
+            },
+            {
+              "scenario_id": "obj_11_s3",
+              "scenario_name": "Reuse Browser State Between Dependent Scenarios - Filtering",
+              "category": "filtering",
+              "feature_type": "TABLES",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 57,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "filtered_results"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "tables_ready",
+                "reuse_browser_state_between_dependent_scenarios_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 2
+            },
+            {
+              "scenario_id": "obj_11_s4",
+              "scenario_name": "Reuse Browser State Between Dependent Scenarios - Row Actions",
+              "category": "row_actions",
+              "feature_type": "TABLES",
+              "coverage_level": "deep",
+              "coverage_profile": "Deep",
+              "min_coverage_level": "deep",
+              "risk_score": 65,
+              "risk_level": "medium",
+              "validation_requirements": [
+                "row_action_result"
+              ],
+              "execution_status": "pending",
+              "depends_on": [],
+              "required_state": [],
+              "produces_state": [
+                "tables_ready",
+                "reuse_browser_state_between_dependent_scenarios_ready"
+              ],
+              "required_page": null,
+              "generated_steps": 2
+            }
+          ]
+        },
+        {
+          "objective_id": "obj_5",
+          "feature_key": "TABLES",
+          "feature_name": "Tables",
+          "feature_type": "TABLES",
+          "coverage_level": "standard",
+          "coverage_profile": "Standard",
+          "risk_score": 50,
+          "risk_level": "medium",
+          "metadata": {
+            "feature_type": "TABLES",
+            "evidence": [
+              "instruction"
+            ],
+            "sources": [
+              "instruction"
+            ],
+            "available_actions": [
+              {
+                "type": "submit",
+                "text": "Login",
+                "aria_label": "",
+                "id": "login-button",
+                "class": "submit-button btn_action",
+                "name": "login-button",
+                "role": "",
+                "data_testid": ""
+              },
+              {
+                "type": "workflow",
+                "name": "Form Submission Flow",
+                "feature_key": "FORMS",
+                "entry_point": "https://www.saucedemo.com/"
+              }
+            ],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [
+              "data_order",
+              "row_state"
+            ]
+          },
+          "scenarios": []
+        }
+      ],
+      "summary": {
+        "requested_objectives": 11,
+        "planned_objectives": 11,
+        "generated_scenarios": 38,
+        "generated_steps": 165,
+        "coverage_profile_counts": {
+          "minimal": 0,
+          "standard": 4,
+          "deep": 7,
+          "aggressive": 0
+        },
+        "feature_type_counts": {
+          "CHECKOUT": 2,
+          "AUTHENTICATION": 2,
+          "CART": 2,
+          "INVENTORY": 2,
+          "FORMS": 1,
+          "TABLES": 2
+        },
+        "risk_level_counts": {
+          "critical": 6,
+          "high": 2,
+          "medium": 3
+        },
+        "focused_features": [],
+        "risk_summary": {
+          "critical_features": 6,
+          "high_features": 2,
+          "medium_features": 3,
+          "low_features": 0,
+          "critical_scenarios": 9,
+          "high_scenarios": 16,
+          "medium_scenarios": 13,
+          "low_scenarios": 0
+        },
+        "dependency_graph": {
+          "nodes": [
+            "obj_10_s4",
+            "obj_6_s4",
+            "obj_10_s3",
+            "obj_7_s5",
+            "obj_1_s5",
+            "obj_6_s3",
+            "obj_10_s2",
+            "obj_10_s1",
+            "obj_7_s6",
+            "obj_6_s2",
+            "obj_7_s4",
+            "obj_1_s6",
+            "obj_6_s1",
+            "obj_7_s2",
+            "obj_1_s4",
+            "obj_1_s2",
+            "obj_9_s3",
+            "obj_7_s3",
+            "obj_9_s2",
+            "obj_1_s3",
+            "obj_7_s1",
+            "obj_8_s2",
+            "obj_1_s1",
+            "obj_9_s1",
+            "obj_8_s3",
+            "obj_4_s2",
+            "obj_8_s1",
+            "obj_3_s2",
+            "obj_2_s3",
+            "obj_4_s1",
+            "obj_2_s2",
+            "obj_11_s4",
+            "obj_2_s4",
+            "obj_2_s1",
+            "obj_3_s1",
+            "obj_11_s3",
+            "obj_11_s2",
+            "obj_11_s1"
+          ],
+          "edges": [
+            {
+              "from": "authenticated_session",
+              "to": "obj_10_s4"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_10_s4"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_10_s4"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_6_s4"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_6_s4"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_6_s4"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_10_s3"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_10_s3"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_10_s3"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_6_s3"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_6_s3"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_6_s3"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_10_s2"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_10_s2"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_10_s2"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_10_s1"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_10_s1"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_10_s1"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_7_s6"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_6_s2"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_6_s2"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_6_s2"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_1_s6"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_6_s1"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_6_s1"
+            },
+            {
+              "from": "cart_ready",
+              "to": "obj_6_s1"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_9_s3"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_9_s3"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_9_s2"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_9_s2"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_8_s2"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_9_s1"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_9_s1"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_8_s3"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_4_s2"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_4_s2"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_8_s1"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_3_s2"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_4_s1"
+            },
+            {
+              "from": "inventory_loaded",
+              "to": "obj_4_s1"
+            },
+            {
+              "from": "authenticated_session",
+              "to": "obj_3_s1"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "normalized_ai_plan": {
+    "title": "SauceDemo Orchestration Validation",
+    "expected": "Validate login, inventory, cart, and checkout with shared browser state.",
+    "scenarios": [
+      {
+        "title": "Login Success - Valid Input",
+        "expected": "Login Success - Valid Input validates: success_state, session_created.",
+        "steps": [
+          {
+            "action": "input",
+            "target": "username input",
+            "selector": "username input",
+            "value": "standard_user",
+            "feature_key": "AUTHENTICATION",
+            "objective_id": "obj_7",
+            "objective_name": "Login Success",
+            "scenario_id": "obj_7_s1",
+            "scenario_name": "Login Success - Valid Input",
+            "scenario_category": "valid_input",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 76,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "input",
+            "target": "password input",
+            "selector": "password input",
+            "value": "secret_sauce",
+            "feature_key": "AUTHENTICATION",
+            "objective_id": "obj_7",
+            "objective_name": "Login Success",
+            "scenario_id": "obj_7_s1",
+            "scenario_name": "Login Success - Valid Input",
+            "scenario_category": "valid_input",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 76,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "click",
+            "target": "login button",
+            "selector": "login button",
+            "value": null,
+            "feature_key": "AUTHENTICATION",
+            "objective_id": "obj_7",
+            "objective_name": "Login Success",
+            "scenario_id": "obj_7_s1",
+            "scenario_name": "Login Success - Valid Input",
+            "scenario_category": "valid_input",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 76,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "verify",
+            "target": "inventory page",
+            "selector": "inventory page",
+            "value": null,
+            "feature_key": "AUTHENTICATION",
+            "objective_id": "obj_7",
+            "objective_name": "Login Success",
+            "scenario_id": "obj_7_s1",
+            "scenario_name": "Login Success - Valid Input",
+            "scenario_category": "valid_input",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 76,
+            "risk_level": "high",
+            "execution_context": null
+          }
+        ],
+        "objective_id": "obj_7",
+        "objective_name": "Login Success",
+        "feature_key": "AUTHENTICATION",
+        "coverage_level": "deep",
+        "scenario_id": "obj_7_s1",
+        "scenario_name": "Login Success - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_profile": "Deep",
+        "risk_score": 76,
+        "risk_level": "high",
+        "objective_tracking": null,
+        "plan_metrics": null,
+        "scenario_tree": null,
+        "depends_on": [],
+        "required_state": [],
+        "produces_state": [
+          "authenticated_session",
+          "authentication_success",
+          "login_success_success"
+        ],
+        "required_page": "login"
+      },
+      {
+        "title": "Inventory - Inventory Load",
+        "expected": "Inventory - Inventory Load validates: products_visible.",
+        "steps": [
+          {
+            "action": "click",
+            "target": "add to cart",
+            "selector": "add to cart",
+            "value": null,
+            "feature_key": "INVENTORY",
+            "objective_id": "obj_8",
+            "objective_name": "Inventory",
+            "scenario_id": "obj_8_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "scenario_category": "inventory_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 68,
+            "risk_level": "medium",
+            "execution_context": null
+          },
+          {
+            "action": "verify",
+            "target": "cart badge",
+            "selector": "cart badge",
+            "value": null,
+            "feature_key": "INVENTORY",
+            "objective_id": "obj_8",
+            "objective_name": "Inventory",
+            "scenario_id": "obj_8_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "scenario_category": "inventory_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 68,
+            "risk_level": "medium",
+            "execution_context": null
+          },
+          {
+            "action": "click",
+            "target": "cart link",
+            "selector": "cart link",
+            "value": null,
+            "feature_key": "INVENTORY",
+            "objective_id": "obj_8",
+            "objective_name": "Inventory",
+            "scenario_id": "obj_8_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "scenario_category": "inventory_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 68,
+            "risk_level": "medium",
+            "execution_context": null
+          },
+          {
+            "action": "verify",
+            "target": "cart page",
+            "selector": "cart page",
+            "value": null,
+            "feature_key": "INVENTORY",
+            "objective_id": "obj_8",
+            "objective_name": "Inventory",
+            "scenario_id": "obj_8_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "scenario_category": "inventory_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 68,
+            "risk_level": "medium",
+            "execution_context": null
+          }
+        ],
+        "objective_id": "obj_8",
+        "objective_name": "Inventory",
+        "feature_key": "INVENTORY",
+        "coverage_level": "deep",
+        "scenario_id": "obj_8_s1",
+        "scenario_name": "Inventory - Inventory Load",
+        "scenario_category": "inventory_load",
+        "coverage_profile": "Deep",
+        "risk_score": 68,
+        "risk_level": "medium",
+        "objective_tracking": null,
+        "plan_metrics": null,
+        "scenario_tree": null,
+        "depends_on": [
+          "authenticated_session"
+        ],
+        "required_state": [
+          "authenticated_session"
+        ],
+        "produces_state": [
+          "inventory_loaded",
+          "inventory_ready",
+          "inventory_ready"
+        ],
+        "required_page": "inventory"
+      },
+      {
+        "title": "Cart - Cart Load",
+        "expected": "Cart - Cart Load validates: cart_items_visible.",
+        "steps": [
+          {
+            "action": "click",
+            "target": "cart link",
+            "selector": "cart link",
+            "value": null,
+            "feature_key": "CART",
+            "objective_id": "obj_9",
+            "objective_name": "Cart",
+            "scenario_id": "obj_9_s1",
+            "scenario_name": "Cart - Cart Load",
+            "scenario_category": "cart_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 72,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "verify",
+            "target": "cart page",
+            "selector": "cart page",
+            "value": null,
+            "feature_key": "CART",
+            "objective_id": "obj_9",
+            "objective_name": "Cart",
+            "scenario_id": "obj_9_s1",
+            "scenario_name": "Cart - Cart Load",
+            "scenario_category": "cart_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 72,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "verify",
+            "target": "selected item",
+            "selector": "selected item",
+            "value": null,
+            "feature_key": "CART",
+            "objective_id": "obj_9",
+            "objective_name": "Cart",
+            "scenario_id": "obj_9_s1",
+            "scenario_name": "Cart - Cart Load",
+            "scenario_category": "cart_load",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 72,
+            "risk_level": "high",
+            "execution_context": null
+          }
+        ],
+        "objective_id": "obj_9",
+        "objective_name": "Cart",
+        "feature_key": "CART",
+        "coverage_level": "deep",
+        "scenario_id": "obj_9_s1",
+        "scenario_name": "Cart - Cart Load",
+        "scenario_category": "cart_load",
+        "coverage_profile": "Deep",
+        "risk_score": 72,
+        "risk_level": "high",
+        "objective_tracking": null,
+        "plan_metrics": null,
+        "scenario_tree": null,
+        "depends_on": [
+          "authenticated_session",
+          "inventory_loaded"
+        ],
+        "required_state": [
+          "authenticated_session",
+          "inventory_loaded"
+        ],
+        "produces_state": [
+          "cart_ready",
+          "cart_ready",
+          "cart_ready"
+        ],
+        "required_page": "cart"
+      },
+      {
+        "title": "Checkout - Complete Workflow",
+        "expected": "Checkout - Complete Workflow validates: order_confirmation, checkout_state.",
+        "steps": [
+          {
+            "action": "click",
+            "target": "cart link",
+            "selector": "cart link",
+            "value": null,
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "click",
+            "target": "checkout button",
+            "selector": "checkout button",
+            "value": null,
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "input",
+            "target": "first name input",
+            "selector": "first name input",
+            "value": "Test",
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "input",
+            "target": "last name input",
+            "selector": "last name input",
+            "value": "User",
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "input",
+            "target": "zip/postal input",
+            "selector": "zip/postal input",
+            "value": "12345",
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "click",
+            "target": "continue button",
+            "selector": "continue button",
+            "value": null,
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "click",
+            "target": "finish button",
+            "selector": "finish button",
+            "value": null,
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          },
+          {
+            "action": "verify",
+            "target": "order confirmation",
+            "selector": "order confirmation",
+            "value": null,
+            "feature_key": "CHECKOUT",
+            "objective_id": "obj_6",
+            "objective_name": "Checkout",
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "scenario_category": "complete_workflow",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "execution_context": null
+          }
+        ],
+        "objective_id": "obj_6",
+        "objective_name": "Checkout",
+        "feature_key": "CHECKOUT",
+        "coverage_level": "deep",
+        "scenario_id": "obj_6_s1",
+        "scenario_name": "Checkout - Complete Workflow",
+        "scenario_category": "complete_workflow",
+        "coverage_profile": "Deep",
+        "risk_score": 82,
+        "risk_level": "high",
+        "objective_tracking": null,
+        "plan_metrics": null,
+        "scenario_tree": null,
+        "depends_on": [
+          "authenticated_session",
+          "inventory_loaded",
+          "cart_ready"
+        ],
+        "required_state": [
+          "authenticated_session",
+          "inventory_loaded",
+          "cart_ready"
+        ],
+        "produces_state": [
+          "checkout_ready",
+          "checkout_ready",
+          "checkout_ready"
+        ],
+        "required_page": "checkout"
+      }
+    ]
+  },
+  "plan_metrics": {
+    "requested_objectives": 4,
+    "planned_objectives": 4,
+    "generated_steps": 19,
+    "generated_scenarios": 4,
+    "requested_objective_names": [
+      "Login Success",
+      "Inventory",
+      "Cart",
+      "Checkout"
+    ],
+    "planned_objective_names": [
+      "Login Success",
+      "Inventory",
+      "Cart",
+      "Checkout"
+    ],
+    "legacy_plan": false
+  },
+  "discovery": {
+    "feature_map": [
+      {
+        "feature_key": "USER_MANAGEMENT",
+        "feature_name": "User Management",
+        "evidence": "Password for all users:",
+        "page_type": "auth_page",
+        "url": "https://www.saucedemo.com/"
+      },
+      {
+        "feature_key": "FORMS",
+        "feature_name": "Forms",
+        "evidence": "form-1",
+        "page_type": "auth_page",
+        "url": "https://www.saucedemo.com/"
+      },
+      {
+        "feature_key": "LOGIN",
+        "feature_name": "Login",
+        "evidence": "Login",
+        "page_type": "auth_page",
+        "url": "https://www.saucedemo.com/"
+      }
+    ],
+    "workflows": [
+      {
+        "name": "Form Submission Flow",
+        "feature_key": "FORMS",
+        "entry_point": "https://www.saucedemo.com/"
+      }
+    ],
+    "forms": [
+      {
+        "page_url": "https://www.saucedemo.com/",
+        "page_title": "Swag Labs",
+        "page_type": "auth_page",
+        "form_index": 0,
+        "name": "form-1",
+        "action": "",
+        "method": "",
+        "fields": [
+          {
+            "index": 0,
+            "name": "user-name",
+            "type": "text",
+            "placeholder": "Username",
+            "aria_label": ""
+          },
+          {
+            "index": 1,
+            "name": "password",
+            "type": "password",
+            "placeholder": "Password",
+            "aria_label": ""
+          },
+          {
+            "index": 2,
+            "name": "login-button",
+            "type": "submit",
+            "placeholder": "",
+            "aria_label": ""
+          }
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "url": "https://www.saucedemo.com/",
+        "title": "Swag Labs",
+        "page_type": "auth_page",
+        "headings": [
+          "Accepted usernames are:",
+          "Password for all users:"
+        ],
+        "forms": 1,
+        "tables": 0,
+        "buttons": 1,
+        "links": 0
+      }
+    ],
+    "discovered_pages": [
+      {
+        "url": "https://www.saucedemo.com/",
+        "title": "Swag Labs",
+        "page_type": "auth_page",
+        "feature_map": [
+          {
+            "feature_key": "USER_MANAGEMENT",
+            "feature_name": "User Management",
+            "evidence": "Password for all users:",
+            "page_type": "auth_page",
+            "url": "https://www.saucedemo.com/"
+          },
+          {
+            "feature_key": "FORMS",
+            "feature_name": "Forms",
+            "evidence": "form-1",
+            "page_type": "auth_page",
+            "url": "https://www.saucedemo.com/"
+          },
+          {
+            "feature_key": "LOGIN",
+            "feature_name": "Login",
+            "evidence": "Login",
+            "page_type": "auth_page",
+            "url": "https://www.saucedemo.com/"
+          }
+        ],
+        "workflows": [
+          {
+            "name": "Form Submission Flow",
+            "feature_key": "FORMS",
+            "entry_point": "https://www.saucedemo.com/"
+          }
+        ],
+        "forms": [
+          {
+            "index": 0,
+            "name": "form-1",
+            "action": "",
+            "method": "",
+            "fields": [
+              {
+                "index": 0,
+                "name": "user-name",
+                "type": "text",
+                "placeholder": "Username",
+                "aria_label": ""
+              },
+              {
+                "index": 1,
+                "name": "password",
+                "type": "password",
+                "placeholder": "Password",
+                "aria_label": ""
+              },
+              {
+                "index": 2,
+                "name": "login-button",
+                "type": "submit",
+                "placeholder": "",
+                "aria_label": ""
+              }
+            ]
+          }
+        ],
+        "tables": []
+      }
+    ],
+    "root_url": "https://www.saucedemo.com/",
+    "page_count": 1
+  },
+  "discovery_status": "ready",
+  "discovery_error": null,
+  "scenario_tree": {
+    "coverage_levels": [
+      "minimal",
+      "standard",
+      "deep",
+      "aggressive"
+    ],
+    "coverage_profiles": {
+      "minimal": "Smoke",
+      "standard": "Standard",
+      "deep": "Deep",
+      "aggressive": "Exhaustive"
+    },
+    "default_coverage_level": "standard",
+    "focus_overrides": {},
+    "features": [
+      {
+        "objective_id": "obj_10",
+        "feature_key": "CHECKOUT",
+        "feature_name": "Checkout Flows On Saucedemo",
+        "feature_type": "CHECKOUT",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 100,
+        "risk_level": "critical",
+        "metadata": {
+          "feature_type": "CHECKOUT",
+          "evidence": [
+            "Checkout Flows On Saucedemo"
+          ],
+          "sources": [
+            "instruction_requested"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "recovery_state",
+            "transaction_integrity"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_10_s1",
+            "scenario_name": "Checkout Flows On Saucedemo - Complete Workflow",
+            "category": "complete_workflow",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "minimal",
+            "risk_score": 85,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "order_confirmation",
+              "checkout_state"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_flows_on_saucedemo_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          },
+          {
+            "scenario_id": "obj_10_s2",
+            "scenario_name": "Checkout Flows On Saucedemo - Validation Failures",
+            "category": "validation_failures",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 87,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "payment_errors",
+              "required_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_flows_on_saucedemo_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          },
+          {
+            "scenario_id": "obj_10_s3",
+            "scenario_name": "Checkout Flows On Saucedemo - Partial Completion",
+            "category": "partial_completion",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 90,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "state_preserved",
+              "no_duplicate_order"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_flows_on_saucedemo_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          },
+          {
+            "scenario_id": "obj_10_s4",
+            "scenario_name": "Checkout Flows On Saucedemo - Recovery Scenarios",
+            "category": "recovery_scenarios",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 92,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "resume_flow",
+              "cart_preserved"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_flows_on_saucedemo_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_7",
+        "feature_key": "AUTHENTICATION",
+        "feature_name": "Login Success",
+        "feature_type": "AUTHENTICATION",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 100,
+        "risk_level": "critical",
+        "metadata": {
+          "feature_type": "AUTHENTICATION",
+          "evidence": [
+            "Login Success"
+          ],
+          "sources": [
+            "instruction_requested"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [
+            {
+              "page_url": "https://www.saucedemo.com/",
+              "page_title": "Swag Labs",
+              "page_type": "auth_page",
+              "form_index": 0,
+              "name": "form-1",
+              "action": "",
+              "method": "",
+              "fields": [
+                {
+                  "index": 0,
+                  "name": "user-name",
+                  "type": "text",
+                  "placeholder": "Username",
+                  "aria_label": ""
+                },
+                {
+                  "index": 1,
+                  "name": "password",
+                  "type": "password",
+                  "placeholder": "Password",
+                  "aria_label": ""
+                },
+                {
+                  "index": 2,
+                  "name": "login-button",
+                  "type": "submit",
+                  "placeholder": "",
+                  "aria_label": ""
+                }
+              ]
+            }
+          ],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "authorization_boundary",
+            "error_messages",
+            "format_validation",
+            "logout_state",
+            "required_fields",
+            "session_state"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_7_s1",
+            "scenario_name": "Login Success - Valid Input",
+            "category": "valid_input",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "minimal",
+            "risk_score": 76,
+            "risk_level": "high",
+            "validation_requirements": [
+              "success_state",
+              "session_created"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authenticated_session",
+              "authentication_success",
+              "login_success_success"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_7_s2",
+            "scenario_name": "Login Success - Invalid Input",
+            "category": "invalid_input",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 82,
+            "risk_level": "high",
+            "validation_requirements": [
+              "error_message",
+              "no_session"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authentication_rejected",
+              "authentication_rejected"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_7_s3",
+            "scenario_name": "Login Success - Empty Fields",
+            "category": "empty_fields",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 79,
+            "risk_level": "high",
+            "validation_requirements": [
+              "required_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authentication_rejected",
+              "authentication_rejected"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_7_s4",
+            "scenario_name": "Login Success - Boundary Values",
+            "category": "boundary_values",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 84,
+            "risk_level": "high",
+            "validation_requirements": [
+              "field_limits",
+              "safe_error"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authentication_rejected",
+              "authentication_rejected"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_7_s5",
+            "scenario_name": "Login Success - Session Handling",
+            "category": "session_handling",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 90,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "session_persistence",
+              "protected_route"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authenticated_session",
+              "authentication_success",
+              "login_success_success"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_7_s6",
+            "scenario_name": "Login Success - Logout Validation",
+            "category": "logout_validation",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 85,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "session_destroyed",
+              "protected_route_denied"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "logged_out_session",
+              "authentication_logged_out"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_1",
+        "feature_key": "AUTHENTICATION",
+        "feature_name": "User Management",
+        "feature_type": "AUTHENTICATION",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 96,
+        "risk_level": "critical",
+        "metadata": {
+          "feature_type": "AUTHENTICATION",
+          "evidence": [
+            "Password for all users:",
+            "Login",
+            "form-1",
+            "instruction"
+          ],
+          "sources": [
+            "discovery_feature_map",
+            "form_metadata",
+            "instruction"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [
+            {
+              "page_url": "https://www.saucedemo.com/",
+              "page_title": "Swag Labs",
+              "page_type": "auth_page",
+              "form_index": 0,
+              "name": "form-1",
+              "action": "",
+              "method": "",
+              "fields": [
+                {
+                  "index": 0,
+                  "name": "user-name",
+                  "type": "text",
+                  "placeholder": "Username",
+                  "aria_label": ""
+                },
+                {
+                  "index": 1,
+                  "name": "password",
+                  "type": "password",
+                  "placeholder": "Password",
+                  "aria_label": ""
+                },
+                {
+                  "index": 2,
+                  "name": "login-button",
+                  "type": "submit",
+                  "placeholder": "",
+                  "aria_label": ""
+                }
+              ]
+            }
+          ],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "authorization_boundary",
+            "error_messages",
+            "format_validation",
+            "logout_state",
+            "required_fields",
+            "session_state"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_1_s1",
+            "scenario_name": "User Management - Valid Input",
+            "category": "valid_input",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "minimal",
+            "risk_score": 74,
+            "risk_level": "high",
+            "validation_requirements": [
+              "success_state",
+              "session_created"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authenticated_session",
+              "authentication_success",
+              "user_management_success"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_1_s2",
+            "scenario_name": "User Management - Invalid Input",
+            "category": "invalid_input",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 81,
+            "risk_level": "high",
+            "validation_requirements": [
+              "error_message",
+              "no_session"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authentication_rejected",
+              "authentication_rejected"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_1_s3",
+            "scenario_name": "User Management - Empty Fields",
+            "category": "empty_fields",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 77,
+            "risk_level": "high",
+            "validation_requirements": [
+              "required_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authentication_rejected",
+              "authentication_rejected"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_1_s4",
+            "scenario_name": "User Management - Boundary Values",
+            "category": "boundary_values",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 82,
+            "risk_level": "high",
+            "validation_requirements": [
+              "field_limits",
+              "safe_error"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authentication_rejected",
+              "authentication_rejected"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_1_s5",
+            "scenario_name": "User Management - Session Handling",
+            "category": "session_handling",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 88,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "session_persistence",
+              "protected_route"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "authenticated_session",
+              "authentication_success",
+              "user_management_success"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_1_s6",
+            "scenario_name": "User Management - Logout Validation",
+            "category": "logout_validation",
+            "feature_type": "AUTHENTICATION",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 83,
+            "risk_level": "high",
+            "validation_requirements": [
+              "session_destroyed",
+              "protected_route_denied"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "logged_out_session",
+              "authentication_logged_out"
+            ],
+            "required_page": "login",
+            "generated_steps": 4
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_6",
+        "feature_key": "CHECKOUT",
+        "feature_name": "Checkout",
+        "feature_type": "CHECKOUT",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 94,
+        "risk_level": "critical",
+        "metadata": {
+          "feature_type": "CHECKOUT",
+          "evidence": [
+            "instruction"
+          ],
+          "sources": [
+            "instruction"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "recovery_state",
+            "transaction_integrity"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_6_s1",
+            "scenario_name": "Checkout - Complete Workflow",
+            "category": "complete_workflow",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "minimal",
+            "risk_score": 82,
+            "risk_level": "high",
+            "validation_requirements": [
+              "order_confirmation",
+              "checkout_state"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          },
+          {
+            "scenario_id": "obj_6_s2",
+            "scenario_name": "Checkout - Validation Failures",
+            "category": "validation_failures",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 84,
+            "risk_level": "high",
+            "validation_requirements": [
+              "payment_errors",
+              "required_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          },
+          {
+            "scenario_id": "obj_6_s3",
+            "scenario_name": "Checkout - Partial Completion",
+            "category": "partial_completion",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 87,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "state_preserved",
+              "no_duplicate_order"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          },
+          {
+            "scenario_id": "obj_6_s4",
+            "scenario_name": "Checkout - Recovery Scenarios",
+            "category": "recovery_scenarios",
+            "feature_type": "CHECKOUT",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 90,
+            "risk_level": "critical",
+            "validation_requirements": [
+              "resume_flow",
+              "cart_preserved"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded",
+              "cart_ready"
+            ],
+            "produces_state": [
+              "checkout_ready",
+              "checkout_ready",
+              "checkout_ready"
+            ],
+            "required_page": "checkout",
+            "generated_steps": 8
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_9",
+        "feature_key": "CART",
+        "feature_name": "Cart",
+        "feature_type": "CART",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 92,
+        "risk_level": "critical",
+        "metadata": {
+          "feature_type": "CART",
+          "evidence": [
+            "Cart"
+          ],
+          "sources": [
+            "instruction_requested"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "cart_integrity",
+            "selection_state"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_9_s1",
+            "scenario_name": "Cart - Cart Load",
+            "category": "cart_load",
+            "feature_type": "CART",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "minimal",
+            "risk_score": 72,
+            "risk_level": "high",
+            "validation_requirements": [
+              "cart_items_visible"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "produces_state": [
+              "cart_ready",
+              "cart_ready",
+              "cart_ready"
+            ],
+            "required_page": "cart",
+            "generated_steps": 3
+          },
+          {
+            "scenario_id": "obj_9_s2",
+            "scenario_name": "Cart - Cart State Preservation",
+            "category": "state_preservation",
+            "feature_type": "CART",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 77,
+            "risk_level": "high",
+            "validation_requirements": [
+              "selected_item",
+              "state_preserved"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "produces_state": [
+              "cart_ready",
+              "cart_ready",
+              "cart_ready"
+            ],
+            "required_page": "cart",
+            "generated_steps": 3
+          },
+          {
+            "scenario_id": "obj_9_s3",
+            "scenario_name": "Cart - Checkout Progression",
+            "category": "checkout_progression",
+            "feature_type": "CART",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 80,
+            "risk_level": "high",
+            "validation_requirements": [
+              "checkout_state",
+              "continue_state"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "produces_state": [
+              "cart_ready",
+              "cart_ready",
+              "cart_ready"
+            ],
+            "required_page": "cart",
+            "generated_steps": 3
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_8",
+        "feature_key": "INVENTORY",
+        "feature_name": "Inventory",
+        "feature_type": "INVENTORY",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 85,
+        "risk_level": "critical",
+        "metadata": {
+          "feature_type": "INVENTORY",
+          "evidence": [
+            "Inventory"
+          ],
+          "sources": [
+            "instruction_requested"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": []
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_8_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "category": "inventory_load",
+            "feature_type": "INVENTORY",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "minimal",
+            "risk_score": 68,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "products_visible"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "inventory_loaded",
+              "inventory_ready",
+              "inventory_ready"
+            ],
+            "required_page": "inventory",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_8_s2",
+            "scenario_name": "Inventory - Add To Cart Progression",
+            "category": "cart_progression",
+            "feature_type": "INVENTORY",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 75,
+            "risk_level": "high",
+            "validation_requirements": [
+              "cart_badge",
+              "state_preserved"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "inventory_loaded",
+              "inventory_ready",
+              "inventory_ready"
+            ],
+            "required_page": "inventory",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_8_s3",
+            "scenario_name": "Inventory - Product Detail View",
+            "category": "detail_view",
+            "feature_type": "INVENTORY",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 71,
+            "risk_level": "high",
+            "validation_requirements": [
+              "product_detail_visible"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "inventory_loaded",
+              "inventory_ready",
+              "inventory_ready"
+            ],
+            "required_page": "inventory",
+            "generated_steps": 4
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_4",
+        "feature_key": "CART",
+        "feature_name": "Cart",
+        "feature_type": "CART",
+        "coverage_level": "standard",
+        "coverage_profile": "Standard",
+        "risk_score": 76,
+        "risk_level": "high",
+        "metadata": {
+          "feature_type": "CART",
+          "evidence": [
+            "instruction"
+          ],
+          "sources": [
+            "instruction"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "cart_integrity",
+            "selection_state"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_4_s1",
+            "scenario_name": "Cart - Cart Load",
+            "category": "cart_load",
+            "feature_type": "CART",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "minimal",
+            "risk_score": 65,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "cart_items_visible"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "produces_state": [
+              "cart_ready",
+              "cart_ready",
+              "cart_ready"
+            ],
+            "required_page": "cart",
+            "generated_steps": 3
+          },
+          {
+            "scenario_id": "obj_4_s2",
+            "scenario_name": "Cart - Cart State Preservation",
+            "category": "state_preservation",
+            "feature_type": "CART",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "standard",
+            "risk_score": 69,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "selected_item",
+              "state_preserved"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "required_state": [
+              "authenticated_session",
+              "inventory_loaded"
+            ],
+            "produces_state": [
+              "cart_ready",
+              "cart_ready",
+              "cart_ready"
+            ],
+            "required_page": "cart",
+            "generated_steps": 3
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_2",
+        "feature_key": "FORMS",
+        "feature_name": "Forms",
+        "feature_type": "FORMS",
+        "coverage_level": "standard",
+        "coverage_profile": "Standard",
+        "risk_score": 73,
+        "risk_level": "high",
+        "metadata": {
+          "feature_type": "FORMS",
+          "evidence": [
+            "form-1",
+            "https://www.saucedemo.com/",
+            "1 form(s)"
+          ],
+          "sources": [
+            "discovery_feature_map",
+            "workflow",
+            "forms"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [
+            {
+              "page_url": "https://www.saucedemo.com/",
+              "page_title": "Swag Labs",
+              "page_type": "auth_page",
+              "form_index": 0,
+              "name": "form-1",
+              "action": "",
+              "method": "",
+              "fields": [
+                {
+                  "index": 0,
+                  "name": "user-name",
+                  "type": "text",
+                  "placeholder": "Username",
+                  "aria_label": ""
+                },
+                {
+                  "index": 1,
+                  "name": "password",
+                  "type": "password",
+                  "placeholder": "Password",
+                  "aria_label": ""
+                },
+                {
+                  "index": 2,
+                  "name": "login-button",
+                  "type": "submit",
+                  "placeholder": "",
+                  "aria_label": ""
+                }
+              ]
+            }
+          ],
+          "tables": [],
+          "workflows": [
+            {
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "validation_requirements": [
+            "error_messages",
+            "format_validation",
+            "required_fields",
+            "state_transition",
+            "workflow_completion"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_2_s1",
+            "scenario_name": "Forms - Required Fields",
+            "category": "required_fields",
+            "feature_type": "FORMS",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "minimal",
+            "risk_score": 61,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "required_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "forms_ready",
+              "forms_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 2
+          },
+          {
+            "scenario_id": "obj_2_s2",
+            "scenario_name": "Forms - Invalid Formats",
+            "category": "invalid_formats",
+            "feature_type": "FORMS",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "standard",
+            "risk_score": 65,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "format_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "forms_ready",
+              "forms_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 3
+          },
+          {
+            "scenario_id": "obj_2_s3",
+            "scenario_name": "Forms - Empty Submission",
+            "category": "empty_submission",
+            "feature_type": "FORMS",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "standard",
+            "risk_score": 66,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "submission_blocked"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "forms_ready",
+              "forms_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 2
+          },
+          {
+            "scenario_id": "obj_2_s4",
+            "scenario_name": "Forms - Partial Submission",
+            "category": "partial_submission",
+            "feature_type": "FORMS",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "standard",
+            "risk_score": 64,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "missing_field_errors"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "forms_ready",
+              "forms_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 3
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_3",
+        "feature_key": "INVENTORY",
+        "feature_name": "Inventory",
+        "feature_type": "INVENTORY",
+        "coverage_level": "standard",
+        "coverage_profile": "Standard",
+        "risk_score": 69,
+        "risk_level": "medium",
+        "metadata": {
+          "feature_type": "INVENTORY",
+          "evidence": [
+            "instruction"
+          ],
+          "sources": [
+            "instruction"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": []
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_3_s1",
+            "scenario_name": "Inventory - Inventory Load",
+            "category": "inventory_load",
+            "feature_type": "INVENTORY",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "minimal",
+            "risk_score": 61,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "products_visible"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "inventory_loaded",
+              "inventory_ready",
+              "inventory_ready"
+            ],
+            "required_page": "inventory",
+            "generated_steps": 4
+          },
+          {
+            "scenario_id": "obj_3_s2",
+            "scenario_name": "Inventory - Add To Cart Progression",
+            "category": "cart_progression",
+            "feature_type": "INVENTORY",
+            "coverage_level": "standard",
+            "coverage_profile": "Standard",
+            "min_coverage_level": "standard",
+            "risk_score": 67,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "cart_badge",
+              "state_preserved"
+            ],
+            "execution_status": "pending",
+            "depends_on": [
+              "authenticated_session"
+            ],
+            "required_state": [
+              "authenticated_session"
+            ],
+            "produces_state": [
+              "inventory_loaded",
+              "inventory_ready",
+              "inventory_ready"
+            ],
+            "required_page": "inventory",
+            "generated_steps": 4
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_11",
+        "feature_key": "TABLES",
+        "feature_name": "Reuse Browser State Between Dependent Scenarios",
+        "feature_type": "TABLES",
+        "coverage_level": "deep",
+        "coverage_profile": "Deep",
+        "risk_score": 66,
+        "risk_level": "medium",
+        "metadata": {
+          "feature_type": "TABLES",
+          "evidence": [
+            "Reuse Browser State Between Dependent Scenarios"
+          ],
+          "sources": [
+            "instruction_requested"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "data_order",
+            "row_state"
+          ]
+        },
+        "scenarios": [
+          {
+            "scenario_id": "obj_11_s1",
+            "scenario_name": "Reuse Browser State Between Dependent Scenarios - Pagination",
+            "category": "pagination",
+            "feature_type": "TABLES",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 53,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "page_changes",
+              "row_count_stable"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "tables_ready",
+              "reuse_browser_state_between_dependent_scenarios_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 2
+          },
+          {
+            "scenario_id": "obj_11_s2",
+            "scenario_name": "Reuse Browser State Between Dependent Scenarios - Sorting",
+            "category": "sorting",
+            "feature_type": "TABLES",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "standard",
+            "risk_score": 54,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "order_changes"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "tables_ready",
+              "reuse_browser_state_between_dependent_scenarios_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 2
+          },
+          {
+            "scenario_id": "obj_11_s3",
+            "scenario_name": "Reuse Browser State Between Dependent Scenarios - Filtering",
+            "category": "filtering",
+            "feature_type": "TABLES",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 57,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "filtered_results"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "tables_ready",
+              "reuse_browser_state_between_dependent_scenarios_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 2
+          },
+          {
+            "scenario_id": "obj_11_s4",
+            "scenario_name": "Reuse Browser State Between Dependent Scenarios - Row Actions",
+            "category": "row_actions",
+            "feature_type": "TABLES",
+            "coverage_level": "deep",
+            "coverage_profile": "Deep",
+            "min_coverage_level": "deep",
+            "risk_score": 65,
+            "risk_level": "medium",
+            "validation_requirements": [
+              "row_action_result"
+            ],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [
+              "tables_ready",
+              "reuse_browser_state_between_dependent_scenarios_ready"
+            ],
+            "required_page": null,
+            "generated_steps": 2
+          }
+        ]
+      },
+      {
+        "objective_id": "obj_5",
+        "feature_key": "TABLES",
+        "feature_name": "Tables",
+        "feature_type": "TABLES",
+        "coverage_level": "standard",
+        "coverage_profile": "Standard",
+        "risk_score": 50,
+        "risk_level": "medium",
+        "metadata": {
+          "feature_type": "TABLES",
+          "evidence": [
+            "instruction"
+          ],
+          "sources": [
+            "instruction"
+          ],
+          "available_actions": [
+            {
+              "type": "submit",
+              "text": "Login",
+              "aria_label": "",
+              "id": "login-button",
+              "class": "submit-button btn_action",
+              "name": "login-button",
+              "role": "",
+              "data_testid": ""
+            },
+            {
+              "type": "workflow",
+              "name": "Form Submission Flow",
+              "feature_key": "FORMS",
+              "entry_point": "https://www.saucedemo.com/"
+            }
+          ],
+          "forms": [],
+          "tables": [],
+          "workflows": [],
+          "validation_requirements": [
+            "data_order",
+            "row_state"
+          ]
+        },
+        "scenarios": []
+      }
+    ],
+    "summary": {
+      "requested_objectives": 11,
+      "planned_objectives": 11,
+      "generated_scenarios": 38,
+      "generated_steps": 165,
+      "coverage_profile_counts": {
+        "minimal": 0,
+        "standard": 4,
+        "deep": 7,
+        "aggressive": 0
+      },
+      "feature_type_counts": {
+        "CHECKOUT": 2,
+        "AUTHENTICATION": 2,
+        "CART": 2,
+        "INVENTORY": 2,
+        "FORMS": 1,
+        "TABLES": 2
+      },
+      "risk_level_counts": {
+        "critical": 6,
+        "high": 2,
+        "medium": 3
+      },
+      "focused_features": [],
+      "risk_summary": {
+        "critical_features": 6,
+        "high_features": 2,
+        "medium_features": 3,
+        "low_features": 0,
+        "critical_scenarios": 9,
+        "high_scenarios": 16,
+        "medium_scenarios": 13,
+        "low_scenarios": 0
+      },
+      "dependency_graph": {
+        "nodes": [
+          "obj_10_s4",
+          "obj_6_s4",
+          "obj_10_s3",
+          "obj_7_s5",
+          "obj_1_s5",
+          "obj_6_s3",
+          "obj_10_s2",
+          "obj_10_s1",
+          "obj_7_s6",
+          "obj_6_s2",
+          "obj_7_s4",
+          "obj_1_s6",
+          "obj_6_s1",
+          "obj_7_s2",
+          "obj_1_s4",
+          "obj_1_s2",
+          "obj_9_s3",
+          "obj_7_s3",
+          "obj_9_s2",
+          "obj_1_s3",
+          "obj_7_s1",
+          "obj_8_s2",
+          "obj_1_s1",
+          "obj_9_s1",
+          "obj_8_s3",
+          "obj_4_s2",
+          "obj_8_s1",
+          "obj_3_s2",
+          "obj_2_s3",
+          "obj_4_s1",
+          "obj_2_s2",
+          "obj_11_s4",
+          "obj_2_s4",
+          "obj_2_s1",
+          "obj_3_s1",
+          "obj_11_s3",
+          "obj_11_s2",
+          "obj_11_s1"
+        ],
+        "edges": [
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s4"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s4"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s4"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s4"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s4"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s4"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s3"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s3"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s3"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s3"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s2"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_10_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_10_s1"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_10_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_7_s6"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s2"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_1_s6"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_6_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_6_s1"
+          },
+          {
+            "from": "cart_ready",
+            "to": "obj_6_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_9_s3"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_9_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_9_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_9_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_8_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_9_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_9_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_8_s3"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_4_s2"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_4_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_8_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_3_s2"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_4_s1"
+          },
+          {
+            "from": "inventory_loaded",
+            "to": "obj_4_s1"
+          },
+          {
+            "from": "authenticated_session",
+            "to": "obj_3_s1"
+          }
+        ]
+      }
+    }
+  },
+  "objective_coverage": [
+    {
+      "objective_id": "obj_7",
+      "objective_name": "Login Success",
+      "feature_key": "AUTHENTICATION",
+      "coverage_level": "deep",
+      "coverage_profile": "Deep",
+      "priority_score": 100,
+      "risk_score": 100,
+      "risk_level": "critical",
+      "critical": true,
+      "generated_steps": 4,
+      "generated_scenarios": 1,
+      "executed_scenarios": 1,
+      "passed_scenarios": 1,
+      "failed_scenarios": 0,
+      "execution_status": "completed",
+      "scenarios": [
+        {
+          "scenario_id": "obj_7_s1",
+          "scenario_name": "Login Success - Valid Input",
+          "generated_steps": 1,
+          "coverage_level": "deep",
+          "risk_score": 76,
+          "risk_level": "high",
+          "executed_steps": 1,
+          "passed_steps": 1,
+          "failed_steps": 0,
+          "execution_status": "completed"
+        }
+      ]
+    },
+    {
+      "objective_id": "obj_8",
+      "objective_name": "Inventory",
+      "feature_key": "INVENTORY",
+      "coverage_level": "deep",
+      "coverage_profile": "Deep",
+      "priority_score": 85,
+      "risk_score": 85,
+      "risk_level": "critical",
+      "critical": true,
+      "generated_steps": 4,
+      "generated_scenarios": 1,
+      "executed_scenarios": 1,
+      "passed_scenarios": 0,
+      "failed_scenarios": 1,
+      "execution_status": "failed",
+      "scenarios": [
+        {
+          "scenario_id": "obj_8_s1",
+          "scenario_name": "Inventory - Inventory Load",
+          "generated_steps": 0,
+          "coverage_level": "deep",
+          "risk_score": 68,
+          "risk_level": "medium",
+          "executed_steps": 1,
+          "passed_steps": 0,
+          "failed_steps": 1,
+          "execution_status": "failed"
+        }
+      ]
+    },
+    {
+      "objective_id": "obj_9",
+      "objective_name": "Cart",
+      "feature_key": "CART",
+      "coverage_level": "deep",
+      "coverage_profile": "Deep",
+      "priority_score": 92,
+      "risk_score": 92,
+      "risk_level": "critical",
+      "critical": true,
+      "generated_steps": 3,
+      "generated_scenarios": 1,
+      "executed_scenarios": 1,
+      "passed_scenarios": 0,
+      "failed_scenarios": 1,
+      "execution_status": "failed",
+      "scenarios": [
+        {
+          "scenario_id": "obj_9_s1",
+          "scenario_name": "Cart - Cart Load",
+          "generated_steps": 0,
+          "coverage_level": "deep",
+          "risk_score": 72,
+          "risk_level": "high",
+          "executed_steps": 1,
+          "passed_steps": 0,
+          "failed_steps": 1,
+          "execution_status": "failed"
+        }
+      ]
+    },
+    {
+      "objective_id": "obj_6",
+      "objective_name": "Checkout",
+      "feature_key": "CHECKOUT",
+      "coverage_level": "deep",
+      "coverage_profile": "Deep",
+      "priority_score": 94,
+      "risk_score": 94,
+      "risk_level": "critical",
+      "critical": true,
+      "generated_steps": 8,
+      "generated_scenarios": 1,
+      "executed_scenarios": 1,
+      "passed_scenarios": 0,
+      "failed_scenarios": 1,
+      "execution_status": "failed",
+      "scenarios": [
+        {
+          "scenario_id": "obj_6_s1",
+          "scenario_name": "Checkout - Complete Workflow",
+          "generated_steps": 0,
+          "coverage_level": "deep",
+          "risk_score": 82,
+          "risk_level": "high",
+          "executed_steps": 1,
+          "passed_steps": 0,
+          "failed_steps": 1,
+          "execution_status": "failed"
+        }
+      ]
+    }
+  ],
+  "risk_summary": {
+    "critical_features": 6,
+    "high_features": 2,
+    "medium_features": 3,
+    "low_features": 0,
+    "critical_scenarios": 9,
+    "high_scenarios": 16,
+    "medium_scenarios": 13,
+    "low_scenarios": 0
+  },
+  "summary": {
+    "total": 4,
+    "passed": 1,
+    "failed": 3,
+    "info": 0,
+    "total_objectives": 4,
+    "passed_objectives": 1,
+    "failed_objectives": 3,
+    "total_scenarios": 4,
+    "passed_scenarios": 1,
+    "failed_scenarios": 3,
+    "objective_pass_rate": 0.25,
+    "scenario_pass_rate": 0.25,
+    "critical_objective_failures": 3,
+    "risk_weighted_failures": 9,
+    "coverage_score": 25.0,
+    "health_score": 0.0,
+    "confidence_score": 0.62,
+    "recoveries_attempted": 0,
+    "recoveries_successful": 0,
+    "recovery_attempts": 0,
+    "successful_recoveries": 0,
+    "steps_saved_by_recovery": 0,
+    "total_tasks": 4,
+    "completed_tasks": 1,
+    "successful_tasks": 1,
+    "failed_tasks": 3,
+    "skipped_tasks": 0
+  },
+  "health_score": 0.0,
+  "coverage_score": 25.0,
+  "confidence_score": 0.62,
+  "objective_pass_rate": 0.25,
+  "scenario_pass_rate": 0.25,
+  "critical_objective_failures": 3,
+  "insights": {
+    "critical": [],
+    "moderate": [],
+    "minor": [
+      "Issue detected in Checkout - Complete Workflow.",
+      "Issue detected in Cart - Cart Load.",
+      "Issue detected in Inventory - Inventory Load."
+    ]
+  },
+  "overall_status": "warning",
+  "recommendations": [],
+  "report": "Website Analysis Report\n\nOverall Health Score: 0.0/100\n\nThe website is facing significant issues that impact usability and reliability.\nOut of 4 tests, 1 passed and 3 failed.\n\nObjective Coverage:\n- Objective pass rate: 25%\n- Scenario pass rate: 25%\n- Critical objective failures: 3\n\nNo critical issues detected.\n\nMinor Observations:\n- Issue detected in Checkout - Complete Workflow.\n- Issue detected in Cart - Cart Load.\n- Issue detected in Inventory - Inventory Load.\n\nStrengths:\n\nConclusion:\nThe website needs significant fixes to improve functionality and user experience.\n\nImproving the highlighted areas will enhance overall usability, performance, and reliability.",
+  "ai_summary": "The website has significant issues affecting usability and performance. 3 test(s) failed and should be reviewed. Failure causes could not be classified consistently. Objectives passed: 25%, scenarios passed: 25%, critical objective failures: 3. Objective coverage -> Login Success: completed, Inventory: failed, Cart: failed, Checkout: failed."
+}

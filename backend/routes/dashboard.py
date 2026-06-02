@@ -1,19 +1,44 @@
-from fastapi import APIRouter, Depends
-from backend.database.mongo import collection
-from backend.services.ai_log_service import generate_ai_logs
 from collections import defaultdict
+
+from fastapi import APIRouter, Depends
+
+from backend.database.mongo import bug_collection, collection
+from backend.services.ai_log_service import generate_ai_logs
 from backend.services.auth import get_current_user
 
 
 router = APIRouter()
 
 
+def _derive_risk_level(total_tests: int, failed: int, average_health: int, open_bugs: int) -> str:
+    """Compute risk level from real metrics, returning one of low/medium/high/unknown."""
+    if total_tests == 0:
+        return "unknown"
+
+    fail_rate = failed / total_tests if total_tests else 0
+
+    if fail_rate >= 0.4 or average_health < 60 or open_bugs >= 10:
+        return "high"
+    if fail_rate >= 0.2 or average_health < 80 or open_bugs >= 3:
+        return "medium"
+    return "low"
+
+
 @router.get("/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
+    projection = {
+        "overall_status": 1,
+        "health_score": 1,
+        "created_at": 1,
+        "insights": 1,
+        "test_id": 1,
+        "project": 1,
+        "url": 1,
+        "test_type": 1,
+        "results": 1,
+    }
 
-    tests = list(collection.find({
-        "user_id": current_user["user_id"]
-    }))
+    tests = list(collection.find({"user_id": current_user["user_id"]}, projection))
 
     total_tests = len(tests)
 
@@ -43,6 +68,16 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         if health_scores
         else 0
     )
+
+    try:
+        open_bugs = bug_collection.count_documents({
+            "user_id": current_user["user_id"],
+            "status": {"$in": ["open", "in-progress", "Open", "In Progress"]},
+        })
+    except Exception:
+        open_bugs = warnings
+
+    risk_level = _derive_risk_level(total_tests, failed, average_health, open_bugs)
 
     activity_map = defaultdict(lambda: {
         "passed": 0,
@@ -83,7 +118,6 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     critical_count = 0
     moderate_count = 0
     minor_count = 0
-
     for test in tests:
         insights = test.get("insights") or {}
 
@@ -122,7 +156,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "total_tests": total_tests,
         "passed": passed,
         "failed": failed,
-        "open_bugs": warnings,
+        "open_bugs": open_bugs,
         "average_health": average_health,
         "test_activity": test_activity,
         "bug_distribution": {
@@ -131,5 +165,17 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
             "minor": minor_count
         },
         "ai_logs": ai_logs,
+        "ai_summary": {
+            "summary": (
+                f"{passed}/{total_tests} tests passing, {open_bugs} open bug(s) tracked."
+                if total_tests > 0
+                else "No tests recorded yet."
+            ),
+            "insights": [
+                f"{critical_count} critical finding(s) across all runs.",
+                f"{failed} failed test(s) in the active dataset.",
+            ] if total_tests > 0 else [],
+            "risk_level": risk_level,
+        },
         "recent_tests": recent_tests,
     }

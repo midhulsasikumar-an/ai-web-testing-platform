@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import uuid
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
 from backend.agent.agent_loop_v2 import run_agent_loop_v2
 from backend.agent.browser_session import BrowserSessionManager
@@ -12,8 +13,10 @@ from backend.core.models.agent_state import AgentRunRequest
 from backend.events import event_bus
 from backend.events.replay_engine import TimelineReplayEngine
 from backend.services.ai_report_service import generate_report
-from backend.services.auth import get_current_user_from_token
+from backend.services.auth import get_current_user, get_current_user_from_token
+from backend.database.mongo import collection as test_runs_collection
 
+logger = logging.getLogger("routes.live_execution")
 router = APIRouter()
 
 
@@ -95,7 +98,14 @@ async def websocket_live_execution(websocket: WebSocket):
 
 
 @router.get("/runs/{run_id}/timeline")
-async def get_timeline(run_id: str):
+async def get_timeline(run_id: str, current_user: dict = Depends(get_current_user)):
+    user_id = str(current_user.get("user_id") or current_user.get("id") or "")
+    owner = test_runs_collection.find_one(
+        {"test_id": run_id, "user_id": user_id},
+        {"_id": 1},
+    )
+    if not owner:
+        raise HTTPException(status_code=404, detail="Timeline not found")
     engine = TimelineReplayEngine()
     events = await engine.load(run_id)
     return {"run_id": run_id, "events": [event.model_dump(mode="json") for event in events]}

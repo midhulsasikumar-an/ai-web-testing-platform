@@ -1,7 +1,8 @@
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Terminal } from "lucide-react";
-import { useRef, useMemo } from "react";
+import { useMemo } from "react";
 import { AILog } from "@/services/dashboard-api";
 
 interface LiveTelemetryTerminalProps {
@@ -9,22 +10,9 @@ interface LiveTelemetryTerminalProps {
 }
 
 export function LiveTelemetryTerminal({ logs = [] }: LiveTelemetryTerminalProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const telemetry = useMemo(() => {
-    if (!logs || logs.length === 0) {
-      return [
-        "[14:20:05] SUCCESS Smoke test: Homepage",
-        "[14:22:11] INFO Analyzing checkout latency...",
-        "[14:23:45] INFO Patching 'login-module' hotfix",
-        "[14:25:30] WARNING 404 detected on /api/v1/auth",
-        "[14:26:12] INFO Running AI vulnerability scan..."
-      ];
-    }
-    
-    return logs.map(log => 
-      `[${log.time.substring(11, 19) || '14:20:05'}] ${log.level === 'error' ? 'WARNING' : log.level.toUpperCase()} ${log.msg}`
-    );
+    if (!logs || logs.length === 0) return [];
+    return logs.map((log) => `[${(log.time || "").substring(11, 19) || ""}] ${log.level === "error" ? "WARNING" : (log.level || "").toUpperCase()} ${log.msg || ""}`);
   }, [logs]);
 
   const renderColoredLog = (log: string) => {
@@ -41,36 +29,31 @@ export function LiveTelemetryTerminal({ logs = [] }: LiveTelemetryTerminalProps)
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg border border-slate-800">
-      {/* Terminal Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#2D2D2D] border-b border-[#3D3D3D]">
-        <div className="flex items-center gap-2">
+    <Card variant="elevated" className="flex flex-col h-full overflow-hidden border-slate-800 bg-[#1A1A1A] shadow-lg-token">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-slate-800 bg-[#2D2D2D] px-4 py-2.5 group-data-[variant=elevated]/card:pt-2.5">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
-            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+            <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
+            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
+            <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
           </div>
-          <span className="ml-2 text-xs font-medium text-slate-300 flex items-center gap-2">
-            Live System Telemetry
-          </span>
+          <span className="ml-1 text-xs font-medium text-slate-300 truncate">Live System Telemetry</span>
         </div>
-        <Terminal className="h-4 w-4 text-slate-400" />
-      </div>
+        <Terminal className="h-4 w-4 text-slate-400 shrink-0" />
+      </CardHeader>
 
-      {/* Terminal Body */}
-      <div 
-        ref={containerRef}
-        className="p-4 font-mono text-[13px] text-slate-300 h-[280px] overflow-y-auto space-y-1.5"
-      >
-        {telemetry.map((log, i) => (
-          <div key={i} className="flex">
-            <span className="opacity-50 mr-3 shrink-0">{log.split("]")[0] + "]"}</span>
-            <span>{renderColoredLog(log.split("]").slice(1).join("]"))}</span>
-          </div>
-        ))}
-        {/* Blinking cursor */}
-        <div className="animate-pulse w-2 h-4 bg-slate-400 mt-2"></div>
-      </div>
-    </div>
+      <CardContent className="font-mono text-[13px] text-slate-300 h-[280px] overflow-y-auto space-y-1.5 bg-[#1A1A1A]">
+        {telemetry.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-slate-700 p-4 text-sm text-slate-400">No telemetry available.</div>
+        ) : (
+          telemetry.map((log, i) => (
+            <div key={i} className="flex">
+              <span className="opacity-50 mr-3 shrink-0">{log.split("]")[0] + "]"}</span>
+              <span>{renderColoredLog(log.split("]").slice(1).join("]"))}</span>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
   );
 }

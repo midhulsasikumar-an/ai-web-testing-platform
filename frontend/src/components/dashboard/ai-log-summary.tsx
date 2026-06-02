@@ -10,11 +10,10 @@ export function AILogSummary({
 }: {
   aiLogs?: AILog[];
 }) {
-
   if (aiLogs.length === 0) {
     return (
       <Card className="col-span-full lg:col-span-2">
-        <CardContent className="text-sm text-muted-foreground">
+        <CardContent className="text-muted-sm">
           No AI logs available
         </CardContent>
       </Card>
@@ -25,7 +24,7 @@ export function AILogSummary({
     <Card className="col-span-full lg:col-span-2">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <Terminal className="h-4 w-4 text-primary" />
             AI Log Summary
           </CardTitle>

@@ -1,0 +1,5 @@
+Index creation skipped on reports: Index already exists with a different name: report_key_1, full error: {'ok': 0.0, 'errmsg': 'Index already exists with a different name: report_key_1', 'code': 85, 'codeName': 'IndexOptionsConflict', '$clusterTime': {'clusterTime': Timestamp(1780418258, 20), 'signature': {'hash': b'\xb1\x1eZ\xa7\xbf\xba\xd2\xc9\xe4\xd0\xc1\xac\xf27\xd1\r\xaf\xd4,C', 'keyId': 7606079922334859267}}, 'operationTime': Timestamp(1780418258, 20)}
+INFO:     Started server process [24680]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8765 (Press CTRL+C to quit)

@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 
-from backend.database.report_repository import list_reports_for_user
+from backend.database.report_repository import list_reports_for_user, get_report
 from backend.services.auth import get_current_user
 from backend.services.report_export_service import export_report_to_pdf, list_report_exports
 
@@ -50,6 +50,9 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
 
     related_test_id = _pick_first(report, "related_test_id", "test_run_id", default=str(report.get("test_run_id") or ""))
     related_bug_id = _pick_first(report, "related_bug_id", "bug_id")
+    scenario_tree = report.get("scenario_tree") if isinstance(report.get("scenario_tree"), dict) else None
+    risk_summary = report.get("risk_summary") if isinstance(report.get("risk_summary"), dict) else None
+    test_type = _pick_first(report, "test_type", "run_type")
 
     return {
         "report_id": report_id,
@@ -64,6 +67,10 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
         "related_bug_id": related_bug_id or None,
         "title": _pick_first(report, "title", default=test_name),
         "summary": _pick_first(report, "summary", default=""),
+        "test_type": test_type or None,
+        "scenario_tree": scenario_tree,
+        "risk_summary": risk_summary,
+        "objective_coverage": report.get("objective_coverage") if isinstance(report.get("objective_coverage"), list) else None,
     }
 
 
@@ -75,6 +82,14 @@ def _list_report_docs(current_user_id: str) -> List[Dict[str, Any]]:
 @router.get("/reports")
 def get_reports(current_user: dict = Depends(get_current_user)):
     return {"items": _list_report_docs(current_user["user_id"])}
+
+
+@router.get("/reports/{report_id}")
+def get_report_detail(report_id: str, current_user: dict = Depends(get_current_user)):
+    doc = get_report(report_id, user_id=current_user["user_id"])
+    if not doc:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return _map_report(doc)
 
 
 @router.get("/reports/{report_id}/download")

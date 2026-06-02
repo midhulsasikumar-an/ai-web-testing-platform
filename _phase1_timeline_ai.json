@@ -1,0 +1,780 @@
+{
+  "test_id": "d669d971-33a4-4597-92c8-f5f90d104707",
+  "user_id": "4abb87be-fbd9-4dcd-afeb-1143b85b7482",
+  "duration_s": 306.5180160999298,
+  "mongo_first_terminal": [
+    291.79745221138,
+    "completed_with_failures",
+    712,
+    true,
+    true
+  ],
+  "api_first_terminal": [
+    79.67843103408813,
+    "EXC:ReadTimeout",
+    0,
+    false,
+    true
+  ],
+  "bug_observed": [
+    28.981690883636475,
+    "running",
+    97,
+    false,
+    true,
+    "timing:"
+  ],
+  "final_mongo_status": "completed_with_failures",
+  "final_failure_reason": "unspecified_terminal_state",
+  "final_stream_logs_count": 712,
+  "has_terminal_summary": true,
+  "has_execution_finished": true,
+  "events": [
+    {
+      "ts_ms": 1780417433176,
+      "ts_iso": "2026-06-02T16:23:53.176559Z",
+      "category": "signup",
+      "status": 200
+    },
+    {
+      "ts_ms": 1780417442769,
+      "ts_iso": "2026-06-02T16:24:02.769491Z",
+      "category": "ai_plan",
+      "status": 200,
+      "body_len": 192124
+    },
+    {
+      "ts_ms": 1780417443130,
+      "ts_iso": "2026-06-02T16:24:03.130647Z",
+      "category": "test_start",
+      "status": 200,
+      "body": "{\"message\":\"Test started successfully\",\"test_id\":\"d669d971-33a4-4597-92c8-f5f90d104707\",\"status\":\"running\"}"
+    },
+    {
+      "ts_ms": 1780417448266,
+      "ts_iso": "2026-06-02T16:24:08.266974Z",
+      "category": "mongo_status_change",
+      "elapsed_s": 0.0,
+      "new_status": "running",
+      "failure_reason": null,
+      "logs_count": 0,
+      "last_log": "(empty)",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417448266,
+      "ts_iso": "2026-06-02T16:24:08.266974Z",
+      "category": "api_status_change",
+      "elapsed_s": 0.0,
+      "new_status": "running",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417452679,
+      "ts_iso": "2026-06-02T16:24:12.679189Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 4.3,
+      "status": "running",
+      "logs_count": 9,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417455891,
+      "ts_iso": "2026-06-02T16:24:15.891341Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 8.8,
+      "status": "running",
+      "logs_count": 25,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417459604,
+      "ts_iso": "2026-06-02T16:24:19.604189Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 12.0,
+      "status": "running",
+      "logs_count": 37,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417464862,
+      "ts_iso": "2026-06-02T16:24:24.862905Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 15.7,
+      "status": "running",
+      "logs_count": 54,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417468166,
+      "ts_iso": "2026-06-02T16:24:28.166653Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 20.9,
+      "status": "running",
+      "logs_count": 73,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417472906,
+      "ts_iso": "2026-06-02T16:24:32.906193Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 24.2,
+      "status": "running",
+      "logs_count": 85,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": false
+    },
+    {
+      "ts_ms": 1780417480351,
+      "ts_iso": "2026-06-02T16:24:40.351991Z",
+      "category": "BUG_DETECTED_mongo_running_with_finished_log",
+      "elapsed_s": 29.0,
+      "status": "running",
+      "logs_count": 97,
+      "has_terminal_summary": false,
+      "has_execution_finished": true,
+      "last_log": "timing:"
+    },
+    {
+      "ts_ms": 1780417480351,
+      "ts_iso": "2026-06-02T16:24:40.351991Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 29.0,
+      "status": "running",
+      "logs_count": 97,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417482711,
+      "ts_iso": "2026-06-02T16:24:42.711483Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 36.4,
+      "status": "running",
+      "logs_count": 114,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417488566,
+      "ts_iso": "2026-06-02T16:24:48.566322Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 42.1,
+      "status": "running",
+      "logs_count": 117,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417498340,
+      "ts_iso": "2026-06-02T16:24:58.340186Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 49.0,
+      "status": "running",
+      "logs_count": 126,
+      "new_last_log": "screenshot:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417503473,
+      "ts_iso": "2026-06-02T16:25:03.473606Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 54.4,
+      "status": "running",
+      "logs_count": 142,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417507016,
+      "ts_iso": "2026-06-02T16:25:07.016176Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 59.5,
+      "status": "running",
+      "logs_count": 159,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417511450,
+      "ts_iso": "2026-06-02T16:25:11.450765Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 63.1,
+      "status": "running",
+      "logs_count": 170,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417515380,
+      "ts_iso": "2026-06-02T16:25:15.380271Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 67.5,
+      "status": "running",
+      "logs_count": 186,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417520211,
+      "ts_iso": "2026-06-02T16:25:20.211500Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 71.5,
+      "status": "running",
+      "logs_count": 199,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417523603,
+      "ts_iso": "2026-06-02T16:25:23.603651Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 76.3,
+      "status": "running",
+      "logs_count": 210,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417530291,
+      "ts_iso": "2026-06-02T16:25:30.291341Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 79.7,
+      "status": "running",
+      "logs_count": 219,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417530291,
+      "ts_iso": "2026-06-02T16:25:30.291341Z",
+      "category": "api_status_change",
+      "elapsed_s": 79.7,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417535619,
+      "ts_iso": "2026-06-02T16:25:35.619447Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 86.4,
+      "status": "running",
+      "logs_count": 225,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417535619,
+      "ts_iso": "2026-06-02T16:25:35.619447Z",
+      "category": "api_status_change",
+      "elapsed_s": 86.4,
+      "new_status": "running",
+      "api_logs_count": 227,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417539752,
+      "ts_iso": "2026-06-02T16:25:39.752356Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 91.7,
+      "status": "running",
+      "logs_count": 227,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417543187,
+      "ts_iso": "2026-06-02T16:25:43.187180Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 95.8,
+      "status": "running",
+      "logs_count": 244,
+      "new_last_log": "action_translation:Original Action: click -> Normalized Action: click",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417548192,
+      "ts_iso": "2026-06-02T16:25:48.192088Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 99.3,
+      "status": "running",
+      "logs_count": 265,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417551815,
+      "ts_iso": "2026-06-02T16:25:51.815301Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 104.3,
+      "status": "running",
+      "logs_count": 297,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417555343,
+      "ts_iso": "2026-06-02T16:25:55.343822Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 107.9,
+      "status": "running",
+      "logs_count": 321,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417558368,
+      "ts_iso": "2026-06-02T16:25:58.368137Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 111.4,
+      "status": "running",
+      "logs_count": 340,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417568540,
+      "ts_iso": "2026-06-02T16:26:08.540683Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 117.8,
+      "status": "running",
+      "logs_count": 343,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417568541,
+      "ts_iso": "2026-06-02T16:26:08.541682Z",
+      "category": "api_status_change",
+      "elapsed_s": 117.8,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417574396,
+      "ts_iso": "2026-06-02T16:26:14.396534Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 124.6,
+      "status": "running",
+      "logs_count": 355,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417574396,
+      "ts_iso": "2026-06-02T16:26:14.396534Z",
+      "category": "api_status_change",
+      "elapsed_s": 124.6,
+      "new_status": "running",
+      "api_logs_count": 366,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417586055,
+      "ts_iso": "2026-06-02T16:26:26.055778Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 130.5,
+      "status": "running",
+      "logs_count": 383,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417586055,
+      "ts_iso": "2026-06-02T16:26:26.055778Z",
+      "category": "api_status_change",
+      "elapsed_s": 130.5,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417594164,
+      "ts_iso": "2026-06-02T16:26:34.164543Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 142.1,
+      "status": "running",
+      "logs_count": 417,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417599583,
+      "ts_iso": "2026-06-02T16:26:39.583386Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 150.2,
+      "status": "running",
+      "logs_count": 430,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417599583,
+      "ts_iso": "2026-06-02T16:26:39.583386Z",
+      "category": "api_status_change",
+      "elapsed_s": 150.2,
+      "new_status": "running",
+      "api_logs_count": 433,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417603243,
+      "ts_iso": "2026-06-02T16:26:43.244103Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 155.7,
+      "status": "running",
+      "logs_count": 437,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417607268,
+      "ts_iso": "2026-06-02T16:26:47.268420Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 159.3,
+      "status": "running",
+      "logs_count": 440,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417618975,
+      "ts_iso": "2026-06-02T16:26:58.975032Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 169.5,
+      "status": "running",
+      "logs_count": 463,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417625003,
+      "ts_iso": "2026-06-02T16:27:05.003209Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 175.0,
+      "status": "running",
+      "logs_count": 479,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417631776,
+      "ts_iso": "2026-06-02T16:27:11.776756Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 181.1,
+      "status": "running",
+      "logs_count": 508,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417639319,
+      "ts_iso": "2026-06-02T16:27:19.319779Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 187.9,
+      "status": "running",
+      "logs_count": 537,
+      "new_last_log": "action_execution:Executing verify on inventory page",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417639320,
+      "ts_iso": "2026-06-02T16:27:19.320785Z",
+      "category": "api_status_change",
+      "elapsed_s": 187.9,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417647323,
+      "ts_iso": "2026-06-02T16:27:27.323398Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 195.4,
+      "status": "running",
+      "logs_count": 568,
+      "new_last_log": "action_execution:Executing input on Username",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417647323,
+      "ts_iso": "2026-06-02T16:27:27.323398Z",
+      "category": "api_status_change",
+      "elapsed_s": 195.4,
+      "new_status": "running",
+      "api_logs_count": 575,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417654287,
+      "ts_iso": "2026-06-02T16:27:34.287222Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 203.4,
+      "status": "running",
+      "logs_count": 575,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417661022,
+      "ts_iso": "2026-06-02T16:27:41.022441Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 210.4,
+      "status": "running",
+      "logs_count": 583,
+      "new_last_log": "selector_diagnostics:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417668434,
+      "ts_iso": "2026-06-02T16:27:48.434770Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 217.1,
+      "status": "running",
+      "logs_count": 592,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417668435,
+      "ts_iso": "2026-06-02T16:27:48.435763Z",
+      "category": "api_status_change",
+      "elapsed_s": 217.1,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417675277,
+      "ts_iso": "2026-06-02T16:27:55.277435Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 224.5,
+      "status": "running",
+      "logs_count": 595,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417675277,
+      "ts_iso": "2026-06-02T16:27:55.277435Z",
+      "category": "api_status_change",
+      "elapsed_s": 224.5,
+      "new_status": "running",
+      "api_logs_count": 601,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417681924,
+      "ts_iso": "2026-06-02T16:28:01.924148Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 231.4,
+      "status": "running",
+      "logs_count": 624,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417688901,
+      "ts_iso": "2026-06-02T16:28:08.901297Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 238.0,
+      "status": "running",
+      "logs_count": 635,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417688901,
+      "ts_iso": "2026-06-02T16:28:08.901297Z",
+      "category": "api_status_change",
+      "elapsed_s": 238.0,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417695738,
+      "ts_iso": "2026-06-02T16:28:15.738102Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 245.0,
+      "status": "running",
+      "logs_count": 638,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417702490,
+      "ts_iso": "2026-06-02T16:28:22.490372Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 251.8,
+      "status": "running",
+      "logs_count": 652,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417702490,
+      "ts_iso": "2026-06-02T16:28:22.490372Z",
+      "category": "api_status_change",
+      "elapsed_s": 251.8,
+      "new_status": "running",
+      "api_logs_count": 652,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417710569,
+      "ts_iso": "2026-06-02T16:28:30.569001Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 258.6,
+      "status": "running",
+      "logs_count": 655,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417719189,
+      "ts_iso": "2026-06-02T16:28:39.189519Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 266.6,
+      "status": "running",
+      "logs_count": 676,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417719190,
+      "ts_iso": "2026-06-02T16:28:39.190523Z",
+      "category": "api_status_change",
+      "elapsed_s": 266.6,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417726706,
+      "ts_iso": "2026-06-02T16:28:46.706853Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 275.3,
+      "status": "running",
+      "logs_count": 693,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417726706,
+      "ts_iso": "2026-06-02T16:28:46.706853Z",
+      "category": "api_status_change",
+      "elapsed_s": 275.3,
+      "new_status": "running",
+      "api_logs_count": 696,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417735721,
+      "ts_iso": "2026-06-02T16:28:55.721677Z",
+      "category": "mongo_logs_grew",
+      "elapsed_s": 282.8,
+      "status": "running",
+      "logs_count": 699,
+      "new_last_log": "timing:",
+      "has_terminal_summary": false,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417735721,
+      "ts_iso": "2026-06-02T16:28:55.721677Z",
+      "category": "api_status_change",
+      "elapsed_s": 282.8,
+      "new_status": "EXC:ReadTimeout",
+      "api_logs_count": 0,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417742867,
+      "ts_iso": "2026-06-02T16:29:02.867393Z",
+      "category": "mongo_status_change",
+      "elapsed_s": 291.8,
+      "new_status": "completed_with_failures",
+      "failure_reason": "unspecified_terminal_state",
+      "logs_count": 712,
+      "last_log": "terminal_summary:[ERROR] Test execution completed with failures\n  Total Scenarios : 6\n  Passed   ",
+      "has_terminal_summary": true,
+      "has_execution_finished": true
+    },
+    {
+      "ts_ms": 1780417742868,
+      "ts_iso": "2026-06-02T16:29:02.868396Z",
+      "category": "api_status_change",
+      "elapsed_s": 291.8,
+      "new_status": "completed_with_failures",
+      "api_logs_count": 712,
+      "http": 200
+    },
+    {
+      "ts_ms": 1780417742868,
+      "ts_iso": "2026-06-02T16:29:02.868396Z",
+      "category": "both_terminal",
+      "elapsed_s": 291.8,
+      "mongo_status": "completed_with_failures",
+      "api_status": "completed_with_failures",
+      "mongo_logs": 712,
+      "api_logs": 712
+    }
+  ]
+}

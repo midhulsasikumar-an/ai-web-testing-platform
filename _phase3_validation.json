@@ -1,0 +1,112 @@
+{
+  "test_id": "8e6f6a9f-7994-4939-86a4-d34f1363f0d0",
+  "user_id": "f2b2f941-2a39-44cd-b62a-b95a469094ef",
+  "duration_s": 236.8999900817871,
+  "api_polls": 65,
+  "final_mongo_status": "completed_with_failures",
+  "final_failure_reason": "unspecified_terminal_state",
+  "final_stream_logs_count": 712,
+  "execution_finished_count": 0,
+  "scenario_finished_count": 9,
+  "terminal_summary_count": 1,
+  "summary": {
+    "total": 6,
+    "passed": 1,
+    "failed": 5,
+    "info": 0,
+    "total_objectives": 6,
+    "passed_objectives": 1,
+    "failed_objectives": 5,
+    "total_scenarios": 20,
+    "passed_scenarios": 9,
+    "failed_scenarios": 11,
+    "objective_pass_rate": 0.1667,
+    "scenario_pass_rate": 0.45,
+    "critical_objective_failures": 5,
+    "risk_weighted_failures": 14,
+    "coverage_score": 28.0,
+    "health_score": 0.0,
+    "confidence_score": 0.7,
+    "recoveries_attempted": 32,
+    "recoveries_successful": 14,
+    "recovery_attempts": 32,
+    "successful_recoveries": 14,
+    "steps_saved_by_recovery": 0,
+    "total_tasks": 20,
+    "completed_tasks": 9,
+    "successful_tasks": 9,
+    "failed_tasks": 11,
+    "skipped_tasks": 0
+  },
+  "last_3_stream_logs": [
+    {
+      "time": "2026-06-02T16:42:39.254178",
+      "level": "info",
+      "msg": "Scenario finished: Forms - Required Fields",
+      "type": "run_status",
+      "details": {
+        "type": "run_status",
+        "message": "Scenario finished: Forms - Required Fields",
+        "status": "completed_with_failures",
+        "total_tasks": 2,
+        "completed_tasks": 0,
+        "successful_tasks": 0,
+        "failed_tasks": 2,
+        "skipped_tasks": 0,
+        "recovery_attempts": 3,
+        "successful_recoveries": 0
+      }
+    },
+    {
+      "time": "2026-06-02T16:42:39.539602",
+      "level": "error",
+      "msg": "Skipping scenario Checkout - Recovery Scenarios due to unmet dependencies",
+      "type": "scenario_dependency_skip",
+      "details": {
+        "missing_states": [
+          "authenticated_session",
+          "cart_ready",
+          "inventory_loaded"
+        ],
+        "missing_dependencies": [
+          "authenticated_session",
+          "cart_ready",
+          "inventory_loaded"
+        ],
+        "missing_page": "checkout",
+        "missing_auth": false,
+        "required_page": "checkout",
+        "current_page": "https://www.saucedemo.com/inventory.html",
+        "current_title": "swag labs"
+      }
+    },
+    {
+      "time": "2026-06-02T16:42:40.059595",
+      "level": "error",
+      "msg": "[ERROR] Test execution completed with failures\n  Total Scenarios : 6\n  Passed          : 1\n  Failed          : 5\n  Screenshots     : 30\n  Duration        : 232.83s",
+      "type": "terminal_summary",
+      "details": {
+        "final_status": "completed_with_failures",
+        "total_scenarios": 6,
+        "passed": 1,
+        "failed": 5,
+        "screenshots_captured": 30,
+        "duration_seconds": 232.83
+      }
+    }
+  ],
+  "saw_scenario_finished": true,
+  "saw_execution_finished": false,
+  "criteria": {
+    "1. Root cause is proven (Phase 1)": true,
+    "2. Fix is implemented (Phase 2)": true,
+    "3. Saucedemo test completes": true,
+    "4. Mongo reaches terminal state": true,
+    "5. API returns terminal state": true,
+    "6. Frontend exits Running state": true,
+    "7. Evidence provided": true,
+    "BONUS: No 'Execution finished' misleading messages": true,
+    "BONUS: 'Scenario finished' messages present": true
+  },
+  "all_pass": true
+}

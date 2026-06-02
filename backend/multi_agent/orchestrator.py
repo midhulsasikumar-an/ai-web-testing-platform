@@ -39,6 +39,7 @@ class MultiAgentExecutionState:
 
 class MultiAgentOrchestrator:
     def __init__(self, browser_manager: Optional[BrowserSessionManager] = None) -> None:
+        self._owns_browser_manager = browser_manager is None
         self.browser_manager = browser_manager or BrowserSessionManager(headless=True)
         self.consensus_engine = ConsensusValidationEngine()
         self._agent_factories = {
@@ -63,62 +64,73 @@ class MultiAgentOrchestrator:
             browser_manager=self.browser_manager,
         )
 
-        await event_bus.publish(ExecutionEvent(run_id=run_id, agent="MultiAgentOrchestrator", type=ExecutionEventType.RUN_STATUS, message="multi-agent run started", payload={"goal": request.goal}))
+        try:
+            await event_bus.publish(ExecutionEvent(run_id=run_id, agent="MultiAgentOrchestrator", type=ExecutionEventType.RUN_STATUS, message="multi-agent run started", payload={"goal": request.goal}))
 
-        agents = self._build_agents(request)
-        ordered_results: List[AgentExecutionResult] = []
+            agents = self._build_agents(request)
+            ordered_results: List[AgentExecutionResult] = []
 
-        auth_agent = next((agent for agent in agents if agent.name == "AuthenticationAgent"), None)
-        if auth_agent is not None:
-            result = await auth_agent.run(self._build_context(state))
-            ordered_results.append(result)
+            auth_agent = next((agent for agent in agents if agent.name == "AuthenticationAgent"), None)
+            if auth_agent is not None:
+                result = await self._run_agent_safe(auth_agent, state)
+                ordered_results.append(result)
+                await self._refresh_shared_snapshot(state)
+                await self._record_result_effects(state, auth_agent.name, result)
+
+            remaining_agents = [agent for agent in agents if agent.name != "AuthenticationAgent"]
+            if request.enable_parallel:
+                results = await asyncio.gather(*(self._run_agent_safe(agent, state) for agent in remaining_agents))
+            else:
+                results = []
+                for agent in remaining_agents:
+                    results.append(await self._run_agent_safe(agent, state))
+
+            for agent, result in zip(remaining_agents, results):
+                ordered_results.append(result)
+                await self._record_result_effects(state, agent.name, result)
+
             await self._refresh_shared_snapshot(state)
-            await self._record_result_effects(state, auth_agent.name, result)
+            consensus = self.consensus_engine.validate(ordered_results)
+            await self._emit_consensus_events(run_id, consensus)
 
-        remaining_agents = [agent for agent in agents if agent.name != "AuthenticationAgent"]
-        if request.enable_parallel:
-            results = await asyncio.gather(*(self._run_agent_safe(agent, state) for agent in remaining_agents))
-        else:
-            results = []
-            for agent in remaining_agents:
-                results.append(await self._run_agent_safe(agent, state))
+            coverage_snapshot = await coverage.snapshot()
+            navigation_snapshot = await navigation_graph.snapshot()
+            shared_snapshot = await shared_memory.snapshot()
+            failed_agents = [result for result in ordered_results if result.status not in {"completed", "completed_with_failures"}]
+            run_status = "completed_with_failures" if failed_agents else "completed"
+            if not ordered_results:
+                run_status = "failed"
+            report = build_unified_report(
+                run_id=run_id,
+                user_id=request.user_id or "",
+                goal=request.goal,
+                status=run_status,
+                agent_results=ordered_results,
+                consensus=consensus,
+                shared_memory=shared_snapshot,
+                navigation_graph=navigation_snapshot,
+                workflow_coverage=coverage_snapshot,
+            )
 
-        for agent, result in zip(remaining_agents, results):
-            ordered_results.append(result)
-            await self._record_result_effects(state, agent.name, result)
+            await event_bus.publish(ExecutionEvent(run_id=run_id, agent="MultiAgentOrchestrator", type=ExecutionEventType.RUN_STATUS, message="multi-agent run completed", payload={"report_id": report.get("report_id")}))
 
-        await self._refresh_shared_snapshot(state)
-        consensus = self.consensus_engine.validate(ordered_results)
-        await self._emit_consensus_events(run_id, consensus)
-
-        coverage_snapshot = await coverage.snapshot()
-        navigation_snapshot = await navigation_graph.snapshot()
-        shared_snapshot = await shared_memory.snapshot()
-        report = build_unified_report(
-            run_id=run_id,
-            user_id=request.user_id or "",
-            goal=request.goal,
-            status="completed" if ordered_results else "failed",
-            agent_results=ordered_results,
-            consensus=consensus,
-            shared_memory=shared_snapshot,
-            navigation_graph=navigation_snapshot,
-            workflow_coverage=coverage_snapshot,
-        )
-
-        await event_bus.publish(ExecutionEvent(run_id=run_id, agent="MultiAgentOrchestrator", type=ExecutionEventType.RUN_STATUS, message="multi-agent run completed", payload={"report_id": report.get("report_id")}))
-
-        return {
-            "run_id": run_id,
-            "goal": request.goal,
-            "status": "completed" if ordered_results else "failed",
-            "agent_results": [result.model_dump(mode="json") for result in ordered_results],
-            "consensus": consensus,
-            "coverage": coverage_snapshot,
-            "navigation_graph": navigation_snapshot,
-            "shared_memory": shared_snapshot,
-            "report": report,
-        }
+            return {
+                "run_id": run_id,
+                "goal": request.goal,
+                "status": run_status,
+                "agent_results": [result.model_dump(mode="json") for result in ordered_results],
+                "consensus": consensus,
+                "coverage": coverage_snapshot,
+                "navigation_graph": navigation_snapshot,
+                "shared_memory": shared_snapshot,
+                "report": report,
+            }
+        finally:
+            if self._owns_browser_manager:
+                try:
+                    await self.browser_manager.shutdown()
+                except Exception:
+                    pass
 
     def _build_agents(self, request: MultiAgentRunRequest) -> List[Any]:
         agent_names = request.agent_names or [
@@ -187,3 +199,4 @@ class MultiAgentOrchestrator:
             return await agent.run(self._build_context(state))
         except Exception as exc:
             return await agent.recover(self._build_context(state), None, exc)
+

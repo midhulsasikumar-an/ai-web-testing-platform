@@ -61,18 +61,8 @@ async def run_tests():
         print(f"Status: {resp.status_code}")
         print("Response:", json.dumps(resp.json(), indent=2))
 
-        # 5. Test Generate Workflow
-        print("\n--- 5. Testing Workflow Generation ---")
-        workflow_payload = {
-            "user_id": TEST_USER_ID,
-            "prompt": "Run accessibility testing every Monday at 8 PM for Amazon."
-        }
-        resp = await client.post(f"{BASE_URL}/generate-workflow", json=workflow_payload, headers=headers)
-        print(f"Status: {resp.status_code}")
-        print("Response:", json.dumps(resp.json(), indent=2))
-
-        # 6. Test Recommendations
-        print("\n--- 6. Testing AI Recommendations ---")
+        # 5. Test Recommendations
+        print("\n--- 5. Testing AI Recommendations ---")
         resp = await client.get(f"{BASE_URL}/recommendations", headers=headers)
         print(f"Status: {resp.status_code}")
         print("Response:", json.dumps(resp.json(), indent=2))

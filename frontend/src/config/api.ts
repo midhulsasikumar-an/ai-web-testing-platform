@@ -4,7 +4,6 @@ type ApiConfig = {
   authTimeoutMs: number;
 };
 
-const DEV_DEFAULT_API_URL = "http://localhost:8000";
 const DEFAULT_HEALTH_PATH = "/health";
 const DEFAULT_AUTH_TIMEOUT_MS = 10000;
 
@@ -26,21 +25,11 @@ function parseTimeout(rawValue: string | undefined): number {
 }
 
 function resolveApiBaseUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+  const raw = process.env.NEXT_PUBLIC_API_URL ?? "";
   const normalized = normalizeBaseUrl(raw);
 
   if (!normalized) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("Missing NEXT_PUBLIC_API_URL in production environment");
-    }
-
-    if (process.env.NODE_ENV !== "test") {
-      console.warn(
-        "[api-config] NEXT_PUBLIC_API_URL is not set. Falling back to http://localhost:8000 for development."
-      );
-    }
-
-    return DEV_DEFAULT_API_URL;
+    throw new Error("Missing NEXT_PUBLIC_API_URL environment variable");
   }
 
   try {

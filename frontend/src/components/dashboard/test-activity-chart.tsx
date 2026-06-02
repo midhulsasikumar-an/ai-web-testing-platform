@@ -23,7 +23,7 @@ export function TestActivityChart({
     <Card className="col-span-full lg:col-span-2">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
             Recent Test Activity
           </CardTitle>
@@ -47,7 +47,6 @@ export function TestActivityChart({
           role="img"
           aria-label="Test activity bar chart showing passed and failed tests"
         >
-          {/* Grid lines */}
           {[0.25, 0.5, 0.75, 1].map((ratio) => (
             <line
               key={ratio}
@@ -61,7 +60,6 @@ export function TestActivityChart({
             />
           ))}
 
-          {/* Bars */}
           {data.map((d, i) => {
             const passedH = (d.passed / maxVal) * chartHeight;
             const failedH = (d.failed / maxVal) * chartHeight;
@@ -69,7 +67,6 @@ export function TestActivityChart({
 
             return (
               <g key={d.day}>
-                {/* Passed bar */}
                 <rect
                   x={x}
                   width={actualBarW * 0.48}
@@ -79,25 +76,10 @@ export function TestActivityChart({
                   className="fill-primary"
                   opacity="0.85"
                 >
-                  <animate
-                    attributeName="height"
-                    from="0"
-                    to={passedH}
-                    dur="0.6s"
-                    fill="freeze"
-                    begin={`${i * 0.04}s`}
-                  />
-                  <animate
-                    attributeName="y"
-                    from={chartHeight}
-                    to={chartHeight - passedH}
-                    dur="0.6s"
-                    fill="freeze"
-                    begin={`${i * 0.04}s`}
-                  />
+                  <animate attributeName="height" from="0" to={passedH} dur="0.6s" fill="freeze" begin={`${i * 0.04}s`} />
+                  <animate attributeName="y" from={chartHeight} to={chartHeight - passedH} dur="0.6s" fill="freeze" begin={`${i * 0.04}s`} />
                 </rect>
 
-                {/* Failed bar */}
                 <rect
                   x={x + actualBarW * 0.52}
                   width={actualBarW * 0.48}
@@ -107,25 +89,10 @@ export function TestActivityChart({
                   className="fill-red-400"
                   opacity="0.8"
                 >
-                  <animate
-                    attributeName="height"
-                    from="0"
-                    to={failedH}
-                    dur="0.6s"
-                    fill="freeze"
-                    begin={`${i * 0.04}s`}
-                  />
-                  <animate
-                    attributeName="y"
-                    from={chartHeight}
-                    to={chartHeight - failedH}
-                    dur="0.6s"
-                    fill="freeze"
-                    begin={`${i * 0.04}s`}
-                  />
+                  <animate attributeName="height" from="0" to={failedH} dur="0.6s" fill="freeze" begin={`${i * 0.04}s`} />
+                  <animate attributeName="y" from={chartHeight} to={chartHeight - failedH} dur="0.6s" fill="freeze" begin={`${i * 0.04}s`} />
                 </rect>
 
-                {/* Day label */}
                 <text
                   x={x + actualBarW / 2}
                   y={chartHeight + 5}
@@ -134,10 +101,7 @@ export function TestActivityChart({
                   fontSize="2"
                   fontWeight="500"
                 >
-                  {new Date(d.day).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {new Date(d.day).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </text>
               </g>
             );

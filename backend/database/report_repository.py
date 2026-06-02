@@ -182,6 +182,13 @@ def normalize_report_document(
         or (payload.get("debug_data", {}) if isinstance(payload.get("debug_data"), dict) else {}).get("url")
         or ""
     ).strip()
+    payload["test_type"] = str(
+        payload.get("test_type")
+        or payload.get("run_type")
+        or (payload.get("debug_data", {}) if isinstance(payload.get("debug_data"), dict) else {}).get("test_type")
+        or (payload.get("debug_data", {}) if isinstance(payload.get("debug_data"), dict) else {}).get("run_type")
+        or ""
+    ).strip()
     payload["score"] = _derive_score(payload)
     payload["related_test_id"] = _derive_related_test_id(payload, resolved_type, resolved_test_run_id)
     payload["related_bug_id"] = _first_text(payload, "related_bug_id", "bug_id") or None

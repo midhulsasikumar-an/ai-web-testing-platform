@@ -65,7 +65,7 @@ class AgentRunState(BaseModel):
     objective_id: Optional[str] = None
     status: Literal[
         "running", "completed", "failed", "blocked",
-        "cancelled", "max_steps_reached", "paused",
+        "completed_with_failures", "cancelled", "max_steps_reached", "paused",
     ] = "running"
     current_url: str = ""
     workflow_state: WorkflowState = WorkflowState.INIT
@@ -87,7 +87,7 @@ class AgentRunState(BaseModel):
 class AgentRunRequest(BaseModel):
     """Request to start an agent run."""
     url: HttpUrl
-    goal: str
+    goal: Optional[str] = None
     credentials: Optional[Dict[str, str]] = None
     max_steps: int = Field(default=30, ge=1, le=200)
     same_origin_only: bool = True
@@ -103,3 +103,4 @@ class AgentRunResponse(BaseModel):
     success: bool
     run: AgentRunState
     reasoning_output: Optional[Dict[str, Any]] = None
+

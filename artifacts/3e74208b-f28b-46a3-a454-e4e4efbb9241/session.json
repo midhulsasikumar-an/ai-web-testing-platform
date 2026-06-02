@@ -1,0 +1,11 @@
+{
+  "execution_id": "3e74208b-f28b-46a3-a454-e4e4efbb9241",
+  "status": "BLOCKED",
+  "current_step": 0,
+  "current_goal": "explore_navigation",
+  "workflow_state": "INIT",
+  "started_at": "2026-05-28T17:16:38.476044",
+  "updated_at": "2026-05-28T17:16:46.849905",
+  "completed_at": "2026-05-28T17:16:46.849905",
+  "cancelled": false
+}

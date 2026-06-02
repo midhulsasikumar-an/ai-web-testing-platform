@@ -1,4 +1,4 @@
-import { apiJson, API_BASE_URL } from "@/services/http";
+import { apiJson } from "@/services/http";
 
 export interface AILog {
   time: string;
@@ -6,10 +6,12 @@ export interface AILog {
   msg: string;
 }
 
+export type RiskLevel = "low" | "medium" | "high" | "unknown";
+
 export interface AISummary {
   summary: string;
   insights: string[];
-  risk_level: "low" | "medium" | "high";
+  risk_level: RiskLevel;
 }
 
 export interface RecentTest {
@@ -28,7 +30,7 @@ export interface DashboardStatsResponse {
   failed: number;
   open_bugs: number;
   average_health: number;
-  ai_summary: AISummary;
+  ai_summary?: AISummary;
   ai_logs: AILog[];
   test_activity: {
     day: string;
@@ -44,9 +46,6 @@ export interface DashboardStatsResponse {
   recent_tests: RecentTest[];
 }
 
-export async function getDashboardStats(token?: string): Promise<DashboardStatsResponse> {
-  console.debug("[dashboard-api] GET", `${API_BASE_URL}/api/dashboard/stats`);
-  return apiJson<DashboardStatsResponse>(`/api/dashboard/stats`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+export async function getDashboardStats(): Promise<DashboardStatsResponse> {
+  return apiJson<DashboardStatsResponse>(`/api/dashboard/stats`);
 }

@@ -1,0 +1,13 @@
+2026-06-02 22:07:44,718 | WARNING | services.startup_guards | - | startup_guard: MONGO_URL embeds username and password directly in the connection string. Move credentials to a secret manager or use environment variable interpolation.
+2026-06-02 22:07:44,718 | WARNING | services.startup_guards | - | startup_guard: JWT_ALLOW_WEAK_SECRET=1 is set. JWT_SECRET_KEY will be auto-generated per-process; all tokens will be invalidated on restart and the server is not safe for production.
+2026-06-02 22:07:44,719 | WARNING | services.startup_guards | - | startup_guard: FRONTEND_ORIGINS is not set; defaulting to http://localhost:3000
+2026-06-02 22:07:44,720 | INFO | server | - | SKIP_BROWSER_WARMUP=1 set; skipping Playwright warmup at startup
+2026-06-02 22:09:01,341 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:09:19,882 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:09:47,444 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:10:14,497 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:10:45,658 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:11:04,581 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:11:41,362 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:12:17,438 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:12:39,254 | INFO | services.execution | None | Closed shared browser session after execution-complete

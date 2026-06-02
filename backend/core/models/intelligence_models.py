@@ -21,6 +21,8 @@ class BugLifecycleRecord(BaseModel):
     regression_count: int = 0
     resolved_count: int = 0
     flaky_count: int = 0
+    root_cause_counts: Dict[str, int] = Field(default_factory=dict)
+    most_common_root_cause: str = "UNKNOWN"
     affected_components: List[str] = Field(default_factory=list)
     affected_urls: List[str] = Field(default_factory=list)
     screenshot_hashes: List[str] = Field(default_factory=list)
@@ -43,6 +45,8 @@ class BugLifecycleEvent(BaseModel):
     screenshot_path: Optional[str] = None
     screenshot_hash: Optional[str] = None
     similarity_to_previous: Optional[float] = None
+    root_cause: str = "UNKNOWN"
+    root_cause_confidence: float = 0.0
     evidence: Dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
