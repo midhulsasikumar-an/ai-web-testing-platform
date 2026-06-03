@@ -1,0 +1,321 @@
+2026-06-03 00:51:05,342 | WARNING | services.startup_guards | - | startup_guard: MONGO_URL embeds username and password directly in the connection string. Move credentials to a secret manager or use environment variable interpolation.
+2026-06-03 00:51:05,342 | WARNING | services.startup_guards | - | startup_guard: JWT_ALLOW_WEAK_SECRET=1 is set. JWT_SECRET_KEY will be auto-generated per-process; all tokens will be invalidated on restart and the server is not safe for production.
+2026-06-03 00:51:05,342 | WARNING | services.startup_guards | - | startup_guard: FRONTEND_ORIGINS is not set; defaulting to http://localhost:3000
+2026-06-03 02:05:12,407 | INFO | backend.agent.services.website_health_service | None | Starting website health analysis for execution 7dbe36e4-14a5-40a8-ad51-48bb3e16ece2
+2026-06-03 02:05:12,563 | ERROR | backend.agent.services.visual_issue_service | None | Failed to analyze image artifacts/7dbe36e4-14a5-40a8-ad51-48bb3e16ece2/initial.png: cannot access local variable 'size' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\agent\services\visual_issue_service.py", line 40, in analyze_visuals
+    if size < 16000:
+       ^^^^
+UnboundLocalError: cannot access local variable 'size' where it is not associated with a value
+2026-06-03 02:05:12,579 | INFO | backend.agent.services.website_health_service | None | Website health analysis complete: score=80
+2026-06-03 02:06:33,273 | INFO | backend.agent.services.website_health_service | None | Starting website health analysis for execution d998508e-16c6-4669-94b9-acb70daf02ec
+2026-06-03 02:06:33,325 | ERROR | backend.agent.services.visual_issue_service | None | Failed to analyze image artifacts/d998508e-16c6-4669-94b9-acb70daf02ec/initial.png: cannot access local variable 'size' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\agent\services\visual_issue_service.py", line 40, in analyze_visuals
+    if size < 16000:
+       ^^^^
+UnboundLocalError: cannot access local variable 'size' where it is not associated with a value
+2026-06-03 02:06:33,329 | INFO | backend.agent.services.website_health_service | None | Website health analysis complete: score=80
+2026-06-03 02:08:08,043 | INFO | backend.agent.services.website_health_service | None | Starting website health analysis for execution 7aae8a47-f4c0-499b-b10d-1d8125dcde13
+2026-06-03 02:08:08,093 | ERROR | backend.agent.services.visual_issue_service | None | Failed to analyze image artifacts/7aae8a47-f4c0-499b-b10d-1d8125dcde13/initial.png: cannot access local variable 'size' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\agent\services\visual_issue_service.py", line 40, in analyze_visuals
+    if size < 16000:
+       ^^^^
+UnboundLocalError: cannot access local variable 'size' where it is not associated with a value
+2026-06-03 02:08:08,099 | INFO | backend.agent.services.website_health_service | None | Website health analysis complete: score=80
+2026-06-03 02:11:31,412 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:12:05,192 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:12:41,765 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:13:10,113 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:13:34,934 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:14:27,987 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:15:22,977 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:16:25,699 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:17:00,841 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:17:35,599 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:18:07,243 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:18:26,081 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:18:45,818 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:29:08,362 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:29:19,588 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:29:40,812 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:30:04,948 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:30:06,674 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:30:19,352 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:30:25,033 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:30:42,999 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:31:04,521 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:31:20,959 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:31:27,025 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:31:45,841 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:31:47,705 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:32:02,410 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:32:27,675 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:32:29,881 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:32:54,455 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:33:01,560 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:33:02,747 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:33:28,009 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:33:31,856 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:33:39,991 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:33:54,678 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:34:06,340 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:34:27,917 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:34:40,045 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:34:42,271 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:35:00,063 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:35:09,617 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:35:21,365 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:35:54,469 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:36:03,760 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:36:24,267 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:36:40,737 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:36:45,837 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:37:03,701 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:37:44,251 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:37:44,876 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:37:55,493 | WARNING | services.execution | None | Playwright execution cancelled; returning partial results
+2026-06-03 02:37:55,597 | INFO | services.execution | None | Closed shared browser session after cancelled
+2026-06-03 02:38:02,979 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:38:26,449 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:38:44,966 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:39:03,404 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:39:13,447 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:39:27,716 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:39:50,294 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:40:05,763 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:40:18,559 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:40:45,323 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:40:50,575 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:41:08,410 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:41:26,523 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-03 02:43:51,912 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f2d16cc4639e0eaa1951d, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-03 02:45:22,605 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f2d16cc4639e0eaa1951d, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-03 02:46:52,834 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f2d16cc4639e0eaa1951d, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-03 02:48:23,127 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f2d16cc4639e0eaa1951d, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-03 03:02:18,452 | INFO | backend.agent.services.website_health_service | None | Starting website health analysis for execution 6b5f574d-671e-498b-b2ff-f862782f18fd
+2026-06-03 03:02:18,483 | ERROR | backend.agent.services.visual_issue_service | None | Failed to analyze image artifacts/6b5f574d-671e-498b-b2ff-f862782f18fd/initial.png: cannot access local variable 'size' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\agent\services\visual_issue_service.py", line 40, in analyze_visuals
+    if size < 16000:
+       ^^^^
+UnboundLocalError: cannot access local variable 'size' where it is not associated with a value
+2026-06-03 03:02:18,489 | INFO | backend.agent.services.website_health_service | None | Website health analysis complete: score=80

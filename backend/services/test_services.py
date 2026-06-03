@@ -20,7 +20,7 @@ from backend.services.scoring.report_generator import generate_report
 from backend.services.scoring.ai_summary import generate_summary_line
 from backend.services.scoring.overall_status import calculate_overall_status
 from backend.services.bug_services import create_bugs_from_test
-from backend.services.asset_auth import build_artifact_url
+from backend.services.asset_auth import build_artifact_url, build_screenshot_url
 from backend.ai.schema.test_plan_schema import TestCase
 from backend.services.dom_service import extract_page_elements
 from backend.services.action_translation_service import translate_test_case
@@ -30,6 +30,55 @@ from backend.services.root_cause_classifier import classify_root_cause
 logger = logging.getLogger("services.test")
 
 OVERALL_EXECUTION_TIMEOUT_SECONDS = int(os.getenv("AI_PLAN_OVERALL_TIMEOUT_SECONDS", "3600"))
+
+
+def _derive_progress_msg(evt: Dict[str, Any]) -> str:
+    """
+    Derive a human-readable stream_log message from a progress event.
+
+    Many progress events in execution_service.py emit a structured `details` payload
+    but no top-level `message` field. Writing `""` for those would render as blank
+    terminal rows. This function preserves any explicit `message` and otherwise
+    composes a short summary from the event type and structured fields.
+    """
+    explicit = evt.get("message")
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit
+
+    evt_type = evt.get("type")
+
+    if evt_type == "timing":
+        label = evt.get("label") or "event"
+        phase = evt.get("phase") or ""
+        elapsed = evt.get("elapsed_ms")
+        if isinstance(elapsed, (int, float)):
+            return f"⏱ {label} {phase} ({elapsed}ms)".strip()
+        if phase:
+            return f"⏱ {label} {phase}".strip()
+        return f"⏱ {label}"
+
+    if evt_type == "screenshot":
+        label = evt.get("label") or "screenshot"
+        if evt.get("screenshot_error"):
+            return f"📸 {label} (error: {evt['screenshot_error']})"
+        if evt.get("screenshot") or evt.get("screenshot_b64"):
+            return f"📸 {label} captured"
+        return f"📸 {label}"
+
+    if evt_type == "selector_diagnostics":
+        original = evt.get("original_target") or evt.get("step", {}).get("target") or "?"
+        resolved = evt.get("resolved_selector")
+        source = evt.get("source") or "?"
+        confidence = evt.get("confidence")
+        if resolved:
+            conf = f", conf={confidence}" if isinstance(confidence, (int, float)) else ""
+            return f"🔍 {original} → {resolved} (source={source}{conf})"
+        return f"🔍 {original} unresolved (source={source})"
+
+    if evt_type:
+        return f"[{evt_type}]"
+
+    return ""
 
 
 def _collect_recovery_summary(results: List[Dict[str, Any]]) -> Dict[str, int]:
@@ -548,6 +597,8 @@ def create_test_run(req: TestRequest, user_id: str):
         "execution_id": test_id,
         "test_id": test_id,
         "url": req.url,
+        "test_name": req.test_name,
+        "name": req.test_name,
         "project": req.project_name,
         "test_type": req.test_type,
         "browser": req.browser,
@@ -1211,7 +1262,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             stream_logs.append({
                 "time": datetime.utcnow().isoformat(),
                 "level": "error" if evt.get("type") == "bug_detected" else "info",
-                "msg": evt.get("message", ""),
+                "msg": _derive_progress_msg(evt),
                 "type": evt.get("type"),
                 "details": evt,
             })

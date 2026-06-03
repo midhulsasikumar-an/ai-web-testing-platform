@@ -1,0 +1,42 @@
+{
+  "started": 1780435919.9975047,
+  "checkpoints": [
+    {
+      "label": "idle_before_submit",
+      "total": 0,
+      "statusCount": 0,
+      "statusTexts": [],
+      "visibleCountLabel": "SignalTrack \u2014 AI Bug Tracking DashboardTestPilot AIv2.0 \u00b7 ProNew projectWorkspac"
+    },
+    {
+      "label": "running_15s",
+      "total": 1,
+      "statusCount": 1,
+      "statusTexts": [
+        "Execution status: failed"
+      ],
+      "visibleCountLabel": "SignalTrack \u2014 AI Bug Tracking DashboardTestPilot AIv2.0 \u00b7 ProNew projectWorkspac"
+    },
+    {
+      "label": "running_45s",
+      "total": 1,
+      "statusCount": 1,
+      "statusTexts": [
+        "Execution status: failed"
+      ],
+      "visibleCountLabel": "SignalTrack \u2014 AI Bug Tracking DashboardTestPilot AIv2.0 \u00b7 ProNew projectWorkspac"
+    },
+    {
+      "label": "terminal",
+      "total": 1,
+      "statusCount": 1,
+      "statusTexts": [
+        "Execution status: failed"
+      ],
+      "visibleCountLabel": "SignalTrack \u2014 AI Bug Tracking DashboardTestPilot AIv2.0 \u00b7 ProNew projectWorkspac"
+    }
+  ],
+  "errors": [],
+  "verdict": "PASS: at most 2 'Execution status:' bubbles (1 running + 1 terminal)",
+  "finished": 1780435969.9072125
+}

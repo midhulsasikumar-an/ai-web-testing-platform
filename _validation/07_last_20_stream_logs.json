@@ -1,0 +1,588 @@
+[
+  {
+    "time": "2026-06-02T20:48:42.138161",
+    "level": "info",
+    "msg": "\u23f1 screenshot start",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "start",
+      "label": "screenshot",
+      "step": {
+        "action": "click",
+        "target": "login button",
+        "selector": "login button",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:42.469483",
+    "level": "info",
+    "msg": "\ud83d\udcf8 observation captured",
+    "type": "screenshot",
+    "details": {
+      "type": "screenshot",
+      "label": "observation",
+      "step": {
+        "action": "click",
+        "target": "login button",
+        "selector": "login button",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "screenshot": "/artifacts/e7096a8a-f451-4738-865f-13eea9e89d2c/step-1149-1780413522467.png?token=703d4c18-c532-4b4c-9511-2eb4953c19c9:1780414422:UknV9B8fUsE"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:42.626166",
+    "level": "info",
+    "msg": "\u23f1 screenshot end (488.3ms)",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "end",
+      "label": "screenshot",
+      "elapsed_ms": 488.3,
+      "step": {
+        "action": "click",
+        "target": "login button",
+        "selector": "login button",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:42.816026",
+    "level": "info",
+    "msg": "Success state detected",
+    "type": "run_status",
+    "details": {
+      "type": "run_status",
+      "message": "Success state detected"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:43.015100",
+    "level": "info",
+    "msg": "Step finished: click",
+    "type": "timeline_step",
+    "details": {
+      "type": "timeline_step",
+      "message": "Step finished: click",
+      "step": {
+        "action": "click",
+        "target": "login button",
+        "selector": "login button",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "status": "passed",
+      "execution_context": {
+        "current_objective": "User Management",
+        "current_scenario": "User Management - Valid Input",
+        "current_page": "https://www.saucedemo.com/",
+        "current_page_title": "Swag Labs",
+        "current_authenticated_state": true,
+        "previous_successful_actions": [
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "click:browser back",
+          "click:browser back",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input"
+        ]
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:43.182862",
+    "level": "info",
+    "msg": "\u23f1 selector_resolution start",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "start",
+      "label": "selector_resolution",
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:43.474131",
+    "level": "info",
+    "msg": "\u23f1 selector_resolution end (291.4ms)",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "end",
+      "label": "selector_resolution",
+      "elapsed_ms": 291.4,
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "selector": ".inventory_list",
+      "selector_hint": "inventory page"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:43.676522",
+    "level": "info",
+    "msg": "\ud83d\udd0d inventory page \u2192 .inventory_list (source=saucedemo-map, conf=0.7)",
+    "type": "selector_diagnostics",
+    "details": {
+      "type": "selector_diagnostics",
+      "original_target": "inventory page",
+      "resolved_selector": ".inventory_list",
+      "source": "saucedemo-map",
+      "candidates": [
+        {
+          "selector": ".inventory_list",
+          "source": "saucedemo-map"
+        }
+      ],
+      "unresolved": false,
+      "cache_hit": false,
+      "confidence": 0.7,
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:43.844007",
+    "level": "info",
+    "msg": "\u23f1 title:inventory page start",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "start",
+      "label": "title:inventory page",
+      "meta": {
+        "step": {
+          "action": "verify",
+          "target": "inventory page",
+          "selector": "inventory page",
+          "value": null,
+          "feature_key": "AUTHENTICATION",
+          "objective_id": "obj_1",
+          "objective_name": "User Management",
+          "scenario_id": "obj_1_s1",
+          "scenario_name": "User Management - Valid Input",
+          "scenario_category": "valid_input",
+          "coverage_level": "deep",
+          "coverage_profile": null,
+          "risk_score": 74,
+          "risk_level": "high",
+          "execution_context": null
+        },
+        "display_name": "inventory page"
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:44.050668",
+    "level": "info",
+    "msg": "\u23f1 title:inventory page end (207.2ms)",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "end",
+      "label": "title:inventory page",
+      "elapsed_ms": 207.2,
+      "meta": {
+        "step": {
+          "action": "verify",
+          "target": "inventory page",
+          "selector": "inventory page",
+          "value": null,
+          "feature_key": "AUTHENTICATION",
+          "objective_id": "obj_1",
+          "objective_name": "User Management",
+          "scenario_id": "obj_1_s1",
+          "scenario_name": "User Management - Valid Input",
+          "scenario_category": "valid_input",
+          "coverage_level": "deep",
+          "coverage_profile": null,
+          "risk_score": 74,
+          "risk_level": "high",
+          "execution_context": null
+        },
+        "display_name": "inventory page"
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:44.208428",
+    "level": "info",
+    "msg": "Executing verify on inventory page",
+    "type": "action_execution",
+    "details": {
+      "type": "action_execution",
+      "message": "Executing verify on inventory page",
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "execution_context": {
+        "current_objective": "User Management",
+        "current_scenario": "User Management - Valid Input",
+        "current_page": "https://www.saucedemo.com/inventory.html",
+        "current_page_title": "Swag Labs",
+        "current_authenticated_state": true,
+        "previous_successful_actions": [
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "click:browser back",
+          "click:browser back",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button",
+          "input:username input",
+          "input:password input",
+          "click:login button"
+        ]
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:44.568914",
+    "level": "info",
+    "msg": "\ud83d\udcf8 after_failure captured",
+    "type": "screenshot",
+    "details": {
+      "type": "screenshot",
+      "label": "after_failure",
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "screenshot": "/artifacts/e7096a8a-f451-4738-865f-13eea9e89d2c/step-1159-1780413524565.png?token=703d4c18-c532-4b4c-9511-2eb4953c19c9:1780414424:feV1cFs608I"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:44.733975",
+    "level": "info",
+    "msg": "Retrying verify via selector locator: .inventory_list",
+    "type": "recovery_attempt",
+    "details": {
+      "type": "recovery_attempt",
+      "message": "Retrying verify via selector locator: .inventory_list",
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "recovery_type": "generic_retry",
+      "recovery_method": "selector"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:44.913247",
+    "level": "info",
+    "msg": "\u23f1 recovery:scroll:.inventory_list start",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "start",
+      "label": "recovery:scroll:.inventory_list",
+      "meta": {
+        "selector": ".inventory_list",
+        "action": "verify"
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:45.268175",
+    "level": "info",
+    "msg": "\u23f1 recovery:scroll:.inventory_list end (355.8ms)",
+    "type": "timing",
+    "details": {
+      "type": "timing",
+      "phase": "end",
+      "label": "recovery:scroll:.inventory_list",
+      "elapsed_ms": 355.8,
+      "meta": {
+        "selector": ".inventory_list",
+        "action": "verify"
+      }
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:45.524450",
+    "level": "info",
+    "msg": "Recovered step: verify",
+    "type": "timeline_step",
+    "details": {
+      "type": "timeline_step",
+      "message": "Recovered step: verify",
+      "step": {
+        "action": "verify",
+        "target": "inventory page",
+        "selector": "inventory page",
+        "value": null,
+        "feature_key": "AUTHENTICATION",
+        "objective_id": "obj_1",
+        "objective_name": "User Management",
+        "scenario_id": "obj_1_s1",
+        "scenario_name": "User Management - Valid Input",
+        "scenario_category": "valid_input",
+        "coverage_level": "deep",
+        "coverage_profile": null,
+        "risk_score": 74,
+        "risk_level": "high",
+        "execution_context": null
+      },
+      "status": "passed",
+      "recovery_type": "generic_retry"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:45.820611",
+    "level": "info",
+    "msg": "Scenario finished: User Management - Valid Input",
+    "type": "run_status",
+    "details": {
+      "type": "run_status",
+      "message": "Scenario finished: User Management - Valid Input",
+      "status": "completed",
+      "total_tasks": 4,
+      "completed_tasks": 4,
+      "successful_tasks": 4,
+      "failed_tasks": 0,
+      "skipped_tasks": 0,
+      "recovery_attempts": 1,
+      "successful_recoveries": 1
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:46.135263",
+    "level": "error",
+    "msg": "Skipping scenario Checkout - Partial Completion due to unmet dependencies",
+    "type": "scenario_dependency_skip",
+    "details": {
+      "missing_states": [
+        "authenticated_session",
+        "cart_ready",
+        "inventory_loaded"
+      ],
+      "missing_dependencies": [
+        "authenticated_session",
+        "cart_ready",
+        "inventory_loaded"
+      ],
+      "missing_page": "checkout",
+      "missing_auth": false,
+      "required_page": "checkout",
+      "current_page": "https://www.saucedemo.com/inventory.html",
+      "current_title": "swag labs"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:46.280022",
+    "level": "error",
+    "msg": "Skipping scenario Checkout - Recovery Scenarios due to unmet dependencies",
+    "type": "scenario_dependency_skip",
+    "details": {
+      "missing_states": [
+        "authenticated_session",
+        "cart_ready",
+        "inventory_loaded"
+      ],
+      "missing_dependencies": [
+        "authenticated_session",
+        "cart_ready",
+        "inventory_loaded"
+      ],
+      "missing_page": "checkout",
+      "missing_auth": false,
+      "required_page": "checkout",
+      "current_page": "https://www.saucedemo.com/inventory.html",
+      "current_title": "swag labs"
+    }
+  },
+  {
+    "time": "2026-06-02T20:48:46.815395",
+    "level": "error",
+    "msg": "[ERROR] Test execution completed with failures\n  Total Scenarios : 9\n  Passed          : 3\n  Failed          : 6\n  Screenshots     : 48\n  Duration        : 472.87s",
+    "type": "terminal_summary",
+    "details": {
+      "final_status": "completed_with_failures",
+      "total_scenarios": 9,
+      "passed": 3,
+      "failed": 6,
+      "screenshots_captured": 48,
+      "duration_seconds": 472.87
+    }
+  }
+]

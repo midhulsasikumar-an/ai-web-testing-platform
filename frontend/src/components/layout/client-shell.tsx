@@ -3,7 +3,7 @@
 import { AuthProvider } from "@/context/auth-context";
 import { BugProvider } from "@/context/bug-context";
 import { Sidebar } from "@/components/layout/sidebar";
-import { MobileNav, MobileMenuButton } from "@/components/layout/mobile-nav";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { AppHeader } from "@/components/layout/app-header";
 import { useAuth } from "@/context/auth-context";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,9 +19,7 @@ function AppGuard({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    if (!isReady) {
-      return;
-    }
+    if (!isReady) return;
 
     if (!isAuthenticated && !isPublicRoute) {
       router.replace("/login");
@@ -50,10 +48,14 @@ function AppGuard({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="shell-bg flex min-h-screen text-slate-900">
-      <Sidebar />
-      <MobileNav />
+      {/* Desktop sidebar is fixed so the page never scrolls beneath it. */}
+      <div className="fixed inset-y-0 left-0 z-30 hidden lg:block">
+        <Sidebar />
+      </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
+
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
         <AppHeader
           showMobileMenuButton
           onOpenMobileNav={() => setMobileNavOpen(true)}

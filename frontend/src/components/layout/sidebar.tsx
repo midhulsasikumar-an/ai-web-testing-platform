@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Plus, Sparkles } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Plus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { PRIMARY_NAV, SECONDARY_NAV, type NavItem } from "@/lib/navigation";
@@ -56,16 +56,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
-  const router = useRouter();
-  const { user, logout } = useAuth();
   const collapsed = false;
   const isMobile = variant === "mobile";
-
-  const handleLogout = () => {
-    logout();
-    onNavigate?.();
-    router.replace("/login");
-  };
+  const { user } = useAuth();
 
   return (
     <aside
@@ -73,7 +66,7 @@ export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
         "flex h-full flex-col bg-white text-slate-700",
         isMobile
           ? "w-full"
-          : "hidden w-64 shrink-0 border-r border-slate-200/80 lg:flex"
+          : "w-64 shrink-0 border-r border-slate-200/80"
       )}
     >
       {/* Brand */}
@@ -138,9 +131,10 @@ export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
         </div>
       </div>
 
-      {/* User profile card */}
+      {/* Informational account footer (no interactive controls).
+          Account actions live in the navbar user menu. */}
       <div className="border-t border-slate-200/80 p-3">
-        <div className="flex items-center gap-2.5 rounded-lg p-2 transition-colors hover:bg-slate-50">
+        <div className="flex items-center gap-2.5 rounded-md p-2">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-slate-700 to-slate-900 text-[10.5px] font-semibold text-white">
             {(user?.name || "AM")
               .split(" ")
@@ -150,24 +144,14 @@ export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
               .toUpperCase()}
           </span>
           {!collapsed ? (
-            <>
-              <div className="min-w-0 flex-1 leading-tight">
-                <p className="truncate text-[12.5px] font-medium text-slate-900">
-                  {user?.name || "Alex Mercer"}
-                </p>
-                <p className="truncate text-[11px] text-slate-500">
-                  {user?.email || "Admin"}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleLogout}
-                aria-label="Sign out"
-                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white hover:text-red-600"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
-            </>
+            <div className="min-w-0 flex-1 leading-tight">
+              <p className="truncate text-[12.5px] font-medium text-slate-900">
+                {user?.name || "Signed in"}
+              </p>
+              <p className="truncate text-[11px] text-slate-500">
+                {user?.email || "—"}
+              </p>
+            </div>
           ) : null}
         </div>
       </div>

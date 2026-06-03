@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, ArrowRight, Monitor, Smartphone, Globe, Shield, Terminal } from "lucide-react";
 import Link from "next/link";
 import { RecentTest } from "@/services/dashboard-api";
+import { resolveTestDisplayName, truncateText } from "@/lib/test-display";
 
 interface LatestTestRunsTableProps {
   tests: RecentTest[];
@@ -68,7 +69,7 @@ export function LatestTestRunsTable({ tests }: LatestTestRunsTableProps) {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-5 py-3 text-eyebrow">Website</th>
+                  <th className="px-5 py-3 text-eyebrow">Test Name</th>
                   <th className="px-3 py-3 text-eyebrow">Test Type</th>
                   <th className="px-3 py-3 text-eyebrow">Status</th>
                   <th className="px-3 py-3 text-eyebrow text-center">Bugs</th>
@@ -81,6 +82,7 @@ export function LatestTestRunsTable({ tests }: LatestTestRunsTableProps) {
                 {tests.map((test, index) => {
                   const healthScore = typeof test.health_score === "number" ? test.health_score : 0;
                   const bugCount = (test as RecentTest & { bugs?: number }).bugs ?? 0;
+                  const displayName = resolveTestDisplayName(test);
                   return (
                     <tr key={test.test_id || index} className="border-b border-border/60 last:border-b-0 hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-3.5 whitespace-nowrap">
@@ -88,7 +90,12 @@ export function LatestTestRunsTable({ tests }: LatestTestRunsTableProps) {
                           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 border border-border">
                             {getIconForProject(test.project || test.url)}
                           </div>
-                          <span className="text-[13px] font-medium text-slate-900">{test.project || test.url}</span>
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-medium text-slate-900 truncate max-w-[260px]">{truncateText(displayName, 60)}</p>
+                            {test.url ? (
+                              <p className="text-[11px] text-slate-500 truncate max-w-[260px]">{test.url}</p>
+                            ) : null}
+                          </div>
                         </div>
                       </td>
                       <td className="px-3 py-3.5 whitespace-nowrap">

@@ -32,6 +32,8 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "created_at": 1,
         "insights": 1,
         "test_id": 1,
+        "test_name": 1,
+        "name": 1,
         "project": 1,
         "url": 1,
         "test_type": 1,
@@ -144,6 +146,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     for test in sorted_tests[:5]:
         recent_tests.append({
             "test_id": str(test.get("test_id") or test.get("_id", "")),
+            "test_name": test.get("test_name") or test.get("name") or test.get("project") or "",
             "project": test.get("project", "Unknown"),
             "url": test.get("url", ""),
             "overall_status": test.get("overall_status", "unknown"),

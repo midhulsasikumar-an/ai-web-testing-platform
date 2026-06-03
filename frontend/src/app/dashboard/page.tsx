@@ -4,8 +4,7 @@ import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { AIHealthWidget } from "@/components/dashboard/ai-health-widget";
 import { TestSuccessRateChart } from "@/components/dashboard/test-success-rate-chart";
-import { LiveTelemetryTerminal } from "@/components/dashboard/live-telemetry-terminal";
-import { LiveActivityFeed } from "@/components/dashboard/live-activity-feed";
+import { SystemTelemetry } from "@/components/dashboard/system-telemetry";
 import { LatestTestRunsTable } from "@/components/dashboard/latest-test-runs-table";
 import { useAuth } from "@/context/auth-context";
 import {
@@ -172,13 +171,8 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <LiveTelemetryTerminal logs={stats.ai_logs} />
-          </div>
-          <div className="lg:col-span-1">
-            <LiveActivityFeed logs={stats.ai_logs} />
-          </div>
+        <div className="grid grid-cols-1 gap-3">
+          <SystemTelemetry stats={stats} />
         </div>
 
         <div className="grid grid-cols-1">

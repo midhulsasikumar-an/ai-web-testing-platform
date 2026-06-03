@@ -1,0 +1,29 @@
+[03:01:59] === Fix B regression check ===
+[03:01:59] Evidence dir: C:\Internship\ai-testing-platform\_validation_fix_b
+[03:02:01] 1) Signup
+[03:02:01] CONSOLE ERROR: Failed to load resource: the server responded with a status of 401 (Unauthorized)
+[03:02:01] CONSOLE ERROR: Failed to load resource: the server responded with a status of 401 (Unauthorized)
+[03:02:01] CONSOLE ERROR: Failed to load tests/bugs: ApiHttpError: Request failed: 401 Unauthorized
+    at y (http://127.0.0.1:3000/_next/static/chunks/0lp7llk_tnvll.js:1:13160)
+    at async w (http://127.0.0.1:3000/_next/static/chunks/0lp7llk_tnvll.js:1:13272)
+    at async Promise.all (index 0)
+    at async http://127.0.0.1
+[03:02:01]    signed up, on dashboard
+[03:02:01] 2) Open /run-test
+[03:02:02] 3) Fill form
+[03:02:03] CHECKPOINT 0: idle (before test starts)
+[03:02:04]    total bubbles=0  status bubbles=0  label=SignalTrack — AI Bug Tracking DashboardTestPilot AIv2.0 · ProNew projectWorkspac
+[03:02:04] 4) Install /api/tests/start route interception
+[03:02:04] 5) Click Run Test
+[03:02:04] 6) Wait for Execution status: running to appear
+[03:02:04]    'Execution status: running' appeared
+[03:02:04] 7) Sleep 15s to accumulate any duplicate-status messages
+[03:02:19]    CHECKPOINT 1 (running, 15s after first status): total=1  status=1  distinct_status_texts=1
+[03:02:19]    distinct status texts: ['Execution status: failed']
+[03:02:19] 8) Sleep another 30s (45s total running)
+[03:02:49]    CHECKPOINT 2 (running, 45s after first status): total=1  status=1  distinct_status_texts=1
+[03:02:49]    distinct status texts: ['Execution status: failed']
+[03:02:49] 9) Wait for Execution status: completed* (terminal)
+[03:02:49]    terminal status appeared
+[03:02:49]    CHECKPOINT 3 (terminal): total=1  status=1  distinct_status_texts=1
+[03:02:49]    distinct status texts: ['Execution status: failed']

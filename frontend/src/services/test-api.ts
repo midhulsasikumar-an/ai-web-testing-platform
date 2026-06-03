@@ -10,7 +10,7 @@ export interface StartTestResponse {
 export interface StartTestRequest {
   url: string;
   testName: string;
-  goal: string;
+  goal?: string;
   projectName?: string;
   testType?: string;
   aiPlan?: AIPlanResponse | null;

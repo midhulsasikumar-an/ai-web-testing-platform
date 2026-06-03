@@ -37,6 +37,7 @@ class VisualIssueService:
                         # detect extreme aspect ratio (possible cut-off)
                         if w / h > 3 or h / w > 3:
                             issues.append({"path": path, "issue": "extreme_aspect_ratio", "size": (w, h)})
+                        size = os.path.getsize(path)
                         if size < 16000:
                             issues.append({"path": path, "issue": "low_detail_or_blank_layout", "severity": "medium"})
                 except Exception as e:

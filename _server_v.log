@@ -11,3 +11,718 @@
 2026-06-02 22:11:41,362 | INFO | services.execution | None | Closed shared browser session after execution-complete
 2026-06-02 22:12:17,438 | INFO | services.execution | None | Closed shared browser session after execution-complete
 2026-06-02 22:12:39,254 | INFO | services.execution | None | Closed shared browser session after execution-complete
+2026-06-02 22:26:16,497 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:27:47,205 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:29:17,426 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:30:47,653 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:32:17,895 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:33:48,141 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:35:18,344 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:36:48,572 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:38:18,754 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:39:48,948 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:41:19,157 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:42:49,355 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2026-06-02 22:44:19,525 | ERROR | server | - | stuck-run cleanup loop crashed; will retry next interval
+Traceback (most recent call last):
+  File "C:\Internship\ai-testing-platform\backend\server.py", line 251, in _stuck_run_cleanup_loop
+    stuck_records = list(stuck_cursor)
+                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1166, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1142, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 1090, in _refresh
+    self._send_message(q)
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\cursor.py", line 985, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1956, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2076, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2038, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2811, in run
+    res = self._read() if self._is_read else self._write()
+          ^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 3027, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2975, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1851, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 428, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 402, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 298, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Internship\ai-testing-platform\.venv\Lib\site-packages\pymongo\synchronous\topology.py", line 359, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 6a1f06d02e471fbda05f56b2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-00.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-01.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-idvu2ff-shard-00-02.z9yxifc.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>

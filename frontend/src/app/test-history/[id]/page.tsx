@@ -32,6 +32,7 @@ import { MetadataField } from "@/components/shared/metadata-field";
 import { useBugContext } from "@/context/bug-context";
 import { formatDateLong, formatTime } from "@/lib/formatters";
 import { DEFAULT_TEST_TYPE_CONFIG, resolveTestTypeConfig } from "@/lib/constants";
+import { resolveTestDisplayName } from "@/lib/test-display";
 import { cn } from "@/lib/utils";
 import { API_BASE_URL } from "@/services/http";
 import { getTestById as fetchTestById } from "@/services/test-api";
@@ -379,9 +380,10 @@ export default function TestDetailPage() {
 
   const handleRerun = () => {
     const historicalPlan = activeTest?.ai_plan && typeof activeTest.ai_plan === "object" ? (activeTest.ai_plan as Record<string, unknown>) : null;
+    const resolvedName = resolveTestDisplayName(activeTest);
     const rerunConfig = {
       targetUrl: String(activeTest?.target_url || activeTest?.url || ""),
-      testName: String(activeTest?.test_name || activeTest?.name || ""),
+      testName: resolvedName === "Untitled Test" ? "" : resolvedName,
       goal: String(activeTest?.goal || historicalPlan?.instruction || activeTest?.ai_summary || summaryText || ""),
       testType: String(activeTest?.test_type || activeTest?.run_type || "e2e"),
       browser: String(activeTest?.browser || activeTest?.execution_settings?.browser || ""),
@@ -446,7 +448,7 @@ export default function TestDetailPage() {
                     <Badge variant="outline">{activeTest?.test_type ?? "full"}</Badge>
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">{activeTest?.test_name || activeTest?.name || "Test Run"}</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">{resolveTestDisplayName(activeTest)}</h1>
                     <p className="mt-1 max-w-3xl break-words text-sm text-slate-500">{activeTest?.website || activeTest?.url || "No website recorded"}</p>
                   </div>
                   <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{stringifyValue(activeTest?.ai_summary || summaryText || "No AI summary available").slice(0, 600)}</p>

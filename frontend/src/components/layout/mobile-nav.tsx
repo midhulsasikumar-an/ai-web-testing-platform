@@ -3,19 +3,28 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Menu, Sparkles, X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/auth-context";
 import { Sidebar } from "./sidebar";
 
-export function MobileNav() {
-  const [open, setOpen] = useState(false);
+export function MobileNav({ open: externalOpen, onOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const controlled = externalOpen !== undefined;
+  const open = controlled ? externalOpen : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (controlled) {
+      onOpenChange?.(next);
+    } else {
+      setInternalOpen(next);
+    }
+  };
 
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+    // Closing the drawer on path change is intentional.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (open) setOpen(false);
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return;
@@ -29,12 +38,8 @@ export function MobileNav() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
-  const handleSignOut = () => {
-    setOpen(false);
-    logout();
-  };
 
   return (
     <>
@@ -74,35 +79,7 @@ export function MobileNav() {
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="h-[calc(100%-3.5rem-3.5rem)] overflow-y-auto">
-          <Sidebar variant="mobile" onNavigate={() => setOpen(false)} />
-        </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-slate-200 bg-white px-3 py-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-slate-700 to-slate-900 text-[10.5px] font-semibold text-white">
-            {(user?.name || "AM")
-              .split(" ")
-              .map((segment) => segment[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase()}
-          </div>
-          <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-[12.5px] font-medium text-slate-900">
-              {user?.name || "Guest"}
-            </p>
-            <p className="truncate text-[11px] text-slate-500">
-              {user?.email || "Not signed in"}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            aria-label="Sign out"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-red-600"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <Sidebar variant="mobile" onNavigate={() => setOpen(false)} />
       </div>
     </>
   );
@@ -116,7 +93,7 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
       aria-label="Open navigation"
       className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition-colors hover:bg-slate-50 lg:hidden"
     >
-      <Menu className="h-4 w-4" />
+      <span className="block h-0.5 w-4 bg-current shadow-[0_-5px_0_currentColor,0_5px_0_currentColor]" />
     </button>
   );
 }

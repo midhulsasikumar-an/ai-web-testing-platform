@@ -1,0 +1,333 @@
+{
+  "execution_id": "7dbe36e4-14a5-40a8-ad51-48bb3e16ece2",
+  "user_id": "f0240653-a4e8-4632-a7c4-6115309f806a",
+  "screenshots": [
+    "artifacts/7dbe36e4-14a5-40a8-ad51-48bb3e16ece2/initial.png"
+  ],
+  "console_logs": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "log",
+      "text": "Content is cached for offline use."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ],
+  "network_logs": [
+    {
+      "url": "https://www.saucedemo.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://www.saucedemo.com/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://events.backtrace.io/api/unique-events/submit?universe=UNIVERSE&token=TOKEN",
+      "method": "POST",
+      "resource_type": "fetch"
+    },
+    {
+      "url": "https://events.backtrace.io/api/summed-events/submit?universe=UNIVERSE&token=TOKEN",
+      "method": "POST",
+      "resource_type": "fetch"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://events.backtrace.io/api/summed-events/submit?universe=UNIVERSE&token=TOKEN",
+      "status": 401,
+      "ok": false
+    },
+    {
+      "url": "https://events.backtrace.io/api/unique-events/submit?universe=UNIVERSE&token=TOKEN",
+      "status": 401,
+      "ok": false
+    },
+    {
+      "url": "https://www.saucedemo.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://www.saucedemo.com/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://www.saucedemo.com/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/?user-name=%21%40%23%24%25%5E%26*%28%29_%2B%7C%7E%3D%60%7B%7D%5B%5D%3A%3B%3C%3E%3F%2C.%2F&password=%27%3B+DROP+TABLE+users%3B+--",
+      "method": "GET",
+      "resource_type": "document"
+    },
+    {
+      "url": "https://www.saucedemo.com/?user-name=%21%40%23%24%25%5E%26*%28%29_%2B%7C%7E%3D%60%7B%7D%5B%5D%3A%3B%3C%3E%3F%2C.%2F&password=%27%3B+DROP+TABLE+users%3B+--",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/js/main.bcf4bc5f.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://www.saucedemo.com/static/css/main.8a7d64a1.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBA.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbQ.woff2",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "method": "GET",
+      "resource_type": "font"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "dom_snapshots": [
+    "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><link rel=\"icon\" href=\"/favicon.ico\"><meta name=\"robots\" content=\"noindex\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"theme-color\" content=\"#ffffff\"><meta name=\"description\" content=\"Sauce Labs Swag Labs app\"><link rel=\"apple-touch-icon\" href=\"/icon/icon-192x192.png\"><link rel=\"manifest\" href=\"/manifest.json\"><script type=\"text/javascript\">!function(n){if(\"/\"===n.search[1]){var a=n.search.slice(1).split(\"&\").map(function(n){return n.replace(/~and~/g,\"&\")}).join(\"?\");window.history.replaceState(null,null,n.pathname.slice(0,-1)+a+n.hash)}}(window.location)</script><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=DM+Sans:wght@400;500\"><title>Swag Labs</title><script defer=\"defer\" src=\"/static/js/main.bcf4bc5f.js\"></script><link href=\"/static/css/main.8a7d64a1.css\" rel=\"stylesheet\"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id=\"root\"><div class=\"login_container\"><div class=\"login_logo\">Swag Labs</div><div class=\"login_wrapper\" data-test=\"login-container\"><div class=\"login_wrapper-inner\"><div id=\"login_button_container\" class=\"form_column\"><div class=\"login-box\"><form><div class=\"form_group\"><input class=\"input_error form_input\" placeholder=\"Username\" type=\"text\" data-test=\"username\" id=\"user-name\" name=\"user-name\" autocorrect=\"off\" autocapitalize=\"none\" value=\"\"></div><div class=\"form_group\"><input class=\"input_error form_input\" placeholder=\"Password\" type=\"password\" data-test=\"password\" id=\"password\" name=\"password\" autocorrect=\"off\" autocapitalize=\"none\" value=\"\"></div><div class=\"error-message-container\"></div><input type=\"submit\" class=\"submit-button btn_action\" data-test=\"login-button\" id=\"login-button\" name=\"login-button\" value=\"Login\"></form></div></div></div><div class=\"login_credentials_wrap\" data-test=\"login-credentials-container\"><div class=\"login_credentials_wrap-inner\"><div id=\"login_credentials\" class=\"login_credentials\" data-test=\"login-credentials\"><h4>Accepted usernames are:</h4>standard_user<br>locked_out_user<br>problem_user<br>performance_glitch_user<br>error_user<br>visual_user<br></div><div class=\"login_password\" data-test=\"login-password\"><h4>Password for all users:</h4>secret_sauce</div></div></div></div></div></div></body></html>",
+    "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><link rel=\"icon\" href=\"/favicon.ico\"><meta name=\"robots\" content=\"noindex\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"theme-color\" content=\"#ffffff\"><meta name=\"description\" content=\"Sauce Labs Swag Labs app\"><link rel=\"apple-touch-icon\" href=\"/icon/icon-192x192.png\"><link rel=\"manifest\" href=\"/manifest.json\"><script type=\"text/javascript\">!function(n){if(\"/\"===n.search[1]){var a=n.search.slice(1).split(\"&\").map(function(n){return n.replace(/~and~/g,\"&\")}).join(\"?\");window.history.replaceState(null,null,n.pathname.slice(0,-1)+a+n.hash)}}(window.location)</script><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=DM+Sans:wght@400;500\"><title>Swag Labs</title><script defer=\"defer\" src=\"/static/js/main.bcf4bc5f.js\"></script><link href=\"/static/css/main.8a7d64a1.css\" rel=\"stylesheet\"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id=\"root\"><div class=\"login_container\"><div class=\"login_logo\">Swag Labs</div><div class=\"login_wrapper\" data-test=\"login-container\"><div class=\"login_wrapper-inner\"><div id=\"login_button_container\" class=\"form_column\"><div class=\"login-box\"><form><div class=\"form_group\"><input class=\"input_error form_input\" placeholder=\"Username\" type=\"text\" data-test=\"username\" id=\"user-name\" name=\"user-name\" autocorrect=\"off\" autocapitalize=\"none\" value=\"\"></div><div class=\"form_group\"><input class=\"input_error form_input\" placeholder=\"Password\" type=\"password\" data-test=\"password\" id=\"password\" name=\"password\" autocorrect=\"off\" autocapitalize=\"none\" value=\"\"></div><div class=\"error-message-container\"></div><input type=\"submit\" class=\"submit-button btn_action\" data-test=\"login-button\" id=\"login-button\" name=\"login-button\" value=\"Login\"></form></div></div></div><div class=\"login_credentials_wrap\" data-test=\"login-credentials-container\"><div class=\"login_credentials_wrap-inner\"><div id=\"login_credentials\" class=\"login_credentials\" data-test=\"login-credentials\"><h4>Accepted usernames are:</h4>standard_user<br>locked_out_user<br>problem_user<br>performance_glitch_user<br>error_user<br>visual_user<br></div><div class=\"login_password\" data-test=\"login-password\"><h4>Password for all users:</h4>secret_sauce</div></div></div></div></div></div></body></html>"
+  ],
+  "cookies": [],
+  "metadata": {
+    "url": "https://www.saucedemo.com"
+  },
+  "form_fuzzing": [],
+  "home": "/screenshots/7dbe36e4-14a5-40a8-ad51-48bb3e16ece2/home.png"
+}

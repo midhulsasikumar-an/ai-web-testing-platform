@@ -16,6 +16,8 @@ export interface AISummary {
 
 export interface RecentTest {
   test_id: string;
+  test_name?: string;
+  name?: string;
   project: string;
   url: string;
   overall_status: string;

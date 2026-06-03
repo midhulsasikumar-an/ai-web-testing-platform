@@ -1,0 +1,31 @@
+{
+  "test_id": "e7096a8a-f451-4738-865f-13eea9e89d2c",
+  "user_email": "playwright_2e5ba2f3@example.com",
+  "polling_elapsed_s": 460,
+  "api_final_status": "completed_with_failures",
+  "api_final_failure_reason": "unspecified_terminal_state",
+  "api_final_stream_logs_count": 1167,
+  "api_final_empty_msg_count": 0,
+  "ai_status_running": "NOT_FOUND",
+  "ai_status_terminal": "NOT_FOUND",
+  "ai_status_changed": false,
+  "run_button_text_post_terminal": "Running\u2026",
+  "frontend_exited_running": true,
+  "test_id_visible_in_history": false,
+  "evidence_files": [
+    "01_signup_filled.png",
+    "02_run_test_initial.png",
+    "03_run_test_filled.png",
+    "04_run_test_running.png",
+    "05_chat_running.txt",
+    "05_terminal_running.txt",
+    "06_api_final.json",
+    "07_last_20_stream_logs.json",
+    "08_run_test_terminal.png",
+    "09_chat_terminal.txt",
+    "09_terminal_terminal.txt",
+    "10_test_history.png",
+    "REPORT.json",
+    "_run.log"
+  ]
+}

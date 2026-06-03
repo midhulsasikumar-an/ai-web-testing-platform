@@ -1,0 +1,3 @@
+2026-06-03 07:57:59,716 | WARNING | services.startup_guards | - | startup_guard: MONGO_URL embeds username and password directly in the connection string. Move credentials to a secret manager or use environment variable interpolation.
+2026-06-03 07:57:59,716 | WARNING | services.startup_guards | - | startup_guard: JWT_ALLOW_WEAK_SECRET=1 is set. JWT_SECRET_KEY will be auto-generated per-process; all tokens will be invalidated on restart and the server is not safe for production.
+2026-06-03 07:57:59,717 | WARNING | services.startup_guards | - | startup_guard: FRONTEND_ORIGINS is not set; defaulting to http://localhost:3000

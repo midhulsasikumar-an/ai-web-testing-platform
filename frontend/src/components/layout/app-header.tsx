@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronRight,
   HelpCircle,
+  KeyRound,
   LogOut,
   Plus,
   Search,
@@ -60,14 +61,15 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
   }, [menuOpen]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false);
   }, [pathname]);
 
-  const pageMeta = getPageMeta(pathname);
   const breadcrumbs = getBreadcrumbs(pathname);
   const initials = getInitials(user?.name);
   const displayName = user?.name || "Guest";
   const displayEmail = user?.email || "Not signed in";
+  const roleLabel = user?.role === "admin" ? "Admin" : "Member";
 
   const handleLogout = () => {
     logout();
@@ -75,9 +77,9 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
     router.replace("/login");
   };
 
-  const goToSettings = () => {
+  const goTo = (href: string) => {
     setMenuOpen(false);
-    router.push("/settings/profile");
+    router.push(href);
   };
 
   return (
@@ -192,7 +194,7 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
                 {displayName}
               </span>
               <span className="block text-[10.5px] leading-tight text-slate-500">
-                {user?.role === "admin" ? "Admin" : "Member"}
+                {roleLabel}
               </span>
             </span>
             <ChevronDown
@@ -226,15 +228,26 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
               <div className="p-1">
                 <button
                   type="button"
-                  onClick={goToSettings}
+                  onClick={() => goTo("/settings/profile")}
+                  role="menuitem"
                   className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] text-slate-700 transition-colors hover:bg-slate-100"
                 >
                   <User className="h-3.5 w-3.5 text-slate-500" />
-                  Your profile
+                  Profile
                 </button>
                 <button
                   type="button"
-                  onClick={goToSettings}
+                  onClick={() => goTo("/settings/security")}
+                  role="menuitem"
+                  className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] text-slate-700 transition-colors hover:bg-slate-100"
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-slate-500" />
+                  Security
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("/settings/profile")}
+                  role="menuitem"
                   className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] text-slate-700 transition-colors hover:bg-slate-100"
                 >
                   <SettingsIcon className="h-3.5 w-3.5 text-slate-500" />
@@ -245,10 +258,11 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
                 <button
                   type="button"
                   onClick={handleLogout}
+                  role="menuitem"
                   className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] text-red-600 transition-colors hover:bg-red-50"
                 >
                   <LogOut className="h-3.5 w-3.5" />
-                  Sign out
+                  Logout
                 </button>
               </div>
             </div>

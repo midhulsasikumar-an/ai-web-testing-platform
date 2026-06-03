@@ -15,13 +15,31 @@ export function extractHostname(rawUrl?: string | null): string {
   }
 }
 
-export function resolveTestDisplayName(test: Partial<TestApiResponse> | undefined): string {
+type TestLike = {
+  test_name?: string | null;
+  name?: string | null;
+  title?: string | null;
+  project?: string | null;
+  goal?: string | null;
+  ai_plan?: { instruction?: string | null; test_case?: { title?: string | null } | null } | null;
+  ai_summary?: string | null;
+  target_url?: string | null;
+  url?: string | null;
+  test_id?: string | null;
+};
+
+const FALLBACK_TEST_NAME = "Untitled Test";
+
+export function resolveTestDisplayName(test: TestLike | undefined | null): string {
   if (!test) {
-    return "Unnamed Test";
+    return FALLBACK_TEST_NAME;
   }
 
-  const candidates = [
+  const candidates: Array<string | null | undefined> = [
     test.test_name,
+    test.name,
+    test.title,
+    test.ai_plan?.test_case?.title,
     test.project,
     test.goal,
     test.ai_plan?.instruction,
@@ -37,7 +55,7 @@ export function resolveTestDisplayName(test: Partial<TestApiResponse> | undefine
     }
   }
 
-  return "Unnamed Test";
+  return FALLBACK_TEST_NAME;
 }
 
 export function truncateText(text: string, limit: number): string {
