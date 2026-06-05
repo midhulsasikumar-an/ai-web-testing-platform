@@ -50,6 +50,21 @@ type DetailResult = {
   failure_category?: string | null;
   root_cause?: string | null;
   root_cause_confidence?: number | null;
+  scenario_id?: string | null;
+  scenario_name?: string | null;
+  passed_steps?: number;
+  failed_steps?: number;
+  executed_steps?: number;
+  step_results?: TestStepView[];
+};
+
+type TestStepView = {
+  step_index?: number;
+  step_name?: string;
+  status?: "passed" | "failed" | "warning";
+  error?: string | null;
+  details?: string | null;
+  duration_ms?: number | null;
 };
 
 type ScreenshotEvidence = {
@@ -540,6 +555,40 @@ export default function TestDetailPage() {
                                   <p className="mt-1 text-sm font-medium text-slate-800">{Math.round(((result as DetailResult).root_cause_confidence || 0) * 100)}%</p>
                                 </div>
                               </div>
+                            </div>
+                          ) : null}
+                          {Array.isArray((result as DetailResult).step_results) && (result as DetailResult).step_results && (result as DetailResult).step_results!.length > 0 ? (
+                            <div className="rounded-lg border border-border bg-slate-50 px-3 py-3 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-eyebrow text-slate-700">Step Breakdown</p>
+                                <p className="text-xs text-slate-500">
+                                  {(result as DetailResult).passed_steps ?? 0} passed · {(result as DetailResult).failed_steps ?? 0} failed
+                                </p>
+                              </div>
+                              <ul className="space-y-1.5">
+                                {((result as DetailResult).step_results ?? []).map((step) => {
+                                  const status = (step.status || "warning") as "passed" | "failed" | "warning";
+                                  const badgeVariant = status === "passed" ? "secondary" : status === "failed" ? "destructive" : "outline";
+                                  const icon = status === "passed" ? "✓" : status === "failed" ? "✗" : "•";
+                                  return (
+                                    <li key={step.step_index ?? step.step_name} className="flex items-start gap-3 rounded-md border border-border bg-white px-3 py-2">
+                                      <span className="mt-0.5 text-sm text-slate-500 w-6 text-right">{step.step_index ?? "·"}</span>
+                                      <span className="mt-0.5 text-sm">{icon}</span>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-slate-800 break-words">{step.step_name || `Step ${step.step_index ?? ""}`}</p>
+                                        {step.status === "failed" && (step.error || step.details) ? (
+                                          <p className="text-xs text-rose-600 mt-0.5 break-words">
+                                            {step.error || step.details}
+                                          </p>
+                                        ) : null}
+                                      </div>
+                                      <Badge variant={badgeVariant as "secondary" | "destructive" | "outline"} className="shrink-0">
+                                        {status}
+                                      </Badge>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
                             </div>
                           ) : null}
                         </div>

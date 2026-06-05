@@ -13,7 +13,9 @@ SCREENSHOTS_DIR = Path(os.getenv("SCREENSHOTS_DIR", "screenshots")).resolve()
 ARTIFACTS_DIR = Path(os.getenv("ARTIFACTS_DIR", "artifacts")).resolve()
 SCREENSHOT_TOKEN_SALT = os.getenv("SCREENSHOT_TOKEN_SALT", "testpilot-screenshot")
 ARTIFACT_TOKEN_SALT = os.getenv("ARTIFACT_TOKEN_SALT", "testpilot-artifact")
-ASSET_TOKEN_TTL_SECONDS = int(os.getenv("ASSET_TOKEN_TTL_SECONDS", "900"))
+# Default TTL: 24 hours. Long enough for a typical QA session to share
+# screenshot URLs, short enough to bound exposure if a token leaks.
+ASSET_TOKEN_TTL_SECONDS = int(os.getenv("ASSET_TOKEN_TTL_SECONDS", str(24 * 60 * 60)))
 
 
 def _issue_asset_token(user_id: str, salt: str, *, expires_in: int) -> str:
@@ -23,6 +25,14 @@ def _issue_asset_token(user_id: str, salt: str, *, expires_in: int) -> str:
 
 
 def _verify_asset_token(token: Optional[str], expected_user_id: str) -> bool:
+    """Validate an asset token.
+
+    The token is the sole proof of authorisation for an asset URL. The
+    signature is an 8-byte URL-safe random secret issued at URL-build
+    time, the timestamp is checked against the current time, and the
+    optional user_id cross-check is only enforced when the caller has
+    identified themselves (i.e. ``expected_user_id`` is non-empty).
+    """
     if not token or not isinstance(token, str):
         return False
     parts = token.split(":")
@@ -34,7 +44,13 @@ def _verify_asset_token(token: Optional[str], expected_user_id: str) -> bool:
             return False
     except ValueError:
         return False
-    if user_id != expected_user_id:
+    # Only enforce the user_id match when the caller is already
+    # authenticated (expected_user_id is non-empty). This lets browser
+    # <img> tags that send no Authorization header still load
+    # token-bearing URLs as long as the token itself is valid and not
+    # expired. When the caller IS authenticated, we still verify the
+    # token was issued to that same user.
+    if expected_user_id and user_id != expected_user_id:
         return False
     return True
 

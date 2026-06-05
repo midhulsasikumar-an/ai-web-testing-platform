@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from backend.database.mongo import collection as test_runs_collection
 from backend.database.mongo import db
+from backend.utils.url_utils import canonicalize_url as _canonicalize_url
 
 
 REPORT_COLLECTION = db["reports"]
@@ -28,8 +29,21 @@ def save_report(
     summary: Optional[str] = None,
     status: Optional[str] = None,
 ) -> str:
+    # Canonicalize any URL fields in the source report so the same
+    # website written with different trailing-slash / casing variants
+    # ends up in the same document.
+    canonical_source = dict(report or {})
+    for key in ("url", "target_url", "website"):
+        if key in canonical_source and isinstance(canonical_source[key], str):
+            canonical_source[key] = _canonicalize_url(canonical_source[key])
+    if isinstance(canonical_source.get("debug_data"), dict):
+        dd = dict(canonical_source["debug_data"])
+        for key in ("url", "target_url", "website"):
+            if key in dd and isinstance(dd[key], str):
+                dd[key] = _canonicalize_url(dd[key])
+        canonical_source["debug_data"] = dd
     payload = normalize_report_document(
-        report,
+        canonical_source,
         report_type=report_type,
         user_id=user_id,
         test_run_id=test_run_id,
@@ -91,7 +105,148 @@ def list_reports_for_user(
             or q in str(item.get("test_run_id", "")).lower()
         ]
 
+    reports = sorted(reports, key=_sort_key, reverse=True)
+
+    # Merge in bug reports derived from the user's bug_lifecycle records.
+    # Bug reports are not stored in the `reports` collection -- they are
+    # materialised on read so the Reports page can show them alongside
+    # the test reports without duplicating storage.
+    include_bugs = _should_include_bug_reports(report_type)
+    if include_bugs:
+        for bug_report in list_bug_reports_for_user(user_id, status=status):
+            if not _matches_query(bug_report, query):
+                continue
+            reports.append(bug_report)
+
     return sorted(reports, key=_sort_key, reverse=True)
+
+
+def _should_include_bug_reports(report_type: Optional[str]) -> bool:
+    """Decide whether the requested report_type filter should include bug reports."""
+    if not report_type or report_type.lower() == "all":
+        return True
+    return _normalize_report_type(report_type) == "legacy"
+
+
+def _matches_query(report: Dict[str, Any], query: Optional[str]) -> bool:
+    if not query:
+        return True
+    q = query.strip().lower()
+    if not q:
+        return True
+    return (
+        q in str(report.get("title", "")).lower()
+        or q in str(report.get("summary", "")).lower()
+        or q in str(report.get("website", "")).lower()
+        or q in str(report.get("report_type", "")).lower()
+        or q in str(report.get("test_run_id", "")).lower()
+    )
+
+
+# Mapping from bug_lifecycle canonical status values to the report
+# page's display vocabulary. "open" / "fail" -> "open", "resolved" /
+# "closed" -> "resolved", anything else -> "monitoring".
+_BUG_LIFECYCLE_STATUS_MAP = {
+    "active": "open",
+    "monitoring": "open",
+    "regressed": "open",
+    "flaky": "open",
+    "resolved": "resolved",
+    "closed": "resolved",
+}
+
+
+def list_bug_reports_for_user(
+    user_id: str,
+    *,
+    status: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Materialise the user's bug_lifecycle records as ReportLibraryItem-shaped bug reports.
+
+    The Reports page already understands a "bug report" entry -- it is
+    any record with ``related_bug_id`` set and no ``related_test_id``.
+    We project each ``bug_lifecycle`` record into that shape so the
+    page can render bug reports without needing a new collection or a
+    new endpoint.
+    """
+    try:
+        from backend.services.bug_lifecycle_service import list_bug_lifecycle
+    except Exception:
+        return []
+
+    if not user_id:
+        return []
+    lifecycle_records = list_bug_lifecycle(user_id=user_id) or []
+
+    status_filter = (status or "").strip().lower()
+    bug_reports: List[Dict[str, Any]] = []
+    for record in lifecycle_records:
+        if not isinstance(record, dict):
+            continue
+        lifecycle_status = str(record.get("status") or "").strip()
+        mapped_status = _BUG_LIFECYCLE_STATUS_MAP.get(lifecycle_status.lower(), "open")
+        if status_filter and status_filter != "all" and status_filter not in {lifecycle_status.lower(), mapped_status}:
+            continue
+
+        fingerprint = str(record.get("fingerprint") or "")
+        bug_id = str(record.get("bug_id") or (fingerprint[:16] if fingerprint else ""))
+        title = str(record.get("title") or record.get("description") or "Detected issue").strip() or "Detected issue"
+        summary = str(record.get("description") or record.get("evidence", {}).get("error") or "").strip()
+        if not summary:
+            summary = "Lifecycle-tracked bug detected during test execution."
+
+        website = _canonicalize_url(
+            record.get("website")
+            or (record.get("affected_urls") or [None])[0]
+            or ""
+        )
+
+        severity = str(record.get("severity") or "medium").strip().lower() or "medium"
+        first_seen = record.get("first_seen_run_id") or record.get("last_seen_run_id") or ""
+        generated_date = (
+            record.get("updated_at")
+            or record.get("created_at")
+            or ""
+        )
+        if hasattr(generated_date, "isoformat"):
+            generated_date = generated_date.isoformat()
+        generated_date = str(generated_date)
+
+        bug_reports.append({
+            "report_id": f"bug-{bug_id}" if bug_id else f"bug-{fingerprint[:16] or 'unknown'}",
+            "report_type": "legacy",
+            "report_label": "Bug Report",
+            "test_name": title[:120],
+            "website": website,
+            "generated_date": generated_date,
+            "status": mapped_status,
+            "score": None,
+            "related_test_id": first_seen or None,
+            "related_bug_id": bug_id or fingerprint or None,
+            "title": title[:200],
+            "summary": summary[:400],
+            "test_type": "bug",
+            "scenario_tree": None,
+            "risk_summary": {
+                "severity": severity,
+                "fingerprint": fingerprint,
+                "lifecycle_status": lifecycle_status,
+            },
+            "objective_coverage": None,
+            "bug_metadata": {
+                "severity": severity,
+                "fingerprint": fingerprint,
+                "lifecycle_status": lifecycle_status,
+                "occurrences": int(record.get("occurrences") or 0),
+                "regression_count": int(record.get("regression_count") or 0),
+                "first_seen_run_id": first_seen,
+                "last_seen_run_id": record.get("last_seen_run_id") or "",
+                "step_name": str(record.get("evidence", {}).get("step_name") or ""),
+                "failure_category": record.get("evidence", {}).get("failure_category"),
+                "root_cause": record.get("root_cause"),
+            },
+        })
+    return bug_reports
 
 
 def migrate_reports_from_test_runs(*, user_id: Optional[str] = None) -> Dict[str, int]:
@@ -176,11 +331,13 @@ def normalize_report_document(
     payload["generated_date"] = str(payload.get("generated_date") or created_at)
     payload["test_name"] = str(payload.get("test_name") or resolved_title).strip() or resolved_title
     payload["website"] = str(
-        payload.get("website")
-        or payload.get("url")
-        or payload.get("target_url")
-        or (payload.get("debug_data", {}) if isinstance(payload.get("debug_data"), dict) else {}).get("url")
-        or ""
+        _canonicalize_url(
+            payload.get("website")
+            or payload.get("url")
+            or payload.get("target_url")
+            or (payload.get("debug_data", {}) if isinstance(payload.get("debug_data"), dict) else {}).get("url")
+            or ""
+        )
     ).strip()
     payload["test_type"] = str(
         payload.get("test_type")

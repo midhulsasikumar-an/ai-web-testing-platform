@@ -1,9 +1,9 @@
-import hashlib
 import uuid
 from datetime import datetime
 from backend.database.mongo import bug_collection
 from backend.services.failure_classifier import classify_failure_category
 from backend.services.root_cause_classifier import classify_root_cause
+from backend.services.execution_truth_engine import BUG_EVENT_DETECTED, compute_bug_fingerprint
 
 
 GENERIC_FALLBACKS = [
@@ -150,17 +150,48 @@ def _collect_bug_screenshots(test_data: dict, result: dict) -> list[str]:
 
 
 def _compute_bug_fingerprint(test_data: dict, result: dict) -> str:
-    step = result.get("step") if isinstance(result.get("step"), dict) else result.get("original_step") if isinstance(result.get("original_step"), dict) else {}
-    test_id = str(test_data.get("test_id") or "")
-    user_id = str(test_data.get("user_id") or "")
-    failed_step_name = str(result.get("test") or result.get("failed_step_name") or step.get("action") or step.get("name") or "")
-    selector = str(result.get("selector_used") or step.get("selector") or step.get("target") or "")
-    target = str(step.get("target") or step.get("text") or step.get("url") or "")
-    error = str(result.get("error") or result.get("details") or "")[:500]
-    failure_category = str(result.get("failure_category") or "")
-    parts = [test_id, user_id, failed_step_name, selector, target, error, failure_category]
-    digest = "|".join(part.strip().lower() for part in parts)
-    return hashlib.sha256(digest.encode("utf-8")).hexdigest()
+    """Compute the canonical bug fingerprint for a legacy result record.
+
+    Delegates to
+    :func:`backend.services.execution_truth_engine.compute_bug_fingerprint`
+    so all fingerprint values in the system use the same format. The
+    previous SHA-256-based implementation produced a different string
+    and has been removed; this shim keeps the call site stable for
+    any historical caller that still passes raw ``test_data``/``result``
+    dicts.
+    """
+    step = (
+        result.get("step")
+        if isinstance(result.get("step"), dict)
+        else result.get("original_step")
+        if isinstance(result.get("original_step"), dict)
+        else {}
+    )
+    step_index = (
+        step.get("step_index")
+        or step.get("index")
+        or result.get("step_index")
+    )
+    step_name = str(
+        result.get("test")
+        or result.get("failed_step_name")
+        or step.get("action")
+        or step.get("name")
+        or ""
+    )
+    scenario_id = str(
+        result.get("scenario_id")
+        or result.get("objective_id")
+        or test_data.get("scenario_id")
+        or ""
+    )
+    objective_id = str(result.get("objective_id") or test_data.get("objective_id") or "")
+    return compute_bug_fingerprint(
+        scenario_id=scenario_id,
+        objective_id=objective_id,
+        step_index=step_index,
+        step_name=step_name,
+    )
 
 
 def _ensure_bug_indexes() -> None:
@@ -176,144 +207,90 @@ _ensure_bug_indexes()
 
 
 def create_bugs_from_test(test_data):
+    """Create bug records from the truth-engine ``bug_events`` only.
+
+    This function no longer scans ``test_data["results"]`` for
+    ``status == "fail"``. It only consumes the BUG_DETECTED events
+    produced by ``execution_truth_engine.evaluate_test_run`` which is
+    the single source of truth for what should be a bug. If a run did
+    not emit any BUG_DETECTED event, this function is a no-op.
+    """
     created_bugs = []
     now_iso = datetime.utcnow().isoformat()
+    bug_events = test_data.get("bug_events") or []
 
-    for result in test_data.get("results", []):
+    for event in bug_events:
+        if not isinstance(event, dict):
+            continue
+        if event.get("type") != BUG_EVENT_DETECTED:
+            continue
 
-        if result.get("status") == "fail":
+        fingerprint = str(event.get("fingerprint") or "").strip()
+        if not fingerprint:
+            continue
 
-            bug_name = derive_bug_name(result)
-            validation = result.get("validation") if isinstance(result.get("validation"), dict) else {}
-            failure_category = str(result.get("failure_category") or "").strip().upper() or classify_failure_category(
-                error_text=result.get("error") or result.get("details") or "",
-                console_errors=validation.get("console_errors"),
-                network_failures=validation.get("network_failures"),
-                step_text=str(result.get("test") or ""),
-                selector=str(result.get("selector_used") or ""),
-                target=str(result.get("step", {}).get("target") if isinstance(result.get("step"), dict) else ""),
-                test_name=str(test_data.get("test_name") or test_data.get("project") or ""),
-                validation=validation,
-            )
-            root_cause = str(result.get("root_cause") or "").strip().upper()
-            root_cause_confidence = result.get("root_cause_confidence")
-            recovery_actions = result.get("recovery_actions") if isinstance(result.get("recovery_actions"), list) else []
-            recovery_attempted = bool(result.get("recovery_attempted")) or bool(recovery_actions)
-            recovery_success = bool(result.get("recovery_success"))
-            recovery_type = str(result.get("recovery_type") or "").strip()
-            original_step = result.get("original_step") if isinstance(result.get("original_step"), dict) else result.get("step") if isinstance(result.get("step"), dict) else None
-            replan_history = result.get("replan_attempts") if isinstance(result.get("replan_attempts"), list) else []
-            screenshots = _collect_bug_screenshots(test_data, result)
-            if root_cause not in {"SELECTOR_CHANGED", "ELEMENT_NOT_VISIBLE", "ELEMENT_NOT_FOUND", "NAVIGATION_REDIRECT", "NETWORK_FAILURE", "API_FAILURE", "AUTHENTICATION_FAILURE", "TIMEOUT", "PAGE_CRASH", "JAVASCRIPT_ERROR", "UNKNOWN"}:
-                root_cause_result = classify_root_cause(
-                    action=str(result.get("test") or ""),
-                    category=failure_category,
-                    error=result.get("error") or result.get("details") or "",
-                    console_errors=validation.get("console_errors"),
-                    network_failures=validation.get("network_failures"),
-                    selector_used=str(result.get("selector_used") or ""),
-                    validation=validation,
+        failure_category = str(event.get("failure_category") or "").strip().upper()
+        root_cause = str(event.get("root_cause") or "").strip().upper() or None
+        severity = str(event.get("severity") or "medium").lower()
+        step_name = str(event.get("step_name") or "").strip()
+        step_index = event.get("step_index")
+        error_text = str(event.get("error") or "").strip()
+        bug_name = _shorten(step_name or "General Issue", 50)
+        bug_description = error_text or "Step execution failure detected by truth engine."
+
+        existing = bug_collection.find_one({"fingerprint": fingerprint})
+        if existing:
+            if not existing.get("bug_id"):
+                bug_collection.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": {"bug_id": str(uuid.uuid4())}},
                 )
-                root_cause = str(root_cause_result["root_cause"]).upper()
-                root_cause_confidence = root_cause_result["confidence"]
-            validation_notes = _format_validation_notes(validation)
-            bug_description = str(result.get("details", "No details provided") or "No details provided").strip()
-            if validation_notes:
-                bug_description = f"{bug_description}\n{validation_notes}".strip()
-            if recovery_attempted:
-                recovery_note = f"Recovery attempted: {recovery_type or 'unspecified'}"
-                if recovery_success:
-                    recovery_note += " (successful)"
-                if recovery_actions:
-                    recovery_note += f" via {len(recovery_actions)} attempt(s)"
-                bug_description = f"{bug_description}\n{recovery_note}".strip()
+            bug = dict(existing)
+            bug.pop("_id", None)
+            created_bugs.append(bug)
+            continue
 
-            fingerprint = _compute_bug_fingerprint(test_data, result)
-            existing = bug_collection.find_one({"fingerprint": fingerprint})
-
-            if existing:
-                if not existing.get("bug_id"):
-                    bug_collection.update_one(
-                        {"_id": existing["_id"]},
-                        {"$set": {"bug_id": str(uuid.uuid4())}},
-                    )
-                bug = dict(existing)
-                bug.pop("_id", None)
-                created_bugs.append(bug)
-                continue
-
-            bug = {
-                "bug_id": str(uuid.uuid4()),
-
-                "fingerprint": fingerprint,
-
-                "test_id": test_data["test_id"],
-
-                "execution_id": test_data.get("execution_id") or test_data["test_id"],
-
-                "user_id": test_data["user_id"],
-
-                "issue_type": str(result.get("issue_type") or "").strip(),
-
-                "failed_step_name": str(result.get("test") or "").strip(),
-
-                "bug_name": bug_name,
-
-                "title": bug_name,
-
-                "bug_description": bug_description,
-
-                "description": bug_description,
-
-                "test_name": test_data.get("test_name") or test_data.get("project") or "",
-
-                "severity": "medium",
-
-                "status": "open",
-
+        bug = {
+            "bug_id": str(uuid.uuid4()),
+            "fingerprint": fingerprint,
+            "test_id": test_data["test_id"],
+            "execution_id": test_data.get("execution_id") or test_data["test_id"],
+            "user_id": test_data["user_id"],
+            "issue_type": "",
+            "failed_step_name": step_name,
+            "bug_name": bug_name,
+            "title": bug_name,
+            "bug_description": bug_description,
+            "description": bug_description,
+            "test_name": test_data.get("test_name") or test_data.get("project") or "",
+            "severity": severity,
+            "status": "open",
+            "failure_category": failure_category,
+            "root_cause": root_cause,
+            "step_index": step_index,
+            "evidence": {
                 "failure_category": failure_category,
                 "root_cause": root_cause,
-                "root_cause_confidence": root_cause_confidence,
-                "recovery_attempted": recovery_attempted,
-                "recovery_type": recovery_type or None,
-                "recovery_success": recovery_success,
-                "recovery_actions": recovery_actions,
-                "original_step": original_step,
-                "replan_attempts": replan_history,
-                "screenshots": screenshots,
+                "step_index": step_index,
+                "step_name": step_name,
+                "error": error_text,
+                "screenshots": _collect_bug_screenshots(test_data, {}),
+            },
+            "url": test_data.get("url") or "",
+            "created_at": now_iso,
+            "updated_at": now_iso,
+            "occurrences": 1,
+        }
 
-                "url": test_data["url"],
+        try:
+            bug_collection.insert_one(bug)
+        except Exception:
+            existing = bug_collection.find_one({"fingerprint": fingerprint})
+            if existing:
+                bug.pop("_id", None)
+                bug = dict(existing)
+                bug.pop("_id", None)
 
-                "evidence": {
-                    "validation": validation,
-                    "failure_category": failure_category,
-                    "root_cause": root_cause,
-                    "root_cause_confidence": root_cause_confidence,
-                    "recovery_attempted": recovery_attempted,
-                    "recovery_type": recovery_type or None,
-                    "recovery_success": recovery_success,
-                    "recovery_actions": recovery_actions,
-                    "original_step": original_step,
-                    "replan_attempts": replan_history,
-                    "screenshots": screenshots,
-                    "console_errors": list(validation.get("console_errors", [])) if isinstance(validation, dict) else [],
-                    "network_failures": list(validation.get("network_failures", [])) if isinstance(validation, dict) else [],
-                },
-
-                "created_at": now_iso,
-                "updated_at": now_iso,
-                "occurrences": 1,
-            }
-
-            try:
-                bug_collection.insert_one(bug)
-            except Exception:
-                existing = bug_collection.find_one({"fingerprint": fingerprint})
-                if existing:
-                    bug.pop("_id", None)
-                    bug = dict(existing)
-                    bug.pop("_id", None)
-
-            created_bugs.append(bug)
+        created_bugs.append(bug)
 
     return created_bugs

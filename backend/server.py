@@ -484,6 +484,33 @@ def update_bug_status(bug_id: str, payload: dict, current_user: dict = Depends(g
         {"_id": existing["_id"]},
         {"$set": {"status": new_status, "updated_at": now_iso, "resolved_at": now_iso if new_status == "resolved" else None}},
     )
+
+    # Mirror manual status changes into the bug_lifecycle collection so that
+    # lifecycle stays the canonical source of truth. The reconciliation layer
+    # that runs after a passing test run also writes here, so keeping this
+    # path in sync prevents the two collections from diverging.
+    try:
+        from backend.services.bug_lifecycle_service import BUG_LIFECYCLE_COLLECTION
+        fingerprint = str(existing.get("fingerprint") or "")
+        if fingerprint:
+            lifecycle_status = "Resolved" if new_status in {"resolved", "closed"} else (
+                "Active" if new_status in {"open", "in-progress"} else "Monitoring"
+            )
+            BUG_LIFECYCLE_COLLECTION.update_one(
+                {"fingerprint": fingerprint},
+                {
+                    "$set": {
+                        "status": lifecycle_status,
+                        "updated_at": now_iso,
+                        "evidence.manual_status_change": True,
+                        "evidence.manual_bug_status": new_status,
+                    }
+                },
+            )
+    except Exception:
+        # Lifecycle sync is best-effort; do not block the response if it fails.
+        pass
+
     updated = bug_collection.find_one({"_id": existing["_id"]})
     return normalize_bug_record(updated or existing)
 

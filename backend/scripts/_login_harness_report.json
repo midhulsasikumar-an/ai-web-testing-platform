@@ -1,0 +1,36 @@
+{
+  "run_status": "completed",
+  "total_steps": 4,
+  "results_count": 4,
+  "completed_tasks": 4,
+  "failed_tasks": 0,
+  "skipped_tasks": 0,
+  "final_url": "https://www.saucedemo.com/inventory.html",
+  "elapsed_seconds": 25.19,
+  "step_statuses": [
+    {
+      "action": "input",
+      "target": "username input",
+      "status": "passed",
+      "error": ""
+    },
+    {
+      "action": "input",
+      "target": "password input",
+      "status": "passed",
+      "error": ""
+    },
+    {
+      "action": "click",
+      "target": "login button",
+      "status": "passed",
+      "error": ""
+    },
+    {
+      "action": "verify",
+      "target": "inventory page",
+      "status": "passed",
+      "error": ""
+    }
+  ]
+}

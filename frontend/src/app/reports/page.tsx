@@ -28,6 +28,30 @@ function statusDot(status: string | undefined): string {
   return "bg-emerald-500";
 }
 
+function severityBadgeTone(severity: string | undefined): string {
+  const normalized = String(severity || "").toLowerCase();
+  if (normalized === "critical") return "border-red-300 bg-red-100 text-red-800";
+  if (normalized === "high") return "border-orange-300 bg-orange-100 text-orange-800";
+  if (normalized === "medium") return "border-amber-300 bg-amber-100 text-amber-800";
+  if (normalized === "low") return "border-slate-300 bg-slate-100 text-slate-700";
+  return "border-slate-300 bg-slate-100 text-slate-700";
+}
+
+function formatRelative(value: string | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const diffMs = Date.now() - date.getTime();
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  if (diffMs < minute) return "just now";
+  if (diffMs < hour) return `${Math.floor(diffMs / minute)}m ago`;
+  if (diffMs < day) return `${Math.floor(diffMs / hour)}h ago`;
+  if (diffMs < 7 * day) return `${Math.floor(diffMs / day)}d ago`;
+  return date.toLocaleDateString();
+}
+
 function reportTag(reportType: string) {
   if (reportType === "ai") return "AI";
   if (reportType === "multi_agent") return "MULTI";
@@ -39,7 +63,13 @@ function getReportTypeLabel(report: ReportLibraryItem): string {
 }
 
 function isBugReport(report: ReportLibraryItem): boolean {
-  return Boolean(report.related_bug_id) && !report.related_test_id;
+  // A "bug report" is any report whose ``related_bug_id`` is set.
+  // The original rule also required ``!related_test_id`` but the bug
+  // reports we materialise from bug_lifecycle do carry a
+  // ``related_test_id`` (the run that first detected the bug), so we
+  // key solely off the bug id. This keeps the bug-report filter
+  // working regardless of whether the source record has a test link.
+  return Boolean(report.related_bug_id);
 }
 
 function downloadBlob(blob: Blob, filename: string): void {
@@ -237,6 +267,8 @@ export default function ReportsPage() {
             <div className="divide-y divide-slate-100">
               {filteredReports.map((report) => {
                 const bugReport = isBugReport(report);
+                const bugMeta = report.bug_metadata;
+                const severityTone = bugMeta ? severityBadgeTone(bugMeta.severity) : null;
                 return (
                   <div
                     key={report.report_id}
@@ -254,32 +286,51 @@ export default function ReportsPage() {
                           {truncateText(report.test_name, 60)}
                         </p>
                         <p className="truncate text-[11.5px] text-slate-500">
-                          {report.report_label || getReportTypeLabel(report)}
+                          {bugReport
+                            ? "Bug Report" + (bugMeta?.step_name ? ` \u00b7 ${bugMeta.step_name}` : "")
+                            : report.report_label || getReportTypeLabel(report)}
                         </p>
                       </div>
                     </div>
 
                     <div className="col-span-6 hidden items-center gap-1.5 md:col-span-2 md:flex">
-                      <span className={cn(
-                        "rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
-                        bugReport
-                          ? "border-red-200 bg-red-50 text-red-700"
-                          : "border-blue-200 bg-blue-50 text-blue-700"
-                      )}>
-                        {bugReport ? "BUG" : "TEST"}
-                      </span>
+                      {bugReport && bugMeta ? (
+                        <span className={cn(
+                          "rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                          severityTone
+                        )}>
+                          {bugMeta.severity}
+                        </span>
+                      ) : (
+                        <span className={cn(
+                          "rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
+                          bugReport
+                            ? "border-red-200 bg-red-50 text-red-700"
+                            : "border-blue-200 bg-blue-50 text-blue-700"
+                        )}>
+                          {bugReport ? "BUG" : "TEST"}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="col-span-6 hidden items-center gap-1.5 md:col-span-2 md:flex">
-                      <span className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
-                        {getReportTypeLabel(report)}
-                      </span>
-                      <span className="truncate text-[11.5px] text-slate-500">{report.test_type || "full"}</span>
+                    <div className="col-span-6 hidden items-center gap-1.5 truncate md:col-span-2 md:flex">
+                      {bugReport ? (
+                        <span className="truncate text-[11.5px] text-slate-500">
+                          Detected {formatRelative(report.generated_date)}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                            {getReportTypeLabel(report)}
+                          </span>
+                          <span className="truncate text-[11.5px] text-slate-500">{report.test_type || "full"}</span>
+                        </>
+                      )}
                     </div>
 
                     <div className="col-span-6 hidden items-center gap-1.5 truncate md:col-span-2 md:flex">
                       <Globe className="h-3 w-3 text-slate-400 shrink-0" />
-                      <span className="truncate text-[12px] text-slate-700">{report.website}</span>
+                      <span className="truncate text-[12px] text-slate-700">{report.website || "\u2014"}</span>
                     </div>
 
                     <div className="col-span-6 hidden items-center gap-1.5 md:col-span-1 md:flex">
@@ -288,22 +339,38 @@ export default function ReportsPage() {
                     </div>
 
                     <div className="col-span-12 flex items-center justify-end gap-1.5 md:col-span-1">
-                      <Link
-                        href={`/reports/${report.report_id}`}
-                        className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11.5px] font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        Open
-                      </Link>
-                      <button
-                        type="button"
-                        className="inline-flex h-7 items-center gap-1 rounded-md bg-slate-900 px-2 text-[11.5px] font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
-                        onClick={() => handleDownload(report)}
-                        disabled={downloadingReportId === report.report_id}
-                      >
-                        <Download className="h-3 w-3" />
-                        {downloadingReportId === report.report_id ? "…" : "PDF"}
-                      </button>
+                      {bugReport ? (
+                        report.related_test_id ? (
+                          <Link
+                            href={`/test-history/${encodeURIComponent(report.related_test_id)}`}
+                            className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11.5px] font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Linked test
+                          </Link>
+                        ) : (
+                          <span className="text-[11.5px] text-slate-400">No test link</span>
+                        )
+                      ) : (
+                        <>
+                          <Link
+                            href={`/reports/${report.report_id}`}
+                            className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11.5px] font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Open
+                          </Link>
+                          <button
+                            type="button"
+                            className="inline-flex h-7 items-center gap-1 rounded-md bg-slate-900 px-2 text-[11.5px] font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
+                            onClick={() => handleDownload(report)}
+                            disabled={downloadingReportId === report.report_id}
+                          >
+                            <Download className="h-3 w-3" />
+                            {downloadingReportId === report.report_id ? "\u2026" : "PDF"}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );

@@ -64,3 +64,64 @@ export function truncateText(text: string, limit: number): string {
   }
   return `${text.slice(0, Math.max(0, limit - 3)).trimEnd()}...`;
 }
+
+const TRACKING_PARAM_PREFIXES = ["utm_"];
+const TRACKING_PARAM_NAMES = new Set([
+  "fbclid",
+  "gclid",
+  "msclkid",
+  "mc_cid",
+  "mc_eid",
+  "igshid",
+  "yclid",
+  "ref",
+  "ref_src",
+]);
+
+/**
+ * Lightweight URL canonicalizer used for grouping on the frontend.
+ *
+ * The backend already canonicalises URLs at write time, but historical
+ * records may still contain non-canonical forms (e.g. trailing slash,
+ * mixed case, tracking parameters). This mirrors the backend rules
+ * so that the same URL is always grouped together regardless of which
+ * form was used to start the test.
+ */
+export function canonicalizeUrl(rawUrl?: string | null): string {
+  const value = String(rawUrl ?? "").trim();
+  if (!value) {
+    return "";
+  }
+
+  let working = value;
+  if (!/^https?:\/\//i.test(working)) {
+    working = `https://${working}`;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(working);
+  } catch {
+    return value;
+  }
+
+  const scheme = (url.protocol || "https:").toLowerCase();
+  const host = (url.hostname || "").toLowerCase();
+  const defaultPort = scheme === "http:" ? "80" : "443";
+  const port =
+    url.port && url.port !== defaultPort ? `:${url.port}` : "";
+  const path = url.pathname.replace(/\/+$/, "") || "/";
+
+  const pairs: string[] = [];
+  url.searchParams.forEach((paramValue, key) => {
+    const lowered = key.toLowerCase();
+    if (TRACKING_PARAM_NAMES.has(lowered)) return;
+    if (TRACKING_PARAM_PREFIXES.some((prefix) => lowered.startsWith(prefix))) return;
+    pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(paramValue)}`);
+  });
+  pairs.sort();
+  const search = pairs.length ? `?${pairs.join("&")}` : "";
+
+  return `${scheme}//${host}${port}${path}${search}`;
+}
+

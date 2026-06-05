@@ -231,6 +231,7 @@ async def enforce_terminal_write(
     save_report_fn: Optional[Callable[[], Awaitable[None]]] = None,
     create_bugs_fn: Optional[Callable[[], Awaitable[None]]] = None,
     close_browser_fn: Optional[Callable[[], Awaitable[None]]] = None,
+    reconcile_bugs_fn: Optional[Callable[[], Awaitable[None]]] = None,
 ) -> Dict[str, Any]:
     """Atomically enforce that a run is written to its terminal state.
 
@@ -239,8 +240,12 @@ async def enforce_terminal_write(
       1. Unconditional terminal write (no status guard) of the final payload.
          This is the authoritative "source of truth" write.
       2. Create bugs (best effort, failures are logged but never raise).
-      3. Save report (best effort, failures are logged but never raise).
-      4. Close browser (best effort).
+      3. Reconcile bugs (best effort, transitions matching open lifecycle
+         records to ``Resolved`` if the current run no longer reproduces
+         the failure). Runs after create_bugs_fn so newly-inserted bugs
+         are not immediately re-resolved.
+      4. Save report (best effort, failures are logged but never raise).
+      5. Close browser (best effort).
 
     Returns the final payload that was written to the database.
     """
@@ -280,14 +285,22 @@ async def enforce_terminal_write(
         except Exception:
             logger.exception("enforce_terminal_write: create_bugs_fn failed for test_id=%s", test_id)
 
-    # Step 3: report (best effort)
+    # Step 3: reconcile bugs to Resolved if the current run no longer
+    # reproduces the failure (best effort).
+    if reconcile_bugs_fn is not None:
+        try:
+            await reconcile_bugs_fn()
+        except Exception:
+            logger.exception("enforce_terminal_write: reconcile_bugs_fn failed for test_id=%s", test_id)
+
+    # Step 4: report (best effort)
     if save_report_fn is not None:
         try:
             await save_report_fn()
         except Exception:
             logger.exception("enforce_terminal_write: save_report_fn failed for test_id=%s", test_id)
 
-    # Step 4: close browser (best effort)
+    # Step 5: close browser (best effort)
     if close_browser_fn is not None:
         try:
             await close_browser_fn()

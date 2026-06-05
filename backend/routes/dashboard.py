@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 
@@ -8,6 +9,55 @@ from backend.services.auth import get_current_user
 
 
 router = APIRouter()
+
+
+# Sentinel value used as the sort key for any test_run record whose
+# created_at is missing or unparseable. Picking an explicit value (rather
+# than the empty string the old code used) means a record with a missing
+# timestamp always sorts to the BOTTOM of "latest" lists, never the top.
+_OLDEST_KNOWN_TIMESTAMP = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
+def _parse_created_at(value) -> datetime:
+    """Parse a created_at value (str / datetime / None) into an aware datetime.
+
+    Returns the sentinel _OLDEST_KNOWN_TIMESTAMP when the value is missing or
+    unparseable so the record always sorts to the bottom of a latest-first
+    ordering. The previous string-sort implementation put empty strings at
+    the END of the list (i.e. appearing "latest"), which is the opposite of
+    the desired behavior.
+    """
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
+    if not value:
+        return _OLDEST_KNOWN_TIMESTAMP
+    text = str(value).strip()
+    if not text:
+        return _OLDEST_KNOWN_TIMESTAMP
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return _OLDEST_KNOWN_TIMESTAMP
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _recent_tests_sort_key(test: dict) -> tuple:
+    """Sort key: (created_at DESC, test_id DESC).
+
+    We use a tuple so the second key (test_id) provides a deterministic
+    tie-breaker for runs that share a created_at string. Sorting on raw
+    ISO strings already produces correct chronological order for well-formed
+    input, but the test_id tie-breaker keeps order stable across calls and
+    across any caching layers that snapshot the result.
+    """
+    created_at = _parse_created_at(test.get("created_at"))
+    test_id = str(test.get("test_id") or test.get("_id") or "")
+    # Negate via reverse=True at the call site, so we just return ascending values.
+    return (created_at, test_id)
 
 
 def _derive_risk_level(total_tests: int, failed: int, average_health: int, open_bugs: int) -> str:
@@ -139,8 +189,8 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
     sorted_tests = sorted(
         tests,
-        key=lambda x: str(x.get("created_at", "")),
-        reverse=True
+        key=_recent_tests_sort_key,
+        reverse=True,
     )
 
     for test in sorted_tests[:5]:

@@ -3,9 +3,17 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import type { AIPlanResponse, TestApiResponse } from "@/services/test-api";
 import { generateTestPlan } from "@/services/test-api";
-import { Bot, ChevronRight, Loader2, RefreshCw, Send, Sparkles, Trash2 } from "lucide-react";
+import { Bot, ChevronRight, Loader2, RefreshCw, Send, Sparkles, Trash2, BookOpen, LogIn, Search, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/run-test-store";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AIChatPanelProps {
   open: boolean;
@@ -234,16 +242,19 @@ export default function AIChatPanel({
           <h2 className="text-h3">AI Copilot</h2>
           <p className="truncate text-muted-sm">{currentContext}</p>
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium",
-            executionState === "running" || executionState === "queued" || executionState === "planning"
-              ? "border-blue-200 bg-blue-50 text-blue-700"
-              : "border-slate-200 bg-slate-50 text-slate-600"
-          )}
-        >
-          {executionState}
-        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <ExampleFormatDialog />
+          <span
+            className={cn(
+              "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+              executionState === "running" || executionState === "queued" || executionState === "planning"
+                ? "border-blue-200 bg-blue-50 text-blue-700"
+                : "border-slate-200 bg-slate-50 text-slate-600"
+            )}
+          >
+            {executionState}
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-50/40 px-3.5 py-1.5">
@@ -339,3 +350,163 @@ export default function AIChatPanel({
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Example Format dialog (documentation only)
+//
+// Shows three generic, reusable test workflow examples inside the AI Copilot
+// header. This is documentation, not an input mechanism. The popover NEVER
+// touches the chat input, never calls onInputChange, and never modifies
+// the user's text -- it just displays reference material.
+// ---------------------------------------------------------------------------
+
+interface ExampleWorkflow {
+  id: "login" | "search" | "form";
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  website: string;
+  objective: string;
+  credentials?: { username: string; password: string };
+  steps: string[];
+  expectedResult: string;
+}
+
+const EXAMPLE_WORKFLOWS: ExampleWorkflow[] = [
+  {
+    id: "login",
+    title: "Login workflow",
+    icon: LogIn,
+    website: "https://www.abc.xyz/login",
+    objective: "Sign in with valid credentials and reach the authenticated landing page.",
+    credentials: { username: "demo_user", password: "Demo!Pass123" },
+    steps: [
+      "Open the login page.",
+      "Type the username into the username field.",
+      "Type the password into the password field.",
+      "Click the Sign In button.",
+      "Wait for the dashboard to finish loading.",
+    ],
+    expectedResult: "The user is redirected to the dashboard at /home with the profile menu visible in the top-right corner.",
+  },
+  {
+    id: "search",
+    title: "Search workflow",
+    icon: Search,
+    website: "https://www.abc.xyz/search",
+    objective: "Submit a search query and confirm relevant results render in the results list.",
+    steps: [
+      "Open the search page.",
+      "Type the query into the search input.",
+      "Press the Search button (or hit Enter).",
+      "Wait for the result list to render.",
+    ],
+    expectedResult: "At least one result card is visible and each card shows a title, snippet, and link.",
+  },
+  {
+    id: "form",
+    title: "Form submission workflow",
+    icon: FileText,
+    website: "https://www.abc.xyz/contact",
+    objective: "Fill the contact form with valid data and verify the success confirmation appears.",
+    steps: [
+      "Open the contact form page.",
+      "Type a name into the Full Name field.",
+      "Type a valid email into the Email field.",
+      "Type a short message into the Message field.",
+      "Click the Submit button.",
+      "Wait for the confirmation banner to appear.",
+    ],
+    expectedResult: "A success banner is shown with the text 'Thanks, we received your message' and the form is reset.",
+  },
+];
+
+function ExampleFormatDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={
+          <button
+            type="button"
+            aria-label="View example workflow formats"
+            className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
+          >
+            <BookOpen className="h-3 w-3" />
+            Example Format
+          </button>
+        }
+      />
+      <DialogContent
+        showCloseButton
+        className="sm:max-w-2xl max-h-[85vh] overflow-y-auto"
+      >
+        <DialogHeader>
+          <DialogTitle>Example Workflow Format</DialogTitle>
+          <DialogDescription>
+            Three reusable structures for the AI Copilot. These are reference
+            examples only -- nothing here fills the chat input. Type your own
+            instruction based on the shape that fits your goal.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          {EXAMPLE_WORKFLOWS.map((workflow) => {
+            const Icon = workflow.icon;
+            return (
+              <article
+                key={workflow.id}
+                className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-xs-token"
+              >
+                <header className="mb-2 flex items-center gap-1.5">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+                    <Icon className="h-3 w-3" />
+                  </span>
+                  <h3 className="text-[12.5px] font-semibold text-slate-900">
+                    {workflow.title}
+                  </h3>
+                </header>
+
+                <dl className="space-y-1.5 text-[12px] leading-relaxed">
+                  <DefinitionRow label="Website">
+                    <code className="rounded bg-slate-50 px-1 py-0.5 font-mono text-[11.5px] text-slate-700">
+                      {workflow.website}
+                    </code>
+                  </DefinitionRow>
+                  <DefinitionRow label="Objective">
+                    {workflow.objective}
+                  </DefinitionRow>
+                  {workflow.credentials ? (
+                    <DefinitionRow label="Credentials">
+                      <span className="font-mono text-[11.5px] text-slate-700">
+                        {workflow.credentials.username} / {workflow.credentials.password}
+                      </span>
+                    </DefinitionRow>
+                  ) : null}
+                  <DefinitionRow label="Steps">
+                    <ol className="list-decimal space-y-0.5 pl-4 text-slate-700">
+                      {workflow.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </DefinitionRow>
+                  <DefinitionRow label="Expected Result">
+                    {workflow.expectedResult}
+                  </DefinitionRow>
+                </dl>
+              </article>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DefinitionRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-2">
+      <dt className="text-eyebrow text-slate-500">{label}</dt>
+      <dd className="min-w-0 text-slate-800">{children}</dd>
+    </div>
+  );
+}
+

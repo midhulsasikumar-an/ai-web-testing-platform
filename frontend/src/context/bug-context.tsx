@@ -5,6 +5,7 @@ import type { Bug, DashboardStats, AIFinding } from "@/types";
 import { getAllTests } from "@/services/test-api";
 import type { TestApiResponse } from "@/services/test-api";
 import { getAllBugs, type BugApiResponse } from "@/services/bugs-api";
+import { ApiHttpError, getStoredAuthToken } from "@/services/http";
 import { truncateText } from "@/lib/test-display";
 import { useAuth } from "@/context/auth-context";
 
@@ -27,7 +28,7 @@ const BugContext = createContext<BugContextType | undefined>(undefined);
 // ── Provider ───────────────────────────────────────────────────────
 
 export function BugProvider({ children }: { children: React.ReactNode }) {
-  const { isReady } = useAuth();
+  const { isReady, isAuthenticated } = useAuth();
   const [backendBugs, setBackendBugs] = useState<Bug[]>([]);
   const [testResults, setTestResults] = useState<TestApiResponse[]>([]);
   const [aiFindings] = useState<AIFinding[]>([]);
@@ -106,7 +107,21 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
   }, [mapBugSeverity, mapBugStatus]);
 
   useEffect(() => {
-    if (!isReady) {
+    // Only fetch when the auth context is ready AND the user is
+    // authenticated. Without the second guard we issue unauthenticated
+    // GET /api/tests and GET /api/bugs requests during the brief window
+    // when isReady is true but isAuthenticated is still false (no token
+    // in localStorage, or the token has just been cleared). Both routes
+    // require Depends(get_current_user) and respond with 401, polluting
+    // the console and racing AppGuard's redirect to /login.
+    if (!isReady || !isAuthenticated) {
+      return;
+    }
+
+    // Defensive guard: if a token-clear event fires between the
+    // isAuthenticated check and the actual fetch, skip the call
+    // rather than firing a request we know will 401.
+    if (!getStoredAuthToken()) {
       return;
     }
 
@@ -124,6 +139,14 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
           setBackendBugs(bugs.map(toBug));
         }
       } catch (error) {
+        // 401 is handled end-to-end: the http wrapper clears the token
+        // and dispatches "auth-token-cleared", the auth context picks
+        // that up and sets isAuthenticated=false, and AppGuard then
+        // redirects to /login. We deliberately swallow the error here
+        // so we don't double-log it.
+        if (error instanceof ApiHttpError && error.status === 401) {
+          return;
+        }
         console.error("Failed to load tests/bugs:", error);
       }
     }
@@ -133,13 +156,16 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [isReady]);
+  }, [isReady, isAuthenticated, toBug]);
 
   const visibleTestResults = useMemo(
-    () => (isReady ? testResults : []),
-    [isReady, testResults]
+    () => (isReady && isAuthenticated ? testResults : []),
+    [isReady, isAuthenticated, testResults]
   );
-  const bugs = useMemo(() => (isReady ? backendBugs : []), [isReady, backendBugs]);
+  const bugs = useMemo(
+    () => (isReady && isAuthenticated ? backendBugs : []),
+    [isReady, isAuthenticated, backendBugs]
+  );
 
   const addBug = useCallback((bug: Bug) => {
     setBackendBugs((prev) => [bug, ...prev]);

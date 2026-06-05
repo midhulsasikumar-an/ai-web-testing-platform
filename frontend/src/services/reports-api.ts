@@ -16,6 +16,20 @@ export interface ReportLibraryItem {
   scenario_tree?: Record<string, unknown> | null;
   risk_summary?: Record<string, unknown> | null;
   objective_coverage?: Record<string, unknown>[] | null;
+  bug_metadata?: BugReportMetadata | null;
+}
+
+export interface BugReportMetadata {
+  severity: "low" | "medium" | "high" | "critical";
+  fingerprint: string;
+  lifecycle_status: string;
+  occurrences: number;
+  regression_count: number;
+  first_seen_run_id?: string | null;
+  last_seen_run_id?: string | null;
+  step_name?: string | null;
+  failure_category?: string | null;
+  root_cause?: string | null;
 }
 
 export interface ReportLibraryResponse {

@@ -271,6 +271,291 @@ def _coverage_for_instruction(instruction: str) -> str:
     return "standard"
 
 
+_WORKFLOW_RISK_KEYWORDS = (
+    "comprehensive", "exhaustive", "risk based", "risk-based",
+    "edge case", "edge cases", "negative scenario", "negative scenarios",
+    "validation scenario", "validation scenarios", "security testing",
+    "robustness", "full testing", "all scenarios", "all features",
+    "complete coverage", "thorough testing", "sql injection", "xss",
+    "boundary", "locked account", "session handling", "logout validation",
+)
+
+_CHECKOUT_INSTRUCTION_TOKENS = (
+    "checkout", "purchase", "payment", "order", "transaction",
+)
+
+_WORKFLOW_POSITIVE_CATEGORIES = {
+    "AUTHENTICATION": "valid_input",
+    "INVENTORY": "cart_progression",
+    "CART": "cart_load",
+    "CHECKOUT": "complete_workflow",
+    "SEARCH": "valid_searches",
+    "NAVIGATION": "menu_consistency",
+    "FORMS": "valid_input",
+    "TABLES": "pagination",
+    "SETTINGS": "valid_input",
+    "PAYMENT": "complete_workflow",
+    "UPLOADS": "valid_input",
+    "PERMISSIONS": "valid_input",
+    "APIS": "valid_input",
+    "DATA_MODIFICATION": "complete_workflow",
+}
+
+
+def _is_workflow_instruction(instruction: str) -> bool:
+    normalized = _normalize_text(instruction)
+    return not any(kw in normalized for kw in _WORKFLOW_RISK_KEYWORDS)
+
+
+def _expand_workflow_scenarios(
+    url: str,
+    instruction: str,
+    dom: Dict[str, Any],
+    discovery: Dict[str, Any],
+) -> Optional[Dict[str, Any]]:
+    normalized = _normalize_text(instruction)
+
+    detected_features: List[str] = []
+    seen_features: set[str] = set()
+    for feature_type, aliases in FEATURE_ALIASES.items():
+        if feature_type == "GENERIC":
+            continue
+        if any(re.search(r'\b' + re.escape(alias) + r'\b', normalized) for alias in aliases):
+            if feature_type not in seen_features:
+                detected_features.append(feature_type)
+                seen_features.add(feature_type)
+
+    if not detected_features:
+        return None
+
+    has_checkout_intent = any(
+        token in normalized for token in _CHECKOUT_INSTRUCTION_TOKENS
+    )
+    if "CHECKOUT" in detected_features and not has_checkout_intent:
+        detected_features.remove("CHECKOUT")
+
+    if "INVENTORY" in detected_features and "CART" in detected_features:
+        detected_features.remove("CART")
+
+    feature_order = {
+        "AUTHENTICATION": 0, "INVENTORY": 1, "CART": 2, "CHECKOUT": 3,
+        "PAYMENT": 4, "SEARCH": 5, "NAVIGATION": 6, "FORMS": 7,
+        "TABLES": 8, "SETTINGS": 9, "UPLOADS": 10, "PERMISSIONS": 11,
+        "APIS": 12, "DATA_MODIFICATION": 13,
+    }
+    detected_features.sort(key=lambda ft: feature_order.get(ft, 99))
+
+    all_steps: List[Dict[str, Any]] = []
+    seen_step_keys: set[tuple[str, str]] = set()
+
+    for feature_type in detected_features:
+        objective_name = _title(feature_type)
+        positive_category = _WORKFLOW_POSITIVE_CATEGORIES.get(feature_type, "valid_input")
+
+        catalog_items = SCENARIO_CATALOG.get(feature_type, [])
+        catalog_match = None
+        for item in catalog_items:
+            if item["category"] == positive_category:
+                catalog_match = item
+                break
+        if catalog_match is None and catalog_items:
+            catalog_match = catalog_items[0]
+        if catalog_match is None:
+            continue
+
+        feature = {
+            "feature_type": feature_type,
+            "feature_key": feature_type,
+            "feature_name": objective_name,
+            "evidence": ["instruction"],
+            "sources": ["instruction"],
+        }
+
+        metadata = {
+            "feature_type": feature_type,
+            "evidence": ["instruction"],
+            "sources": ["instruction"],
+            "available_actions": [],
+            "forms": [],
+            "tables": [],
+            "workflows": [],
+            "validation_requirements": [],
+        }
+
+        coverage_level = "minimal"
+        dummy_scenario = {
+            "scenario_id": "wf_s1",
+            "scenario_name": "Workflow Test Plan",
+            "category": catalog_match["category"],
+            "feature_type": feature_type,
+            "coverage_level": coverage_level,
+            "risk_score": 0,
+            "risk_level": "low",
+            "validation_requirements": [],
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [],
+            "required_page": None,
+        }
+
+        steps = _scenario_steps(
+            feature, metadata, "obj_1", objective_name,
+            dummy_scenario, coverage_level, url,
+        )
+
+        for step in steps:
+            s = step
+            if s.get("action") == "verify":
+                target_lower = str(s.get("target", "")).lower()
+                verify_remap = {
+                    "inventory page": "Products visible",
+                    "cart badge": "Products added",
+                }
+                if target_lower in verify_remap:
+                    s = dict(s)
+                    remapped_target = verify_remap[target_lower]
+                    s["target"] = remapped_target
+                    s["selector"] = remapped_target
+            step_key = (str(s.get("action", "")), str(s.get("target", "")))
+            if step_key not in seen_step_keys:
+                seen_step_keys.add(step_key)
+                all_steps.append(s)
+
+    if not all_steps:
+        return None
+
+    workflow_scenario_case = {
+        "title": "Workflow Test Plan",
+        "expected": "All workflow steps executed successfully.",
+        "objective_id": "obj_1",
+        "objective_name": "Workflow Test Plan",
+        "feature_key": "WORKFLOW",
+        "coverage_level": "minimal",
+        "scenario_id": "wf_s1",
+        "scenario_name": "Workflow Test Plan",
+        "category": "workflow",
+        "scenario_category": "workflow",
+        "generated_steps": len(all_steps),
+        "coverage_profile": "Smoke",
+        "risk_score": 0,
+        "risk_level": "low",
+        "depends_on": [],
+        "required_state": [],
+        "produces_state": [],
+        "required_page": None,
+        "steps": all_steps,
+    }
+
+    workflow_objective = {
+        "objective_id": "obj_1",
+        "objective_name": "Workflow Test Plan",
+        "feature_key": "WORKFLOW",
+        "feature_name": "Workflow Test Plan",
+        "feature_type": "WORKFLOW",
+        "coverage_level": "minimal",
+        "coverage_profile": "Smoke",
+        "priority_score": 0,
+        "risk_score": 0,
+        "risk_level": "low",
+        "risk_factors": ["workflow_mode"],
+        "generated_scenarios": 1,
+        "generated_steps": len(all_steps),
+        "execution_status": "pending",
+        "scenarios": [{
+            "scenario_id": "wf_s1",
+            "scenario_name": "Workflow Test Plan",
+            "category": "workflow",
+            "coverage_level": "minimal",
+            "risk_score": 0,
+            "risk_level": "low",
+            "generated_steps": len(all_steps),
+            "execution_status": "pending",
+            "depends_on": [],
+            "required_state": [],
+            "produces_state": [],
+            "required_page": None,
+        }],
+    }
+
+    workflow_feature_profile = {
+        "objective_id": "obj_1",
+        "feature_key": "WORKFLOW",
+        "feature_name": "Workflow Test Plan",
+        "feature_type": "WORKFLOW",
+        "coverage_level": "minimal",
+        "coverage_profile": "Smoke",
+        "priority_score": 0,
+        "risk_score": 0,
+        "risk_level": "low",
+        "risk_factors": ["workflow_mode"],
+    }
+
+    combined_case = {
+        "title": "Workflow Test Plan",
+        "expected": "All workflow steps executed successfully.",
+        "steps": all_steps,
+        "objective_tracking": [workflow_objective],
+        "plan_metrics": {
+            "requested_objectives": 1,
+            "planned_objectives": 1,
+            "generated_scenarios": 1,
+            "generated_steps": len(all_steps),
+            "coverage_profile_counts": {"minimal": 1},
+            "feature_type_counts": {"WORKFLOW": 1},
+            "risk_level_counts": {"low": 1},
+            "focused_features": [],
+            "max_scenarios": 1,
+            "min_scenario_risk_score": 0,
+            "scenario_cap_applied": False,
+            "risk_summary": {
+                "critical_features": 0,
+                "high_features": 0,
+                "medium_features": 0,
+                "low_features": 1,
+                "critical_scenarios": 0,
+                "high_scenarios": 0,
+                "medium_scenarios": 0,
+                "low_scenarios": 1,
+            },
+        },
+        "scenario_tree": {
+            "coverage_levels": list(COVERAGE_LEVELS),
+            "coverage_profiles": {level: _coverage_profile(level) for level in COVERAGE_LEVELS},
+            "default_coverage_level": "minimal",
+            "focus_overrides": {},
+            "features": [workflow_feature_profile],
+            "summary": {
+            "requested_objectives": 1,
+                "planned_objectives": 1,
+                "generated_scenarios": 1,
+                "generated_steps": len(all_steps),
+            },
+        },
+    }
+
+    return {
+        "url": url,
+        "instruction": instruction,
+        "page_title": str(dom.get("title") or "AI Generated Test"),
+        "summary": "Workflow test plan generated successfully.",
+        "source": "workflow_mode",
+        "status": "ready" if all_steps else "failed",
+        "failure_reason": None if all_steps else "workflow_steps_empty",
+        "discovery": discovery,
+        "requested_objectives": ["Workflow Test Plan"],
+        "planned_objectives": ["Workflow Test Plan"],
+        "feature_profiles": [workflow_feature_profile],
+        "objective_tracking": [workflow_objective],
+        "scenario_tree": combined_case["scenario_tree"],
+        "plan_metrics": combined_case["plan_metrics"],
+        "test_case": combined_case,
+        "test_cases": [workflow_scenario_case],
+        "scenario_cases": [workflow_scenario_case],
+        "raw_plan": {"dom": dom, "discovery": discovery},
+    }
+
+
 def _focused_feature_types(instruction: str) -> List[str]:
     normalized = _normalize_text(instruction)
     focus_terms = ["focus heavily on", "prioritize heavily", "deep focus on", "aggressively test"]
@@ -730,6 +1015,10 @@ def _apply_scenario_budget(
 
 def expand_scenarios(url: str, instruction: str, dom: Dict[str, Any], discovery: Dict[str, Any] | None = None) -> Dict[str, Any]:
     discovery = discovery or {"feature_map": [], "workflows": [], "forms": [], "pages": [], "discovered_pages": []}
+    if _is_workflow_instruction(instruction):
+        workflow_plan = _expand_workflow_scenarios(url, instruction, dom, discovery)
+        if workflow_plan is not None:
+            return workflow_plan
     default_coverage = _coverage_for_instruction(instruction)
     focused_features = set(_focused_feature_types(instruction))
     features = _discovered_features(instruction, dom, discovery)

@@ -8,7 +8,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from backend.core.models.intelligence_models import ComparisonScreenshotResult, RunComparisonResult
 from backend.database.mongo import db, run_comparison_collection
-from backend.services.bug_lifecycle_service import fingerprint_bug, _image_hash, _hash_similarity, _resolve_path
+from backend.services.bug_lifecycle_service import fingerprint_bug, _image_hash, _hash_similarity
+from backend.utils.path_utils import resolve_path
 
 REPORT_COLLECTION = db["reports"]
 

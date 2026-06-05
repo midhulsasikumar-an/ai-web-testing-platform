@@ -1,20 +1,48 @@
-from backend.services.scoring.severity_map import TEST_SEVERITY
+"""Deprecated shim — delegates to the centralised truth engine.
 
-def calculate_overall_status(results, insights, health_score):
+This module used to independently compute pass/fail from raw results and
+silently flipped passing runs to "warning" whenever ``health_score < 85``.
+That double-source-of-truth was the root cause of the dashboard-vs-data
+discrepancy. It has been removed.
 
-    has_critical_ai_issue = len(insights.get("critical", [])) > 0
+Kept as a thin shim so legacy callers (``test_services.py`` and the
+``scoring`` package) still work, but every code path now routes through
+:mod:`backend.services.execution_truth_engine`. New code MUST call
+``evaluate_test_run`` directly.
+"""
 
-    has_critical_test_fail = any(
-        r["status"] == "fail" and TEST_SEVERITY.get(r["test"], "minor") == "critical"
-        for r in results
-    )
+from __future__ import annotations
 
-    has_any_fail = any(r["status"] == "fail" for r in results)
+from typing import Any, Dict, Iterable, List, Optional
 
-    if has_critical_ai_issue or has_critical_test_fail:
+from backend.services.execution_truth_engine import (
+    STATUS_FAIL,
+    STATUS_PASS,
+    evaluate_test_run,
+)
+
+
+def calculate_overall_status(
+    results: Optional[Iterable[Dict[str, Any]]],
+    insights: Any = None,
+    health_score: Any = None,
+) -> str:
+    """Backwards-compatible wrapper around :func:`evaluate_test_run`.
+
+    Returns one of ``"pass"`` or ``"fail"`` (lowercase to match the
+    historical API contract; the truth engine itself uses the canonical
+    uppercase vocabulary). The ``insights`` and ``health_score``
+    parameters are accepted but ignored: per the new system contract,
+    health score MUST NOT influence pass/fail.
+    """
+    del insights, health_score  # signature kept for backwards compatibility
+    truth = evaluate_test_run({"results": list(results or [])})
+    canonical = truth.get("overall_status")
+    if canonical == STATUS_FAIL:
         return "fail"
-
-    if has_any_fail or health_score < 85:
-        return "warning"
-
-    return "pass"
+    if canonical == STATUS_PASS:
+        return "pass"
+    # Truth engine never returns anything but PASS/FAIL today, but in
+    # case a future canonical value is added we degrade safely to "fail"
+    # so the dashboard never silently misreports a non-passing state.
+    return "fail"

@@ -14,14 +14,33 @@ import { MiniStatCard } from "@/components/shared/mini-stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useFilteredList } from "@/hooks/use-filtered-list";
 import { formatDate, formatTime } from "@/lib/formatters";
-import { extractHostname, resolveTestDisplayName, truncateText } from "@/lib/test-display";
+import { extractHostname, resolveTestDisplayName, truncateText, canonicalizeUrl } from "@/lib/test-display";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2, XCircle, Globe, Eye,
   Play, Terminal, Filter,
 } from "lucide-react";
 
-type FilterStatus = "all" | "passed" | "failed" | "warning";
+type FilterStatus = "all" | "pass" | "fail" | "warning";
+
+const FILTER_LABELS: Record<FilterStatus, string> = {
+  all: "All",
+  pass: "Passed",
+  fail: "Failed",
+  warning: "Warning",
+};
+
+const NON_PASSING_STATUSES = new Set([
+  "fail",
+  "timeout",
+  "cancelled",
+  "error",
+  "warning",
+]);
+
+function isFailingStatus(value: string | undefined | null): boolean {
+  return NON_PASSING_STATUSES.has(String(value || "").toLowerCase());
+}
 
 function formatDuration(test: { updated_at?: string; created_at?: string; runtime_ms?: number }): string {
   if (typeof test.runtime_ms === "number" && Number.isFinite(test.runtime_ms) && test.runtime_ms >= 0) {
@@ -59,7 +78,7 @@ export default function TestHistoryPage() {
     searchQuery,
     setSearchQuery,
   } = useFilteredList(testResults, {
-    getStatus: (t) => t.overall_status || "warning",
+    getStatus: (t) => t.overall_status || "unknown",
     getSearchText: (t) => {
       const testName = resolveTestDisplayName(t);
       const website = extractHostname(t.target_url || t.url);
@@ -67,17 +86,18 @@ export default function TestHistoryPage() {
     },
   });
 
-  const uniqueUrls = [...new Set(testResults.map((t) => t.target_url || t.url))];
+  const uniqueUrls = [...new Set(testResults.map((t) => canonicalizeUrl(t.target_url || t.url)).filter(Boolean))];
 
-  // Group filtered results by URL
+  // Group filtered results by canonical URL so trailing slashes, mixed case,
+  // and tracking parameters don't fragment the same target across groups.
   const groupedByUrl = uniqueUrls.reduce<Record<string, typeof testResults>>((acc, url) => {
-    const tests = filtered.filter((t) => (t.target_url || t.url) === url);
+    const tests = filtered.filter((t) => canonicalizeUrl(t.target_url || t.url) === url);
     if (tests.length > 0) acc[url] = tests;
     return acc;
   }, {});
 
-  const passedCount = testResults.filter((t) => t.overall_status === "pass").length;
-  const failedCount = testResults.filter((t) => t.overall_status === "fail").length;
+  const passedCount = testResults.filter((t) => String(t.overall_status || "").toLowerCase() === "pass").length;
+  const failedCount = testResults.filter((t) => isFailingStatus(t.overall_status)).length;
 
   return (
     <>
@@ -105,17 +125,17 @@ export default function TestHistoryPage() {
               <Filter className="h-3.5 w-3.5" /> Filters
             </div>
             <div className="flex items-center gap-2">
-              {(["all", "passed", "failed", "warning"] as FilterStatus[]).map((s) => (
+              {(["all", "pass", "fail", "warning"] as FilterStatus[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 capitalize ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 ${
                     statusFilter === s
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-card text-muted-foreground border-border hover:bg-accent"
                   }`}
                 >
-                  {s}
+                  {FILTER_LABELS[s]}
                 </button>
               ))}
             </div>
@@ -141,8 +161,8 @@ export default function TestHistoryPage() {
       ) : (
         <div className="space-y-4">
           {Object.entries(groupedByUrl).map(([url, tests]) => {
-            const urlPassed = tests.filter((t) => t.overall_status === "pass").length;
-            const urlFailed = tests.filter((t) => t.overall_status === "fail").length;
+            const urlPassed = tests.filter((t) => String(t.overall_status || "").toLowerCase() === "pass").length;
+            const urlFailed = tests.filter((t) => isFailingStatus(t.overall_status)).length;
 
             return (
               <Card key={url}>
@@ -188,20 +208,20 @@ export default function TestHistoryPage() {
                             <TableCell>
                               <Badge
                                 variant={
-                                  test.overall_status === "pass"
+                                  String(test.overall_status || "").toLowerCase() === "pass"
                                     ? "secondary"
                                     : "destructive"
                                 }
                                 className="text-xs"
                               >
                                 <span className="flex items-center gap-1">
-                                  {test.overall_status === "pass" ? (
+                                  {String(test.overall_status || "").toLowerCase() === "pass" ? (
                                     <CheckCircle2 className="h-3 w-3" />
                                   ) : (
                                     <XCircle className="h-3 w-3" />
                                   )}
 
-                                  {test.overall_status || "warning"}
+                                  {test.overall_status || "unknown"}
                                 </span>
                               </Badge>
                             </TableCell>

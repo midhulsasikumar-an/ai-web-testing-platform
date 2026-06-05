@@ -19,7 +19,8 @@ from reportlab.platypus import Image as RLImage
 from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from backend.database.mongo import db, report_export_collection
-from backend.services.bug_lifecycle_service import summarize_bug_lifecycle, _resolve_path
+from backend.services.bug_lifecycle_service import summarize_bug_lifecycle
+from backend.utils.path_utils import resolve_path
 from backend.services.run_comparison_service import compare_runs
 
 REPORT_COLLECTION = db["reports"]
@@ -367,7 +368,7 @@ def _image_gallery(screenshots: List[Dict[str, Any]], styles) -> List[Any]:
     for item in screenshots[:6]:
         label = str(item.get("workflow_stage") or item.get("stage") or item.get("label") or "Screenshot")
         path = str(item.get("artifact_url") or item.get("screenshot_path") or item.get("path") or "").strip()
-        resolved = _resolve_path(path)
+        resolved = resolve_path(path)
         if not resolved or not resolved.exists():
             continue
         try:

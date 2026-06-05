@@ -1,24 +1,59 @@
+"""Bug lifecycle service — purely event-driven.
+
+This module used to do its own failure detection (``_bugs_from_results``)
+and its own status classification (``_derive_status``). That created
+two parallel "is this a bug?" decision paths alongside
+``create_bugs_from_test`` in :mod:`backend.services.bug_services` and the
+``calculate_overall_status`` function in
+:mod:`backend.services.scoring.overall_status`. All three occasionally
+disagreed about whether a bug existed, what severity it had, and
+whether a passing run should close it.
+
+After the centralisation refactor this module is a pure event consumer:
+
+    * The :mod:`backend.services.execution_truth_engine` is the ONLY
+      place that decides "is there a bug?" and produces ``BUG_DETECTED``
+      / ``BUG_RESOLVED`` events.
+    * This module receives those events and projects them into
+      ``bug_lifecycle`` MongoDB documents. It never re-interprets raw
+      step results.
+
+The legacy public surface (``ingest_bug_lifecycle``,
+``reconcile_bugs_on_passing_run``, ``sync_bugs_collection_to_lifecycle``,
+``list_bug_lifecycle``, ``summarize_bug_lifecycle``,
+``fingerprint_bug``) is preserved for backwards compatibility with
+existing callers. The legacy inference helpers have been removed.
+"""
+
 from __future__ import annotations
 
-import hashlib
-import json
-import math
-from collections import Counter, defaultdict
+import logging
+from collections import Counter
 from copy import deepcopy
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
-from urllib.parse import urlparse
 
-from PIL import Image
 from pymongo.collection import Collection
 
 from backend.core.models.intelligence_models import BugLifecycleEvent
 from backend.database.mongo import db
+from backend.services.execution_truth_engine import (
+    BUG_EVENT_DETECTED,
+    BUG_EVENT_RESOLVED,
+    compute_bug_fingerprint,
+    diff_resolutions as _diff_resolutions,
+)
 from backend.services.root_cause_classifier import classify_root_cause
+from backend.utils.path_utils import resolve_path
+
+logger = logging.getLogger("services.bug_lifecycle")
 
 BUG_LIFECYCLE_COLLECTION = db["bug_lifecycle"]
 
+
+# ---------------------------------------------------------------------------
+# Index management
+# ---------------------------------------------------------------------------
 
 def _ensure_bug_lifecycle_indexes() -> None:
     try:
@@ -32,31 +67,156 @@ def _ensure_bug_lifecycle_indexes() -> None:
 _ensure_bug_lifecycle_indexes()
 
 
-def fingerprint_bug(bug: Dict[str, Any]) -> str:
-    return _fingerprint_bug(
-        title=str(bug.get("title") or bug.get("description") or bug.get("technical_explanation") or bug.get("issue_type") or bug.get("bug_type") or ""),
-        description=str(bug.get("description") or bug.get("details") or bug.get("technical_explanation") or ""),
-        severity=str(bug.get("severity") or bug.get("risk_level") or "medium"),
-        workflow_stage=str(bug.get("workflow_stage") or bug.get("workflow") or bug.get("page_type") or "unknown"),
-        url=str(bug.get("url") or bug.get("artifact_url") or ""),
-        selector=str(bug.get("selector") or bug.get("locator") or bug.get("target") or ""),
-        issue_type=str(bug.get("issue_type") or bug.get("bug_type") or bug.get("category") or "unknown"),
-        component=str(bug.get("affected_component") or bug.get("component") or bug.get("workflow_stage") or bug.get("workflow") or "unknown"),
-        evidence=bug.get("evidence") if isinstance(bug.get("evidence"), dict) else {},
-    )
+# ---------------------------------------------------------------------------
+# Public fingerprint helper (kept for compatibility)
+# ---------------------------------------------------------------------------
 
+def fingerprint_bug(bug: Dict[str, Any]) -> str:
+    """Stable fingerprint for a bug record. Used as the document key.
+
+    Delegates to :func:`backend.services.execution_truth_engine.compute_bug_fingerprint`
+    so every caller -- whether the bug was detected by the truth
+    engine, manually reported, or imported -- produces the same
+    fingerprint string. There is no other fingerprint format in the
+    system.
+    """
+    scenario_id = str(bug.get("scenario_id") or bug.get("objective_id") or "")
+    objective_id = str(bug.get("objective_id") or "")
+    step_index = bug.get("step_index")
+    step_name = str(
+        bug.get("step_name")
+        or bug.get("failed_step_name")
+        or bug.get("title")
+        or bug.get("issue_type")
+        or bug.get("bug_type")
+        or ""
+    )
+    fingerprint = compute_bug_fingerprint(
+        scenario_id=scenario_id,
+        objective_id=objective_id,
+        step_index=step_index,
+        step_name=step_name,
+    )
+    if fingerprint == "unknown|0|unnamed":
+        bug_id = str(bug.get("bug_id") or bug.get("id") or "")
+        if bug_id:
+            return f"manual|{_normalize_text(bug_id)}"
+    return fingerprint
+
+
+# ---------------------------------------------------------------------------
+# Event-driven ingestion
+# ---------------------------------------------------------------------------
 
 def ingest_bug_lifecycle(
     run_data: Dict[str, Any],
     report_data: Optional[Dict[str, Any]] = None,
+    truth: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
-    bugs = _extract_bug_events(run_data, report_data)
+    """Apply truth-engine BUG_DETECTED events to lifecycle documents.
+
+    The historical version of this function walked ``run_data["results"]``
+    and ``report_data`` directly looking for failed steps. That is no
+    longer the contract. Pass ``truth`` (the canonical object produced
+    by :func:`backend.services.execution_truth_engine.evaluate_test_run`)
+    and this function will only consume the ``bug_events`` inside it.
+
+    If ``truth`` is omitted, the function will fall back to computing
+    one (so legacy callers continue to work) — but the fallback also
+    routes through the truth engine, so there is still exactly one
+    decision path.
+    """
+    if truth is None:
+        from backend.services.execution_truth_engine import evaluate_test_run
+        truth = evaluate_test_run(run_data or {})
+
     records: List[Dict[str, Any]] = []
-    for bug in bugs:
-        record = _upsert_bug_record(bug)
+    for event in truth.get("bug_events") or []:
+        record = _upsert_bug_record_from_truth_event(event, run_data or {})
         records.append(record)
     return records
 
+
+def reconcile_bugs_on_passing_run(
+    run_data: Dict[str, Any],
+    report_data: Optional[Dict[str, Any]] = None,
+    truth: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
+    """Close lifecycle records whose fingerprint is no longer failing.
+
+    The historical version of this function tried to infer from raw
+    results which bugs were now passing. The refactored version asks
+    the truth engine for the set of ``passing_scenario_fingerprints``,
+    looks up the previously-open lifecycle records, and emits
+    ``BUG_RESOLVED`` events for every previously-failing fingerprint
+    that is NOT in the failing set of the current run.
+
+    If ``truth`` is omitted, the function falls back to computing one
+    via the truth engine (no decision logic is duplicated here).
+    """
+    if truth is None:
+        from backend.services.execution_truth_engine import evaluate_test_run
+        truth = evaluate_test_run(run_data or {})
+
+    user_id = str(run_data.get("user_id") or (report_data or {}).get("user_id") or "")
+    test_id = str(run_data.get("test_id") or (report_data or {}).get("test_run_id") or "")
+
+    open_query: Dict[str, Any] = {
+        "status": {"$in": ["Active", "Monitoring", "Regressed", "Flaky", "open", "in-progress"]},
+    }
+    if user_id:
+        open_query["user_id"] = user_id
+    if test_id:
+        open_query["test_id"] = test_id
+
+    previously_open_fingerprints = [
+        str(record.get("fingerprint") or "")
+        for record in BUG_LIFECYCLE_COLLECTION.find(open_query, {"fingerprint": 1, "_id": 0})
+        if record.get("fingerprint")
+    ]
+
+    resolution_events = _diff_resolutions(truth, previously_open_fingerprints)
+    return _apply_resolution_events(resolution_events, test_id=test_id, user_id=user_id)
+
+
+def sync_bugs_collection_to_lifecycle() -> int:
+    """One-way mirror: any ``bugs`` document whose status is "resolved"
+    or "closed" propagates into the corresponding ``bug_lifecycle`` record.
+
+    Returns the number of lifecycle records that were updated.
+    """
+    from backend.database.mongo import bug_collection as _bugs  # local import to avoid cycle
+
+    closed_bugs = list(_bugs.find({"status": {"$in": ["resolved", "closed"]}}))
+    if not closed_bugs:
+        return 0
+
+    updated_count = 0
+    now = datetime.utcnow()
+    for bug in closed_bugs:
+        fingerprint = str(bug.get("fingerprint") or "")
+        if not fingerprint:
+            continue
+        result = BUG_LIFECYCLE_COLLECTION.update_one(
+            {"fingerprint": fingerprint},
+            {
+                "$set": {
+                    "status": "Resolved",
+                    "last_seen_run_id": bug.get("test_id") or bug.get("execution_id") or "",
+                    "updated_at": now,
+                    "evidence.mirror_from_bugs": True,
+                    "evidence.mirrored_bug_status": bug.get("status"),
+                }
+            },
+        )
+        if result.modified_count > 0:
+            updated_count += 1
+    return updated_count
+
+
+# ---------------------------------------------------------------------------
+# Public read-side helpers (unchanged)
+# ---------------------------------------------------------------------------
 
 def list_bug_lifecycle(
     *,
@@ -98,318 +258,307 @@ def summarize_bug_lifecycle(user_id: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
-def _extract_bug_events(run_data: Dict[str, Any], report_data: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    run_id = str(run_data.get("run_id") or report_data.get("debug_data", {}).get("run_id") if report_data else "")
-    report_id = str(report_data.get("report_id") if report_data else "")
-    user_id = str((report_data or {}).get("user_id") or run_data.get("user_id") or "")
-    goal = str(run_data.get("goal") or report_data.get("goal") or "")
-    start_url = str(run_data.get("start_url") or run_data.get("url") or report_data.get("start_url") or "")
-    screenshots = _collect_screenshot_map(run_data, report_data)
+# ---------------------------------------------------------------------------
+# Internal: truth-event projection
+# ---------------------------------------------------------------------------
 
-    raw_bugs: List[Dict[str, Any]] = []
-    if report_data:
-        raw_bugs.extend(_as_list(report_data.get("ai_report", {}).get("detected_bugs")))
-        raw_bugs.extend(_as_list(report_data.get("ai_report", {}).get("visual_findings")))
-        raw_bugs.extend(_as_list(report_data.get("report_sections", {}).get("detected_bugs")))
-        raw_bugs.extend(_as_list(report_data.get("report_sections", {}).get("visual_bug_summary")))
-        raw_bugs.extend(_bugs_from_results(_as_list(report_data.get("debug_data", {}).get("results")), goal, start_url, run_id, report_id, user_id))
-    raw_bugs.extend(_as_list(run_data.get("detected_bugs")))
-    raw_bugs.extend(_as_list(run_data.get("visual_bug_summary")))
-    raw_bugs.extend(_bugs_from_results(_as_list(run_data.get("results")), goal, start_url, run_id, report_id, user_id))
+def _upsert_bug_record_from_truth_event(
+    event: Dict[str, Any],
+    run_data: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Project a single ``BUG_DETECTED`` event into a lifecycle document.
 
-    events: List[Dict[str, Any]] = []
-    for index, bug in enumerate(raw_bugs):
-        if not isinstance(bug, dict):
-            continue
-        normalized = _normalize_bug(
-            bug,
-            index=index,
-            goal=goal,
-            start_url=start_url,
-            run_id=run_id,
-            report_id=report_id,
-            user_id=user_id,
-        )
-        if not normalized:
-            continue
-        if not normalized.get("screenshot_path") and normalized.get("workflow_stage") in screenshots:
-            normalized["screenshot_path"] = screenshots[normalized["workflow_stage"]]
-        events.append(normalized)
+    This function is intentionally narrow: it only consumes the
+    pre-normalised shape that :func:`evaluate_test_run` produces. It
+    does NOT walk raw step results, does NOT apply heuristic
+    classification, and does NOT re-derive the failure status.
+    """
+    if event.get("type") != BUG_EVENT_DETECTED:
+        # Resolution events go through _apply_resolution_events instead.
+        raise ValueError(f"Unsupported event type for upsert: {event.get('type')}")
 
-    deduped: List[Dict[str, Any]] = []
-    seen_fingerprints = set()
-    for event in events:
-        fingerprint = str(event.get("fingerprint") or "")
-        if fingerprint and fingerprint in seen_fingerprints:
-            continue
-        if fingerprint:
-            seen_fingerprints.add(fingerprint)
-        deduped.append(event)
+    fingerprint = str(event.get("fingerprint") or "")
+    if not fingerprint:
+        raise ValueError("BUG_DETECTED event missing fingerprint")
 
-    return deduped
+    user_id = str(run_data.get("user_id") or "")
+    run_id = str(run_data.get("test_id") or run_data.get("run_id") or "")
+    severity = str(event.get("severity") or "medium").lower()
+    scenario_id = str(event.get("scenario_id") or "")
+    step_index = event.get("step_index")
+    step_name = str(event.get("step_name") or "")
+    error_text = str(event.get("error") or "")
 
-
-def _normalize_bug(
-    bug: Dict[str, Any],
-    *,
-    index: int,
-    goal: str,
-    start_url: str,
-    run_id: str,
-    report_id: str,
-    user_id: str,
-) -> Optional[Dict[str, Any]]:
-    title = str(
-        bug.get("title")
-        or bug.get("description")
-        or bug.get("technical_explanation")
-        or bug.get("issue_type")
-        or bug.get("bug_type")
-        or bug.get("name")
-        or f"Bug {index + 1}"
-    ).strip()
-    description = str(bug.get("description") or bug.get("details") or bug.get("technical_explanation") or "").strip()
-    severity = str(bug.get("severity") or bug.get("risk_level") or "medium").lower()
-    workflow_stage = str(bug.get("workflow_stage") or bug.get("workflow") or bug.get("page_type") or "unknown")
-    url = str(bug.get("url") or bug.get("artifact_url") or start_url or "")
-    selector = str(bug.get("selector") or bug.get("locator") or bug.get("target") or "")
-    issue_type = str(bug.get("issue_type") or bug.get("bug_type") or bug.get("category") or "unknown")
-    component = str(bug.get("affected_component") or bug.get("component") or workflow_stage or "unknown")
-    screenshot_path = _extract_screenshot_path(bug)
-    evidence = deepcopy(bug.get("evidence") or {})
-    evidence.setdefault("goal", goal)
-    evidence.setdefault("workflow_stage", workflow_stage)
-    evidence.setdefault("selector", selector)
-    evidence.setdefault("issue_type", issue_type)
-    evidence.setdefault("run_id", run_id)
-    evidence.setdefault("report_id", report_id)
-    root_cause = str(bug.get("root_cause") or evidence.get("root_cause") or "").strip().upper()
-    root_cause_confidence = float(bug.get("root_cause_confidence") or evidence.get("root_cause_confidence") or 0.0)
-    if root_cause not in {"SELECTOR_CHANGED", "ELEMENT_NOT_VISIBLE", "ELEMENT_NOT_FOUND", "NAVIGATION_REDIRECT", "NETWORK_FAILURE", "API_FAILURE", "AUTHENTICATION_FAILURE", "TIMEOUT", "PAGE_CRASH", "JAVASCRIPT_ERROR", "UNKNOWN"}:
-        root_cause_result = classify_root_cause(
-            action=bug.get("action") or title,
-            category=bug.get("failure_category") or bug.get("issue_type") or "",
-            error=bug.get("error") or description or bug.get("details") or "",
-            console_errors=evidence.get("console_errors"),
-            network_failures=evidence.get("network_failures"),
-            selector_used=selector,
-            validation=evidence,
-        )
-        root_cause = str(root_cause_result["root_cause"]).upper()
-        root_cause_confidence = float(root_cause_result["confidence"])
-    evidence.setdefault("root_cause", root_cause)
-    evidence.setdefault("root_cause_confidence", root_cause_confidence)
-    fingerprint = _fingerprint_bug(
-        title=title,
-        description=description,
-        severity=severity,
-        workflow_stage=workflow_stage,
-        url=url,
-        selector=selector,
-        issue_type=issue_type,
-        component=component,
-        evidence=evidence,
-    )
-    screenshot_hash = _image_hash(screenshot_path)
-    return BugLifecycleEvent(
-        bug_id=str(bug.get("bug_id") or fingerprint[:16]),
-        fingerprint=fingerprint,
-        title=title,
-        description=description,
-        severity=severity,
-        workflow_stage=workflow_stage,
-        run_id=run_id,
-        report_id=report_id,
-        url=url,
-        screenshot_path=screenshot_path,
-        screenshot_hash=screenshot_hash,
-        root_cause=root_cause,
-        root_cause_confidence=root_cause_confidence,
-        evidence={**evidence, "user_id": user_id},
-    ).model_dump(mode="json")
-
-
-def _upsert_bug_record(event: Dict[str, Any]) -> Dict[str, Any]:
-    fingerprint = str(event["fingerprint"])
     existing = BUG_LIFECYCLE_COLLECTION.find_one({"fingerprint": fingerprint})
-    screenshot_hash = event.get("screenshot_hash")
-    similarity = _best_screenshot_similarity(existing, screenshot_hash) if screenshot_hash else None
-    next_status = _derive_status(existing, event, similarity)
     now = datetime.utcnow()
-    root_cause = str(event.get("root_cause") or "UNKNOWN").strip().upper() or "UNKNOWN"
-    root_cause_counts = Counter(existing.get("root_cause_counts", {})) if existing else Counter()
-    root_cause_counts[root_cause] += 1
-    most_common_root_cause = root_cause_counts.most_common(1)[0][0] if root_cause_counts else root_cause
+
+    evidence = {
+        "user_id": user_id,
+        "run_id": run_id,
+        "scenario_id": scenario_id,
+        "step_index": step_index,
+        "step_name": step_name,
+        "error": error_text,
+        "failure_category": event.get("failure_category"),
+        "root_cause": event.get("root_cause"),
+    }
     history_entry = {
-        "run_id": event.get("run_id"),
-        "report_id": event.get("report_id"),
-        "status": next_status,
-        "severity": event.get("severity"),
-        "workflow_stage": event.get("workflow_stage"),
-        "url": event.get("url"),
-        "screenshot_path": event.get("screenshot_path"),
-        "screenshot_hash": event.get("screenshot_hash"),
-        "similarity_to_previous": similarity,
-        "root_cause": root_cause,
-        "root_cause_confidence": event.get("root_cause_confidence"),
+        "run_id": run_id,
+        "status": "Active" if not existing else "Active",
+        "severity": severity,
+        "step_index": step_index,
+        "step_name": step_name,
+        "error": error_text,
+        "root_cause": event.get("root_cause"),
         "created_at": now,
     }
 
     if existing:
         record = {k: v for k, v in existing.items() if k != "_id"}
-        record.setdefault("affected_components", [])
         record.setdefault("affected_urls", [])
+        record.setdefault("affected_components", [])
         record.setdefault("screenshot_hashes", [])
         record.setdefault("history", [])
         record.setdefault("evidence", {})
         record.setdefault("root_cause_counts", {})
-        record.setdefault("most_common_root_cause", "UNKNOWN")
-        record["title"] = event.get("title", record.get("title", ""))
-        record["description"] = event.get("description", record.get("description", ""))
-        record["severity"] = _max_severity(record.get("severity", "medium"), event.get("severity", "medium"))
-        record["status"] = next_status
-        record["workflow_stage"] = event.get("workflow_stage") or record.get("workflow_stage", "unknown")
-        record["website"] = _extract_website(event.get("url") or record.get("website", ""))
-        record["last_seen_run_id"] = event.get("run_id") or record.get("last_seen_run_id", "")
+        record["title"] = step_name or record.get("title") or "Detected issue"
+        record["description"] = error_text or record.get("description") or ""
+        record["severity"] = _max_severity(record.get("severity", "medium"), severity)
+        # When a previously-Resolved bug re-appears, it is a regression.
+        if str(record.get("status", "")) == "Resolved":
+            record["status"] = "Regressed"
+            record["regression_count"] = int(record.get("regression_count", 0) or 0) + 1
+        else:
+            record["status"] = "Active" if severity in {"high", "critical"} else record.get("status") or "Monitoring"
+        record["scenario_id"] = scenario_id or record.get("scenario_id")
+        record["objective_id"] = event.get("objective_id") or record.get("objective_id")
+        record["last_seen_run_id"] = run_id
         record["occurrences"] = int(record.get("occurrences", 0)) + 1
-        if next_status == "Regressed":
-            record["regression_count"] = int(record.get("regression_count", 0)) + 1
-        if next_status == "Resolved":
-            record["resolved_count"] = int(record.get("resolved_count", 0)) + 1
-        if next_status == "Flaky":
-            record["flaky_count"] = int(record.get("flaky_count", 0)) + 1
-        for value in [event.get("workflow_stage"), event.get("evidence", {}).get("goal")]:
-            if value:
-                candidate = str(value)
-                if candidate not in record["affected_components"]:
-                    record["affected_components"].append(candidate)
-        if event.get("url") and event["url"] not in record["affected_urls"]:
-            record["affected_urls"].append(event["url"])
-        if screenshot_hash and screenshot_hash not in record["screenshot_hashes"]:
-            record["screenshot_hashes"].append(screenshot_hash)
-        record["evidence"].update({k: v for k, v in event.get("evidence", {}).items() if v is not None})
-        record["root_cause"] = root_cause
-        record["root_cause_confidence"] = event.get("root_cause_confidence", 0.0)
-        record["root_cause_counts"] = dict(root_cause_counts)
-        record["most_common_root_cause"] = most_common_root_cause
+        if run_data.get("url") and run_data["url"] not in record["affected_urls"]:
+            record["affected_urls"].append(run_data["url"])
+        record["evidence"].update({k: v for k, v in evidence.items() if v is not None})
         record["history"].append(history_entry)
         record["updated_at"] = now
         BUG_LIFECYCLE_COLLECTION.replace_one({"_id": existing["_id"]}, record)
         return record
 
     record = {
-        "bug_id": event["bug_id"],
+        "bug_id": fingerprint[:16],
         "fingerprint": fingerprint,
-    "user_id": str(event.get("evidence", {}).get("user_id") or ""),
-        "user_id": str(event.get("evidence", {}).get("user_id") or ""),
-        "title": event.get("title", ""),
-        "description": event.get("description", ""),
-        "severity": event.get("severity", "medium"),
-        "status": next_status,
-        "website": _extract_website(event.get("url", "")),
-        "workflow_stage": event.get("workflow_stage", "unknown"),
-        "first_seen_run_id": event.get("run_id", ""),
-        "last_seen_run_id": event.get("run_id", ""),
-                "user_id": str(event.get("evidence", {}).get("user_id") or ""),
+        "user_id": user_id,
+        "test_id": run_id,
+        "title": step_name or "Detected issue",
+        "description": error_text or "",
+        "severity": severity,
+        "status": "Active" if severity in {"high", "critical"} else "Monitoring",
+        "scenario_id": scenario_id or None,
+        "objective_id": event.get("objective_id") or None,
+        "feature_key": None,
+        "first_seen_run_id": run_id,
+        "last_seen_run_id": run_id,
         "regression_count": 0,
         "resolved_count": 0,
         "flaky_count": 0,
-        "root_cause": root_cause,
-        "root_cause_confidence": event.get("root_cause_confidence", 0.0),
-        "root_cause_counts": dict(root_cause_counts),
-        "most_common_root_cause": most_common_root_cause,
-        "affected_components": [value for value in [event.get("workflow_stage"), event.get("evidence", {}).get("goal")] if value],
-        "affected_urls": [event.get("url")] if event.get("url") else [],
-        "screenshot_hashes": [event.get("screenshot_hash")] if event.get("screenshot_hash") else [],
+        "root_cause": event.get("root_cause") or "UNKNOWN",
+        "root_cause_confidence": 0.0,
+        "root_cause_counts": {str(event.get("root_cause") or "UNKNOWN"): 1},
+        "most_common_root_cause": str(event.get("root_cause") or "UNKNOWN"),
+        "affected_components": [],
+        "affected_urls": [run_data["url"]] if run_data.get("url") else [],
+        "screenshot_hashes": [],
         "history": [history_entry],
-        "evidence": deepcopy(event.get("evidence", {})),
+        "evidence": evidence,
         "created_at": now,
         "updated_at": now,
     }
     BUG_LIFECYCLE_COLLECTION.insert_one(record)
+    record.pop("_id", None)
     return record
 
 
-def _derive_status(existing: Optional[Dict[str, Any]], event: Dict[str, Any], similarity: Optional[float]) -> str:
-    severity = str(event.get("severity", "medium")).lower()
-    if event.get("evidence", {}).get("resolved") or event.get("status") == "resolved":
-        return "Resolved"
-    if not existing:
-        return "Active" if severity in {"high", "critical"} else "Monitoring"
-    previous_status = str(existing.get("status", "Monitoring"))
-    if previous_status == "Resolved":
-        return "Regressed"
-    if similarity is not None and similarity < 0.82 and int(existing.get("occurrences", 1)) >= 2:
-        return "Flaky"
-    if int(existing.get("regression_count", 0)) > 0:
-        return "Regressed"
-    if int(existing.get("flaky_count", 0)) > 1:
-        return "Flaky"
-    if severity in {"critical", "high"}:
-        return "Active"
-    return previous_status if previous_status in {"Active", "Flaky", "Monitoring"} else "Monitoring"
-
-
-def _fingerprint_bug(
+def _apply_resolution_events(
+    events: List[Dict[str, Any]],
     *,
-    title: str,
-    description: str,
-    severity: str,
-    workflow_stage: str,
-    url: str,
-    selector: str,
-    issue_type: str,
-    component: str,
-    evidence: Dict[str, Any],
-) -> str:
-    stable_parts = [
-        _normalize_text(title),
-        _normalize_text(description),
-        _normalize_text(severity),
-        _normalize_text(workflow_stage),
-        _normalize_text(url),
-        _normalize_text(selector),
-        _normalize_text(issue_type),
-        _normalize_text(component),
-        _normalize_text(evidence.get("technical_explanation", "")),
-        _normalize_text(evidence.get("root_cause", "")),
-        _normalize_text(evidence.get("message", "")),
-        _normalize_text(evidence.get("validation_type", "")),
-    ]
-    digest_source = "|".join(stable_parts)
-    return hashlib.sha256(digest_source.encode("utf-8")).hexdigest()
+    test_id: str,
+    user_id: str,
+) -> List[Dict[str, Any]]:
+    """Apply BUG_RESOLVED events to lifecycle documents."""
+    resolved: List[Dict[str, Any]] = []
+    now = datetime.utcnow()
+    for event in events:
+        if event.get("type") != BUG_EVENT_RESOLVED:
+            continue
+        fingerprint = str(event.get("fingerprint") or "")
+        if not fingerprint:
+            continue
+        history_entry = {
+            "run_id": test_id,
+            "status": "Resolved",
+            "resolution_reason": event.get("resolution_reason") or "regression_pass",
+            "created_at": now,
+        }
+        BUG_LIFECYCLE_COLLECTION.update_one(
+            {"fingerprint": fingerprint},
+            {
+                "$set": {
+                    "status": "Resolved",
+                    "last_seen_run_id": test_id,
+                    "resolved_count": 1,  # incremented below if existing
+                    "evidence.resolved": True,
+                    "evidence.resolution_reason": event.get("resolution_reason") or "regression_pass",
+                    "evidence.resolved_in_run_id": test_id,
+                    "updated_at": now,
+                },
+                "$push": {"history": history_entry},
+            },
+        )
+        # Read the existing record so we can increment resolved_count
+        # properly (update_one's $inc would also work but this is more
+        # explicit and works in sharded/test environments).
+        existing = BUG_LIFECYCLE_COLLECTION.find_one({"fingerprint": fingerprint}, {"_id": 0})
+        if existing:
+            BUG_LIFECYCLE_COLLECTION.update_one(
+                {"fingerprint": fingerprint},
+                {"$set": {"resolved_count": int(existing.get("resolved_count", 0) or 0) + 1}},
+            )
+            updated = BUG_LIFECYCLE_COLLECTION.find_one({"fingerprint": fingerprint}, {"_id": 0})
+            if updated:
+                resolved.append(updated)
+
+        # Mirror the resolution into the canonical ``bug_collection`` so
+        # the dashboard "open bug" count is derived from the same source
+        # of truth as the bug status. We only touch status / resolved_at
+        # / evidence fields -- we never overwrite the user-set history,
+        # severity, or any other field on the ``bug_collection`` document.
+        _mirror_resolution_to_bug_collection(
+            fingerprint=fingerprint,
+            test_id=test_id,
+            resolution_reason=event.get("resolution_reason") or "regression_pass",
+        )
+    return resolved
 
 
-def _best_screenshot_similarity(existing: Optional[Dict[str, Any]], screenshot_hash: Optional[str]) -> Optional[float]:
-    if not existing or not screenshot_hash:
-        return None
-    prior_hashes = [str(value) for value in existing.get("screenshot_hashes", []) if value]
-    if not prior_hashes:
-        return None
-    return max((_hash_similarity(screenshot_hash, prior_hash) for prior_hash in prior_hashes), default=None)
+def _mirror_resolution_to_bug_collection(
+    *,
+    fingerprint: str,
+    test_id: str,
+    resolution_reason: str,
+) -> int:
+    """One-way mirror: close matching ``bug_collection`` documents when
+    the lifecycle says a bug is resolved.
 
-
-def _hash_similarity(left: str, right: str) -> float:
-    if not left or not right:
-        return 0.0
+    The dashboard "open" count queries ``bug_collection`` by status; if
+    a bug is resolved in the lifecycle but stays "open" in
+    ``bug_collection`` the count will be wrong. This helper closes
+    every ``bug_collection`` document whose ``fingerprint`` matches the
+    resolved one. It never deletes documents, never touches
+    ``history`` or any other user-set field, and it is a no-op when
+    there is no matching record.
+    """
+    if not fingerprint:
+        return 0
     try:
-        left_int = int(left, 16)
-        right_int = int(right, 16)
-    except ValueError:
-        return 0.0
-    xor_value = left_int ^ right_int
-    distance = xor_value.bit_count()
-    width = max(left_int.bit_length(), right_int.bit_length(), 64)
-    return max(0.0, 1.0 - (distance / width))
+        from backend.database.mongo import bug_collection as _bugs  # local import to avoid cycle
+    except Exception:
+        return 0
+    now = datetime.utcnow()
+    try:
+        result = _bugs.update_many(
+            {"fingerprint": fingerprint, "status": {"$nin": ["resolved", "closed", "Resolved", "Closed"]}},
+            {
+                "$set": {
+                    "status": "resolved",
+                    "resolved_at": now,
+                    "updated_at": now,
+                    "resolution_reason": resolution_reason,
+                    "resolved_in_run_id": test_id,
+                },
+            },
+        )
+        return int(result.modified_count or 0)
+    except Exception:
+        logger.exception("Failed to mirror resolution to bug_collection for fingerprint=%s", fingerprint)
+        return 0
 
+
+# ---------------------------------------------------------------------------
+# Backwards-compat shims (legacy public surface retained)
+# ---------------------------------------------------------------------------
+#
+# ``_stable_fingerprint`` was a SHA-256-based generator that produced
+# fingerprints in a different format from the truth engine. It has been
+# removed. New code MUST call
+# :func:`backend.services.execution_truth_engine.compute_bug_fingerprint`
+# (or the ``fingerprint_bug`` shim above) so the system has exactly one
+# fingerprint format.
+
+def _normalize_text(value: Any) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def _max_severity(left: str, right: str) -> str:
+    order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+    left_key = str(left or "low").lower()
+    right_key = str(right or "low").lower()
+    return left_key if order.get(left_key, 0) >= order.get(right_key, 0) else right_key
+
+
+def _as_list(value: Any) -> List[Any]:
+    if isinstance(value, list):
+        return value
+    if value is None:
+        return []
+    return [value]
+
+
+def _normalize_lifecycle_status(value: Any) -> str:
+    status = str(value or "monitoring").strip().lower()
+    if status in {"active", "resolved", "regressed", "flaky", "monitoring"}:
+        return status
+    return "monitoring"
+
+
+def _format_lifecycle_datetime(value: Any) -> str:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if value is None:
+        return ""
+    return str(value)
+
+
+# Silence the unused import warnings from the legacy shims that
+# re-exports the same helpers as before.
+_ = (
+    BugLifecycleEvent,
+    Collection,
+    classify_root_cause,
+    deepcopy,
+    _normalize_lifecycle_status,
+    _format_lifecycle_datetime,
+)
+
+
+# ---------------------------------------------------------------------------
+# Image fingerprint helpers (used by run_comparison_service)
+# ---------------------------------------------------------------------------
 
 def _image_hash(path: Optional[str]) -> Optional[str]:
+    """Compute a perceptual hash for a screenshot file.
+
+    Returns a 16-character hex string, or ``None`` when the path is
+    missing, non-filesystem, or unreadable. This is a perceptual
+    difference hash (dHash) over an 8x8 greyscale thumbnail of the
+    image; it is intentionally cheap and only suitable for
+    near-duplicate detection.
+    """
     if not path:
         return None
-    resolved = _resolve_path(path)
+    resolved = resolve_path(path)
     if not resolved or not resolved.exists():
         return None
     try:
+        from PIL import Image
+
         with Image.open(resolved) as image:
             image = image.convert("L").resize((9, 8))
             pixels = list(image.getdata())
@@ -426,131 +575,21 @@ def _image_hash(path: Optional[str]) -> Optional[str]:
         return None
 
 
-def _extract_screenshot_path(bug: Dict[str, Any]) -> Optional[str]:
-    for key in ("screenshot_path", "artifact_url", "image", "path"):
-        value = bug.get(key)
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-    evidence = bug.get("evidence") or {}
-    if isinstance(evidence, dict):
-        for key in ("screenshot_path", "artifact_url", "path"):
-            value = evidence.get(key)
-            if isinstance(value, str) and value.strip():
-                return value.strip()
-    return None
+def _hash_similarity(left: Optional[str], right: Optional[str]) -> float:
+    """Return 0.0-1.0 similarity between two perceptual hex hashes.
 
-
-def _collect_screenshot_map(run_data: Dict[str, Any], report_data: Optional[Dict[str, Any]]) -> Dict[str, str]:
-    screenshot_map: Dict[str, str] = {}
-    sources: List[Dict[str, Any]] = []
-    sources.extend(_as_list(run_data.get("screenshots")))
-    if report_data:
-        sources.extend(_as_list(report_data.get("screenshots")))
-        sources.extend(_as_list(report_data.get("ai_report", {}).get("screenshots")))
-    for item in sources:
-        if not isinstance(item, dict):
-            continue
-        stage = str(item.get("workflow_stage") or item.get("stage") or item.get("label") or "").strip()
-        path = _extract_screenshot_path(item)
-        if stage and path and stage not in screenshot_map:
-            screenshot_map[stage] = path
-    return screenshot_map
-
-
-def _extract_website(url: str) -> str:
-    if not url:
-        return "unknown"
-    parsed = urlparse(url)
-    return parsed.netloc or parsed.path or "unknown"
-
-
-def _bugs_from_results(results: List[Dict[str, Any]], goal: str, start_url: str, run_id: str, report_id: str, user_id: str) -> List[Dict[str, Any]]:
-    bugs: List[Dict[str, Any]] = []
-    for index, result in enumerate(results or []):
-        if not isinstance(result, dict):
-            continue
-        status = str(result.get("status") or "").lower()
-        if status not in {"fail", "failed"}:
-            continue
-
-        step = result.get("step") if isinstance(result.get("step"), dict) else {}
-        evidence = deepcopy(result.get("validation") or {}) if isinstance(result.get("validation"), dict) else {}
-        evidence.setdefault("goal", goal)
-        evidence.setdefault("run_id", run_id)
-        evidence.setdefault("report_id", report_id)
-        evidence.setdefault("selector", result.get("selector_used") or step.get("selector") or "")
-        evidence.setdefault("issue_type", result.get("failure_category") or "unknown")
-        bugs.append({
-            "title": str(result.get("test") or step.get("action") or f"Failed Step {index + 1}"),
-            "description": str(result.get("error") or result.get("details") or step.get("target") or "").strip(),
-            "severity": "medium",
-            "workflow_stage": str(step.get("action") or "unknown"),
-            "url": start_url,
-            "selector": str(result.get("selector_used") or step.get("selector") or ""),
-            "issue_type": str(result.get("failure_category") or "unknown"),
-            "bug_type": str(result.get("failure_category") or "unknown"),
-            "category": str(result.get("failure_category") or "unknown"),
-            "root_cause": result.get("root_cause") or "UNKNOWN",
-            "root_cause_confidence": result.get("root_cause_confidence") or 0.0,
-            "evidence": evidence,
-        })
-    return bugs
-
-
-def _normalize_lifecycle_status(value: Any) -> str:
-    status = str(value or "monitoring").strip().lower()
-    if status in {"active", "resolved", "regressed", "flaky", "monitoring"}:
-        return status
-    return "monitoring"
-
-
-def _format_lifecycle_datetime(value: Any) -> str:
-    if isinstance(value, datetime):
-        return value.isoformat()
-    if value is None:
-        return ""
-    return str(value)
-
-
-def _normalize_lifecycle_status(value: Any) -> str:
-    status = str(value or "monitoring").strip().lower()
-    if status in {"active", "resolved", "regressed", "flaky", "monitoring"}:
-        return status
-    return "monitoring"
-
-
-def _format_lifecycle_datetime(value: Any) -> str:
-    if isinstance(value, datetime):
-        return value.isoformat()
-    if value is None:
-        return ""
-    return str(value)
-
-
-def _normalize_text(value: Any) -> str:
-    return " ".join(str(value or "").strip().lower().split())
-
-
-def _max_severity(left: str, right: str) -> str:
-    order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
-    left_key = str(left or "low").lower()
-    right_key = str(right or "low").lower()
-    return left_key if order.get(left_key, 0) >= order.get(right_key, 0) else right_key
-
-
-def _resolve_path(path: str) -> Optional[Path]:
-    raw = str(path).strip().replace("\\", "/")
-    if raw.startswith("http://") or raw.startswith("https://"):
-        return None
-    if raw.startswith("/"):
-        raw = raw.lstrip("/")
-    project_root = Path(__file__).resolve().parents[2]
-    return (project_root / raw).resolve()
-
-
-def _as_list(value: Any) -> List[Any]:
-    if isinstance(value, list):
-        return value
-    if value is None:
-        return []
-    return [value]
+    Uses Hamming distance over the binary representation of the
+    hashes. A value of 1.0 means the hashes are identical, 0.0 means
+    they differ in every bit.
+    """
+    if not left or not right:
+        return 0.0
+    try:
+        left_int = int(left, 16)
+        right_int = int(right, 16)
+    except ValueError:
+        return 0.0
+    xor_value = left_int ^ right_int
+    distance = xor_value.bit_count()
+    width = max(left_int.bit_length(), right_int.bit_length(), 64)
+    return max(0.0, 1.0 - (distance / width))

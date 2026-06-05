@@ -382,7 +382,7 @@ export default function RunTestPage() {
       const res = await startTest({
         url: normalizedUrl,
         testName: normalizedTestName,
-        goal: executionGoal,
+        goal: testGoal,
         testType: state.testType,
         aiPlan: hasGeneratedPlan ? executionPlan : null,
         browser: state.browser || undefined,
@@ -807,7 +807,7 @@ function TestPlanPanel({
               </div>
             </div>
           ) : (
-            <div className="flex h-full min-h-[14rem] items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+            <div className="flex h-full min-h-[600px] items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
               <div className="max-w-[22rem] space-y-2">
                 <Sparkles className="mx-auto h-5 w-5 text-primary" />
                 <p className="text-[13px] font-semibold text-slate-700">No plan generated yet</p>
@@ -844,8 +844,7 @@ function ExecutionTerminal({
 }) {
   return (
     <section
-      className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs-token"
-      style={{ minHeight: "14rem", flexBasis: "38%" }}
+      className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs-token min-h-[600px] flex-[2_1_600px]"
     >
       <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-2.5">
         <div className="min-w-0">

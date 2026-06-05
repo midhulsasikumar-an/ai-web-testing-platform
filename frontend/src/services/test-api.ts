@@ -44,6 +44,15 @@ export interface AIPlanResponse {
   raw_plan?: Record<string, unknown> | null;
 }
 
+export interface TestStepResult {
+  step_index: number;
+  step_name: string;
+  status: "passed" | "failed" | "warning";
+  error?: string | null;
+  details?: string | null;
+  duration_ms?: number | null;
+}
+
 export interface TestApiResponse {
   test_id: string;
   url: string;
@@ -67,6 +76,12 @@ export interface TestApiResponse {
     failure_category?: string | null;
     root_cause?: string | null;
     root_cause_confidence?: number | null;
+    passed_steps?: number;
+    failed_steps?: number;
+    executed_steps?: number;
+    scenario_id?: string | null;
+    scenario_name?: string | null;
+    step_results?: TestStepResult[];
   }>;
 
   summary?: {
@@ -116,6 +131,7 @@ export interface TestApiResponse {
 
   artifacts?: Record<string, unknown>;
   bugs?: unknown[];
+  resolved_bug_lifecycle?: string[];
 
   stream_logs?: Array<{
     time: string;

@@ -1062,10 +1062,25 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
         steps_to_run = list(test_case.steps or [])
         results = []
         previous_url = page.url
+        scenario_label_for_log = getattr(test_case, "scenario_id", None) or getattr(test_case, "scenario_name", None) or "unknown"
+        total_steps_for_log = len(steps_to_run)
+        logger.info(
+            "Step loop start: scenario=%s  total_steps=%d",
+            scenario_label_for_log,
+            total_steps_for_log,
+        )
 
-        for step in steps_to_run:
+        for step_index, step in enumerate(steps_to_run, start=1):
             step_started = perf_counter()
             step_timeout_seconds = 30
+            logger.info(
+                "Executing step %d/%d: action=%s target=%s scenario=%s",
+                step_index,
+                total_steps_for_log,
+                getattr(step, "action", "?"),
+                getattr(step, "target", "?"),
+                scenario_label_for_log,
+            )
 
             def _check_step_budget(checkpoint: str):
                 elapsed = perf_counter() - step_started
@@ -1207,10 +1222,22 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                     verify_value = (value or "").strip().lower() if isinstance(value or "", str) else ""
                     if verify_subject:
                         resolved_verify_selector = _resolve_saucedemo_verification_target(target, selector)
+                        _from_semantic = bool(resolved_verify_selector)
+                        _from_resolver = False
+                        if not resolved_verify_selector and selector and _looks_like_selector(selector):
+                            resolved_verify_selector = selector
+                            _from_resolver = True
+                        if resolved_verify_selector:
+                            _verify_source = "semantic_target" if _from_semantic else "resolver_fallback" if _from_resolver else "generic_selector"
+                            logger.info(
+                                "Verify dispatch: subject=%r resolved=%r source=%s context_check=%s",
+                                verify_subject, resolved_verify_selector, _verify_source,
+                                "skipped" if (_from_semantic or _from_resolver) else "applied",
+                            )
                         subject_lower = verify_subject.lower()
                         if verify_value in {"visible", "present", "exists", "exist"}:
                             if resolved_verify_selector:
-                                if not _selector_matches_context(resolved_verify_selector, test_case):
+                                if not _from_semantic and not _from_resolver and not _selector_matches_context(resolved_verify_selector, test_case):
                                     raise Exception(f"Cross-feature selector reuse rejected for verification: {verify_subject}")
                                 locator = page.locator(resolved_verify_selector).first
                                 await locator.wait_for(state="visible", timeout=5000)
@@ -1227,7 +1254,7 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                                     raise Exception(f"Verification failed for expected text: {verify_subject}")
                         else:
                             if resolved_verify_selector:
-                                if not _selector_matches_context(resolved_verify_selector, test_case):
+                                if not _from_semantic and not _from_resolver and not _selector_matches_context(resolved_verify_selector, test_case):
                                     raise Exception(f"Cross-feature selector reuse rejected for verification: {verify_subject}")
                                 locator = page.locator(resolved_verify_selector).first
                                 await locator.wait_for(state="visible", timeout=5000)
@@ -1404,6 +1431,14 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                     "selector_fallback_used": selector_fallback_used,
                     "verification_mismatch": verification_mismatch,
                 })
+                logger.info(
+                    "Step %d/%d result: action=%s status=%s results_so_far=%d",
+                    step_index,
+                    total_steps_for_log,
+                    action,
+                    status,
+                    len(results),
+                )
                 if status == "passed" and selector:
                     try:
                         record_selector_success(
@@ -1506,6 +1541,14 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                         "selector_fallback_used": selector_fallback_used,
                         "verification_mismatch": action_lower == "verify" and status == "failed",
                     })
+                    logger.info(
+                        "Step %d/%d result (recovered): action=%s status=%s results_so_far=%d",
+                        step_index,
+                        total_steps_for_log,
+                        action,
+                        status,
+                        len(results),
+                    )
                     await _emit_progress(progress_callback, {
                         "type": "timeline_step",
                         "message": f"Recovered step: {action}",
@@ -1565,6 +1608,15 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                     "selector_fallback_used": selector_fallback_used,
                     "verification_mismatch": action_lower == "verify" and status == "failed",
                 })
+                logger.info(
+                    "Step %d/%d result (exception): action=%s status=%s results_so_far=%d error=%s",
+                    step_index,
+                    total_steps_for_log,
+                    action,
+                    status,
+                    len(results),
+                    str(e)[:120],
+                )
                 await _emit_progress(progress_callback, {
                     "type": "bug_detected",
                     "message": f"Step failed: {action}",
@@ -1573,6 +1625,13 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                 })
                 previous_url = page.url
 
+        logger.info(
+            "Step loop finished: scenario=%s  expected=%d  executed=%d  skipped=%d",
+            scenario_label_for_log,
+            total_steps_for_log,
+            len(results),
+            max(0, total_steps_for_log - len(results)),
+        )
         final_url = page.url
         try:
             final_title = await page.title()
@@ -1599,7 +1658,17 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
             session_storage = {}
         await _cleanup_runtime_resources("execution-complete")
         metrics = _build_execution_metrics(len(steps_to_run), results)
-        run_status = "completed_with_failures" if metrics["failed_tasks"] else "completed"
+        if metrics["skipped_tasks"] > 0:
+            logger.warning(
+                "Incomplete step execution: scenario=%s  expected=%d  executed=%d  skipped=%d",
+                scenario_label_for_log,
+                total_steps_for_log,
+                metrics["completed_tasks"] + metrics["failed_tasks"],
+                metrics["skipped_tasks"],
+            )
+            run_status = "failed"
+        else:
+            run_status = "completed_with_failures" if metrics["failed_tasks"] else "completed"
         await _emit_progress(progress_callback, {
             "type": "run_status",
             "message": f"Scenario finished: {test_case.title or test_case.scenario_name or 'untitled'}",
@@ -1627,6 +1696,12 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
         logger.warning("Playwright execution cancelled; returning partial results", exc_info=False)
         partial_results = list(locals().get("results", []))
         total_steps = len(locals().get("steps_to_run", list(getattr(test_case, "steps", []) or [])))
+        logger.warning(
+            "CancelledError: scenario=%s  expected_steps=%d  collected_results=%d",
+            getattr(test_case, "scenario_id", None) or getattr(test_case, "scenario_name", "?"),
+            total_steps,
+            len(partial_results),
+        )
         try:
             await _cleanup_runtime_resources("cancelled")
         except Exception:

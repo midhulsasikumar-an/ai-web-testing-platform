@@ -20,7 +20,19 @@ from backend.services.scoring.report_generator import generate_report
 from backend.services.scoring.ai_summary import generate_summary_line
 from backend.services.scoring.overall_status import calculate_overall_status
 from backend.services.bug_services import create_bugs_from_test
+from backend.services.bug_lifecycle_service import (
+    reconcile_bugs_on_passing_run,
+    sync_bugs_collection_to_lifecycle,
+)
+from backend.services.execution_truth_engine import (
+    BUG_EVENT_DETECTED,
+    BUG_EVENT_RESOLVED,
+    evaluate_test_run,
+    is_passing as _truth_is_passing,
+    health_score as _truth_health_score,
+)
 from backend.services.asset_auth import build_artifact_url, build_screenshot_url
+from backend.utils.url_utils import canonicalize_url as _canonicalize_url
 from backend.ai.schema.test_plan_schema import TestCase
 from backend.services.dom_service import extract_page_elements
 from backend.services.action_translation_service import translate_test_case
@@ -116,6 +128,60 @@ def _collect_recovery_summary(results: List[Dict[str, Any]]) -> Dict[str, int]:
         "successful_recoveries": recoveries_successful,
         "steps_saved_by_recovery": steps_saved_by_recovery,
     }
+
+
+def _apply_truth_engine(test_data: Dict[str, Any], results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Run the canonical truth engine and stamp its verdict onto test_data.
+
+    This is the only function in this module that is allowed to compute
+    ``overall_status`` and ``health_score`` for a run. Every other
+    function in the system must consume the values it writes.
+
+    The truth engine normalises step statuses, computes scenario
+    statuses, rolls up the overall status, computes a health-score
+    metric (informational only), and emits BUG_DETECTED / BUG_RESOLVED
+    events. The test_data dict receives the canonical fields:
+
+      * ``overall_status``         -- "pass" | "fail"
+      * ``health_score``           -- 0-100 informational integer
+      * ``scenario_results``       -- canonical per-scenario records
+      * ``step_results``           -- canonical per-step records
+      * ``bug_events``             -- BUG_DETECTED events from this run
+      * ``resolution_events``      -- BUG_RESOLVED events (filled by lifecycle)
+      * ``insights``               -- derived from the truth (passes/fails
+                                      are authoritative; counts only)
+    """
+    truth = evaluate_test_run({"results": list(results or [])})
+
+    canonical_status = truth.get("overall_status")
+    test_data["overall_status"] = "pass" if canonical_status == "PASS" else "fail"
+    test_data["health_score"] = _truth_health_score(truth)
+    test_data["scenario_results"] = truth.get("scenario_results") or []
+    test_data["step_results"] = truth.get("step_results") or []
+    test_data["bug_events"] = truth.get("bug_events") or []
+    test_data["resolution_events"] = truth.get("resolution_events") or []
+
+    # Insights are derived from the truth engine so they can never disagree
+    # with overall_status. Critical/moderate/minor are simple counts.
+    bug_events = truth.get("bug_events") or []
+    severity_counts: Dict[str, int] = {"high": 0, "medium": 0, "low": 0}
+    for event in bug_events:
+        sev = str(event.get("severity") or "low").lower()
+        severity_counts[sev] = severity_counts.get(sev, 0) + 1
+    test_data["insights"] = {
+        "critical": [event.get("error") or event.get("step_name") or "Failure" for event in bug_events if str(event.get("severity") or "").lower() == "high"],
+        "moderate": [event.get("error") or event.get("step_name") or "Failure" for event in bug_events if str(event.get("severity") or "").lower() == "medium"],
+        "minor": [event.get("error") or event.get("step_name") or "Failure" for event in bug_events if str(event.get("severity") or "").lower() == "low"],
+    }
+
+    # Summary counts use the canonical scenario roll-up.
+    canonical_scenarios = truth.get("scenario_results") or []
+    test_data["summary"] = dict(test_data.get("summary") or {})
+    test_data["summary"]["total"] = len(canonical_scenarios)
+    test_data["summary"]["passed"] = sum(1 for s in canonical_scenarios if s.get("status") == "PASS")
+    test_data["summary"]["failed"] = sum(1 for s in canonical_scenarios if s.get("status") == "FAIL")
+    test_data["summary"]["info"] = 0
+    return truth
 
 
 def _normalize_text(value: Any) -> str:
@@ -596,7 +662,8 @@ def create_test_run(req: TestRequest, user_id: str):
         "user_id": user_id,
         "execution_id": test_id,
         "test_id": test_id,
-        "url": req.url,
+        "url": _canonicalize_url(req.url),
+        "target_url": _canonicalize_url(req.url),
         "test_name": req.test_name,
         "name": req.test_name,
         "project": req.project_name,
@@ -684,12 +751,17 @@ def run_test_and_update(test_data, url, user_id: str):
         test_data["summary"]["skipped_tasks"] = 0
 
     try:
-        insights = generate_insights(results or [])
-        test_data["insights"] = insights
-        test_data["overall_status"] = calculate_overall_status(results or [], insights, test_data.get("health_score", 0))
+        # Truth engine is the single source of truth. It returns the
+        # canonical overall_status, health_score, scenario_results, and
+        # bug_events in one shot. The legacy insights / recommendations
+        # / report / ai_summary helpers consume the truth-engine output
+        # so they cannot drift from it.
+        truth = _apply_truth_engine(test_data, results)
+        insights = test_data.get("insights") or {}
         test_data["recommendations"] = generate_recommendations(insights)
         test_data["report"] = generate_report(test_data.get("health_score", 0), test_data.get("summary"), insights)
         test_data["ai_summary"] = generate_summary_line(test_data.get("health_score", 0), test_data.get("summary"), insights)
+        test_data["bug_events"] = truth.get("bug_events") or []
     except Exception:
         logger.exception("Legacy scoring pipeline failed for test_id=%s", test_data.get("test_id"))
 
@@ -732,6 +804,12 @@ def run_test_and_update(test_data, url, user_id: str):
                 except Exception:
                     logger.exception("Legacy create_bugs failed for test_id=%s", test_data.get("test_id"))
 
+            async def _reconcile():
+                try:
+                    reconcile_bugs_on_passing_run(test_data)
+                except Exception:
+                    logger.exception("Legacy reconcile_bugs failed for test_id=%s", test_data.get("test_id"))
+
             async def _save():
                 try:
                     save_report(
@@ -752,6 +830,7 @@ def run_test_and_update(test_data, url, user_id: str):
                 payload=test_data,
                 save_report_fn=_save,
                 create_bugs_fn=_bugs,
+                reconcile_bugs_fn=_reconcile,
             )
 
         try:
@@ -763,6 +842,10 @@ def run_test_and_update(test_data, url, user_id: str):
                 create_bugs_from_test(test_data)
             except Exception:
                 logger.exception("Legacy create_bugs failed for test_id=%s", test_data.get("test_id"))
+            try:
+                reconcile_bugs_on_passing_run(test_data)
+            except Exception:
+                logger.exception("Legacy reconcile_bugs failed for test_id=%s", test_data.get("test_id"))
             try:
                 save_report(
                     test_data,
@@ -1036,6 +1119,68 @@ def _build_objective_coverage(objective_tracking: List[Dict[str, Any]], flattene
     return objective_coverage
 
 
+def _normalize_step_status(raw_status: Any) -> str:
+    """Normalize a step-level status to the API contract: passed | failed | warning.
+
+    The execution engine emits both legacy ("pass"/"fail") and current
+    ("passed"/"failed") spellings, plus ad-hoc values like "skipped", "info"
+    and "warning". The UI relies on a stable three-value contract so that
+    per-step badges and the test history detail page can render reliably.
+    """
+    value = str(raw_status or "").strip().lower()
+    if value in {"pass", "passed", "completed", "success", "ok"}:
+        return "passed"
+    if value in {"fail", "failed", "error", "broken"}:
+        return "failed"
+    if value == "warning":
+        return "warning"
+    return "warning"
+
+
+def _build_step_api_entry(step_result: Dict[str, Any], step_index: int) -> Dict[str, Any]:
+    """Project a raw step_result into the safe API contract shape.
+
+    The raw step_result from execution_service contains a great deal of
+    internal metadata (selector_used, recovery_actions, execution_context,
+    validation dict, etc.) that the UI does not need. This projection keeps
+    only the fields the test history page needs while still being permissive
+    enough that future additions do not break the contract.
+    """
+    if not isinstance(step_result, dict):
+        return {
+            "step_index": step_index,
+            "step_name": f"Step {step_index}",
+            "status": "warning",
+            "error": None,
+            "details": None,
+            "duration_ms": None,
+        }
+
+    step_meta = step_result.get("step") if isinstance(step_result.get("step"), dict) else {}
+    action = step_meta.get("action") or step_result.get("test") or ""
+    target = step_meta.get("target") or step_meta.get("selector") or step_result.get("selector_used") or ""
+    step_name = f"{action} {target}".strip() if (action or target) else f"Step {step_index}"
+
+    error_text = step_result.get("error") or step_result.get("recovery_error") or None
+    details_text = step_result.get("details") or step_result.get("recovery_hint") or None
+    if step_result.get("status") == "failed" and not error_text and not details_text:
+        details_text = "Step failed"
+
+    status = _normalize_step_status(step_result.get("status"))
+
+    validation = step_result.get("validation") if isinstance(step_result.get("validation"), dict) else {}
+    duration_ms = validation.get("duration_ms") if isinstance(validation.get("duration_ms"), (int, float)) else None
+
+    return {
+        "step_index": step_index,
+        "step_name": step_name[:200] if isinstance(step_name, str) else f"Step {step_index}",
+        "status": status,
+        "error": error_text,
+        "details": details_text,
+        "duration_ms": duration_ms,
+    }
+
+
 def _build_scenario_result(
     step_results: List[Dict[str, Any]],
     scenario_case: TestCase,
@@ -1061,6 +1206,28 @@ def _build_scenario_result(
     original_step = failed_step.get("step") if isinstance(failed_step, dict) else None
     replan_attempts = list(recovery_history or [])
     is_failure_status = scenario_status in {"failed", "timed_out", "cancelled"}
+
+    expected_steps = len(getattr(scenario_case, "steps", None) or [])
+    executed_steps = sum(
+        1 for item in step_results
+        if item.get("status") in {"pass", "passed", "completed", "fail", "failed"}
+    )
+    incomplete_execution = expected_steps > 0 and executed_steps < expected_steps
+
+    if incomplete_execution and not is_failure_status:
+        is_failure_status = True
+        if not failure_reason:
+            failure_reason = f"incomplete_execution: {executed_steps}/{expected_steps} steps completed"
+        if not failure_category:
+            failure_category = "INCOMPLETE"
+        if not root_cause:
+            root_cause = "INCOMPLETE_EXECUTION"
+
+    safe_step_results = [
+        _build_step_api_entry(item, index)
+        for index, item in enumerate(step_results or [], start=1)
+    ]
+
     return {
         "test": scenario_case.title or scenario_case.scenario_name or scenario_case.objective_name or "Scenario",
         "status": "fail" if is_failure_status else "pass",
@@ -1071,12 +1238,12 @@ def _build_scenario_result(
         "scenario_name": scenario_case.scenario_name or scenario_case.title,
         "feature_key": getattr(scenario_case, "feature_key", None),
         "coverage_level": getattr(scenario_case, "coverage_level", None),
-        "generated_steps": len(step_results),
-        "executed_steps": sum(1 for item in step_results if item.get("status") in {"pass", "passed", "completed", "fail", "failed"}),
+        "generated_steps": expected_steps or len(step_results),
+        "executed_steps": executed_steps,
         "skipped_steps": skipped_steps,
         "passed_steps": passed_steps,
         "failed_steps": failed_steps,
-        "step_results": step_results,
+        "step_results": safe_step_results,
         "original_step": original_step,
         "failure_reason": failure_reason or error,
         "failure_category": failure_category,
@@ -1119,7 +1286,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
     try:
         # Normalize minimal expected test_data fields to avoid downstream KeyErrors
         if not test_data.get("url"):
-            test_data["url"] = url
+            test_data["url"] = _canonicalize_url(url)
+        test_data["target_url"] = _canonicalize_url(test_data.get("target_url") or test_data.get("url") or url)
         is_valid_plan, plan_validation_payload = _validate_plan_objectives(plan)
         if not is_valid_plan:
             test_data["status"] = "failed"
@@ -1441,10 +1609,17 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         }
 
         try:
-            score_data = calculate_health_score(scenario_results, objective_coverage=objective_coverage)
-            test_data["health_score"] = score_data["health_score"]
-            test_data["summary"] = score_data["summary"]
-            test_data["coverage_score"] = score_data.get("coverage_score", score_data["health_score"])
+            # Truth engine is the single source of truth for scenario /
+            # step / overall status. calculate_health_score is used only
+            # for auxiliary diagnostic fields (coverage / confidence /
+            # pass-rate) -- it can never override the canonical verdict.
+            truth = _apply_truth_engine(test_data, scenario_results)
+            canonical_scenarios = truth.get("scenario_results") or []
+            score_data = calculate_health_score(
+                canonical_scenarios,
+                objective_coverage=objective_coverage,
+            )
+            test_data["coverage_score"] = score_data.get("coverage_score", test_data.get("health_score", 0))
             test_data["confidence_score"] = score_data.get("confidence_score", 0)
             test_data["objective_pass_rate"] = score_data.get("objective_pass_rate", 0)
             test_data["scenario_pass_rate"] = score_data.get("scenario_pass_rate", 0)
@@ -1452,21 +1627,9 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         except Exception:
             test_data["health_score"] = 0
 
-        test_data["summary"].update(_collect_recovery_summary(scenario_results))
-        fallback_completed = sum(1 for item in scenario_results if item.get("status") == "pass")
-        fallback_failed = sum(1 for item in scenario_results if item.get("status") == "fail")
-        test_data["summary"]["total_tasks"] = len(scenario_results)
-        test_data["summary"]["completed_tasks"] = fallback_completed
-        test_data["summary"]["successful_tasks"] = test_data["summary"]["completed_tasks"]
-        test_data["summary"]["failed_tasks"] = fallback_failed
-        test_data["summary"]["skipped_tasks"] = 0
-        test_data["summary"]["recovery_attempts"] = int(test_data["summary"].get("recovery_attempts", 0) or 0)
-        test_data["summary"]["successful_recoveries"] = int(test_data["summary"].get("successful_recoveries", 0) or 0)
-
-        failure_category_counts = collect_failure_category_counts(scenario_results)
-        insights = generate_insights(scenario_results)
-        test_data["insights"] = insights
-        test_data["overall_status"] = calculate_overall_status(scenario_results, insights, test_data.get("health_score", 0))
+        test_data["summary"].update(_collect_recovery_summary(test_data.get("scenario_results") or scenario_results))
+        failure_category_counts = collect_failure_category_counts(test_data.get("scenario_results") or scenario_results)
+        insights = test_data.get("insights") or {}
         test_data["recommendations"] = generate_recommendations(insights)
         test_data["report"] = generate_report(test_data.get("health_score", 0), test_data.get("summary"), insights)
         test_data["ai_summary"] = generate_summary_line(test_data.get("health_score", 0), test_data.get("summary"), insights, dict(failure_category_counts))
@@ -1554,6 +1717,39 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             except Exception:
                 logger.exception("create_bugs_from_test failed for test_id=%s", test_data.get("test_id"))
 
+        async def _reconcile_bugs_best_effort() -> None:
+            """Resolve previously-open bug lifecycle records that this run
+            has now demonstrated to be fixed. Best-effort: failures here are
+            logged but do not affect the terminal state of the run.
+            """
+            try:
+                resolved = reconcile_bugs_on_passing_run(test_data)
+                if resolved:
+                    test_data["resolved_bug_lifecycle"] = [
+                        record.get("fingerprint") for record in resolved
+                    ]
+                    logger.info(
+                        "Reconciled %d bug lifecycle record(s) to Resolved for test_id=%s",
+                        len(resolved),
+                        test_data.get("test_id"),
+                    )
+            except Exception:
+                logger.exception(
+                    "reconcile_bugs_on_passing_run failed for test_id=%s",
+                    test_data.get("test_id"),
+                )
+            # Mirror manually-closed bugs from the bugs collection so
+            # lifecycle stays in sync (best-effort).
+            try:
+                synced = sync_bugs_collection_to_lifecycle()
+                if synced:
+                    logger.info(
+                        "Synced %d manually-closed bug(s) into bug_lifecycle",
+                        synced,
+                    )
+            except Exception:
+                logger.exception("sync_bugs_collection_to_lifecycle failed for test_id=%s", test_data.get("test_id"))
+
         async def _save_report_best_effort() -> None:
             try:
                 save_report(
@@ -1581,6 +1777,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 save_report_fn=_save_report_best_effort,
                 create_bugs_fn=_create_bugs_best_effort,
                 close_browser_fn=_close_browser_best_effort,
+                reconcile_bugs_fn=_reconcile_bugs_best_effort,
             )
         except Exception:
             logger.exception("enforce_terminal_write crashed for test_id=%s; falling back to direct write", test_data.get("test_id"))
@@ -1637,6 +1834,12 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             except Exception:
                 logger.exception("Bug creation failed during cancellation for test_id=%s", test_data.get("test_id"))
 
+        async def _reconcile_bugs_cancel() -> None:
+            try:
+                reconcile_bugs_on_passing_run(test_data)
+            except Exception:
+                logger.exception("Bug reconciliation failed during cancellation for test_id=%s", test_data.get("test_id"))
+
         async def _save_report_cancel() -> None:
             try:
                 save_report(
@@ -1661,6 +1864,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 payload=test_data,
                 save_report_fn=_save_report_cancel,
                 create_bugs_fn=_create_bugs_cancel,
+                reconcile_bugs_fn=_reconcile_bugs_cancel,
             )
         except Exception:
             logger.exception("enforce_terminal_write failed during cancellation for test_id=%s", test_data.get("test_id"))
