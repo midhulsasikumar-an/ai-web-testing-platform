@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { TestResult, StreamLogLine } from "@/types";
+import type { StreamLogLine } from "@/types";
 import { useBugContext } from "@/context/bug-context";
 import type { TestApiResponse } from "@/services/test-api";
 import {
@@ -26,6 +26,18 @@ const FALLBACK_STREAM: StreamLogLine[] = [
   { time: "00:08", level: "info", msg: "Phase 5: Performance metrics collection..." },
 ];
 
+const TERMINAL_TEST_STATUSES = new Set([
+  "completed",
+  "completed_with_failures",
+  "failed",
+  "cancelled",
+  "timed_out",
+]);
+
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ITERATIONS = 600;
+const STUCK_THRESHOLD = 20; // 20 polls * 3s = 60s with no status change => stuck
+
 // ── Hook ──────────────────────────────────────
 
 export function useTestRunner() {
@@ -41,6 +53,8 @@ export function useTestRunner() {
 
   const streamLinesRef = useRef<StreamLogLine[]>([]);
   const streamRef = useRef<HTMLDivElement>(null);
+  const cancelledRef = useRef(false);
+  const runIdRef = useRef<string | null>(null);
 
   // Auto-scroll stream container
   useEffect(() => {
@@ -48,6 +62,13 @@ export function useTestRunner() {
       streamRef.current.scrollTop = streamRef.current.scrollHeight;
     }
   }, [streamLines]);
+
+  useEffect(() => {
+    return () => {
+      cancelledRef.current = true;
+      runIdRef.current = null;
+    };
+  }, []);
 
   const appendStream = useCallback((line: StreamLogLine) => {
     setStreamLines((prev) => {
@@ -60,6 +81,7 @@ export function useTestRunner() {
   const runTest = useCallback(async () => {
     if (!url.trim()) return;
 
+    cancelledRef.current = false;
     setLoading(true);
     setResult(null);
     setStreamLines([]);
@@ -68,6 +90,7 @@ export function useTestRunner() {
     try {
       // 1. Initial stream
       for (const line of INITIAL_STREAM) {
+        if (cancelledRef.current) return;
         await new Promise((r) => setTimeout(r, 400));
         appendStream(line);
       }
@@ -85,6 +108,8 @@ export function useTestRunner() {
         testType
       );
 
+      runIdRef.current = startResponse.test_id;
+
       appendStream({
         time: "00:04",
         level: "info",
@@ -92,12 +117,33 @@ export function useTestRunner() {
       });
 
       // 3. Poll backend
-      let testData: TestApiResponse ;
+      let testData: TestApiResponse | undefined;
+      let iterations = 0;
+      let lastSeenStatus: string | null = null;
+      let pollsSinceLastChange = 0;
 
-      while (true) {
-        await new Promise((r) => setTimeout(r, 3000));
+      while (!cancelledRef.current && iterations < MAX_POLL_ITERATIONS) {
+        iterations += 1;
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+        if (cancelledRef.current) return;
 
-        testData = await getTestById(startResponse.test_id);
+        try {
+          testData = await getTestById(startResponse.test_id);
+        } catch (pollError) {
+          appendStream({
+            time: "00:05",
+            level: "warn",
+            msg: `Polling error (will retry): ${pollError instanceof Error ? pollError.message : "unknown"}`,
+          });
+          continue;
+        }
+
+        if (testData.status !== lastSeenStatus) {
+          lastSeenStatus = testData.status;
+          pollsSinceLastChange = 0;
+        } else {
+          pollsSinceLastChange += 1;
+        }
 
         appendStream({
           time: "00:05",
@@ -105,11 +151,28 @@ export function useTestRunner() {
           msg: `Current status: ${testData.status}`,
         });
 
-        if (testData.status !== "running") break;
+        if (TERMINAL_TEST_STATUSES.has(testData.status)) break;
+
+        // If the status has not changed for a long time, surface a warning
+        // so the user knows the backend watchdog is taking over.
+        if (pollsSinceLastChange === STUCK_THRESHOLD) {
+          appendStream({
+            time: "00:05",
+            level: "warn",
+            msg: "No status change in 60s. The execution watchdog will force a timeout if this persists.",
+          });
+        }
+      }
+
+      if (cancelledRef.current) return;
+
+      if (!testData) {
+        throw new Error("Test data not received from backend");
       }
 
       // 4. Stream results from backend (NO DECISION LOGIC)
       for (const res of testData.results) {
+        if (cancelledRef.current) return;
         await new Promise((r) => setTimeout(r, 600));
 
         appendStream({
@@ -122,40 +185,44 @@ export function useTestRunner() {
       }
 
       // 5. FINAL RESULT (backend is source of truth)
-      if (!testData) {
-        throw new Error("Test data not received from backend");
-      }
+      if (cancelledRef.current) return;
       setResult(testData);
       addTestResult(testData);
     } catch {
-      appendStream({
-        time: "00:04",
-        level: "error",
-        msg: "Failed to connect to AI backend. Falling back to simulation...",
-      });
+      if (!cancelledRef.current) {
+        appendStream({
+          time: "00:04",
+          level: "error",
+          msg: "Failed to connect to AI backend. Falling back to simulation...",
+        });
 
-      for (const line of FALLBACK_STREAM) {
-        await new Promise((r) => setTimeout(r, 400));
-        appendStream(line);
+        for (const line of FALLBACK_STREAM) {
+          if (cancelledRef.current) return;
+          await new Promise((r) => setTimeout(r, 400));
+          appendStream(line);
+        }
       }
     } finally {
-      setLoading(false);
+      if (!cancelledRef.current) {
+        setLoading(false);
+      }
+      runIdRef.current = null;
     }
   }, [url, projectName, testType, appendStream, addTestResult]);
 
   return {
     url,
+    setUrl,
     githubUrl,
+    setGithubUrl,
     projectName,
+    setProjectName,
     testType,
+    setTestType,
+    runTest,
     loading,
     result,
     streamLines,
     streamRef,
-    setUrl,
-    setGithubUrl,
-    setProjectName,
-    setTestType,
-    runTest,
   };
 }

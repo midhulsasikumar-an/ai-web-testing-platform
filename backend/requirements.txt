@@ -1,21 +1,16 @@
 # Backend Python dependencies
 fastapi
 uvicorn[standard]
-pymongo
+pymongo[srv]
 python-dotenv
 python-jose[cryptography]
-passlib[bcrypt]
 slowapi
 playwright
-reportlab
 argon2-cffi
 bcrypt
 Pillow
 pydantic[email]
 pydantic-settings
 groq
-openai
-
-# Fallback HTML parsing for environments without Playwright
 requests
 beautifulsoup4

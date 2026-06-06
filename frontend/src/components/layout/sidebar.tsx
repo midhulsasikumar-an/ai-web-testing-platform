@@ -2,164 +2,159 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Plus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Play,
-  Bug,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  History,
-  LogOut,
-  User,
-} from "lucide-react";
-import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
-import { SystemStatus } from "@/components/dashboard/system-status";
+import { PRIMARY_NAV, SECONDARY_NAV, type NavItem } from "@/lib/navigation";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/run-test", label: "Run Test", icon: Play },
-  { href: "/test-history", label: "History", icon: History },
-  { href: "/bugs", label: "Bugs", icon: Bug },
-];
-
-const bottomNavItems = [
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/profile", label: "Profile", icon: User },
-];
-
-export function Sidebar() {
+function NavRow({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
-  const { user, logout } = useAuth();
+  const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const Icon = item.icon;
 
-  const initials = user
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "??";
-
-  const renderNavLink = (
-    { href, label, icon: Icon }: (typeof navItems)[0],
-  ) => {
-    const active =
-      href === "/" ? pathname === "/" : pathname.startsWith(href);
-    return (
-      <Link
-        key={href}
-        href={href}
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "group/nav relative flex items-center gap-3 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-all duration-150",
+        active
+          ? "bg-blue-50 text-blue-700"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      )}
+    >
+      {active ? (
+        <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-blue-600" />
+      ) : null}
+      <span
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors",
           active
-            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25"
-            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-white text-blue-600 shadow-xs-token"
+            : "bg-transparent text-slate-500 group-hover/nav:bg-white group-hover/nav:text-slate-700"
         )}
       >
-        <Icon className="h-[18px] w-[18px] shrink-0" />
-        {!collapsed && <span>{label}</span>}
-      </Link>
-    );
-  };
+        <Icon className="h-[15px] w-[15px]" strokeWidth={2.25} />
+      </span>
+      {!collapsed ? (
+        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+          <span className="truncate">{item.label}</span>
+        </span>
+      ) : null}
+      {!collapsed && item.badge ? (
+        <span className="ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-100 px-1.5 text-[10px] font-semibold text-blue-700">
+          {item.badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
+interface SidebarProps {
+  onNavigate?: () => void;
+  variant?: "desktop" | "mobile";
+}
+
+export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
+  const collapsed = false;
+  const isMobile = variant === "mobile";
+  const { user } = useAuth();
 
   return (
     <aside
       className={cn(
-        "sticky top-0 h-screen flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
-        collapsed ? "w-[68px]" : "w-[250px]"
+        "flex h-full flex-col bg-white text-slate-700",
+        isMobile
+          ? "w-full"
+          : "w-64 shrink-0 border-r border-slate-200/80"
       )}
     >
-      {/* Logo / Brand */}
-      <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-          <Zap className="h-5 w-5" />
+      {/* Brand */}
+      <div className="flex h-14 items-center gap-2.5 border-b border-slate-200/80 px-4">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 text-white shadow-sm">
+          <Sparkles className="h-4 w-4" />
         </div>
-        {!collapsed && (
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-bold tracking-tight text-white truncate">
-              SignalTrack
+        {!collapsed ? (
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="text-[14px] font-semibold tracking-tight text-slate-900">
+              TestPilot <span className="text-blue-600">AI</span>
             </span>
-            <span className="text-[0.65rem] text-sidebar-foreground/60 truncate">
-              Precision QA System
+            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">
+              v2.0 · Pro
             </span>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Main Navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        {!collapsed && (
-          <p className="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
-            Main
-          </p>
-        )}
-        {navItems.map(renderNavLink)}
+      {/* Quick action */}
+      <div className="px-3 pt-3">
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title="Project workspaces ship in a future release. Use the AI Workspace to start new tests for now."
+          className="group flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-[12.5px] font-medium text-slate-400 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          {!collapsed ? <span>New project</span> : null}
+        </button>
+      </div>
 
-        {/* Separator + Bottom Nav */}
-        <div className="pt-4 mt-4 border-t border-sidebar-border/50 space-y-1">
-          {!collapsed && (
-            <p className="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
-              Account
-            </p>
-          )}
-          {bottomNavItems.map(renderNavLink)}
-        </div>
+      {/* Primary navigation */}
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        {PRIMARY_NAV.map((section) => (
+          <div key={section.label} className="space-y-1">
+            {!collapsed ? (
+              <h3 className="px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                {section.label}
+              </h3>
+            ) : null}
+            <div className="space-y-0.5">
+              {section.items.map((item) => (
+                <div key={item.href} onClick={onNavigate}>
+                  <NavRow item={item} collapsed={collapsed} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* System Status */}
-      <div className="px-3 pb-1">
-        <SystemStatus collapsed={collapsed} />
-      </div>
-
-      {/* User section */}
-      <div className="border-t border-sidebar-border p-3">
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2",
-            collapsed && "justify-center px-0"
-          )}
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white text-xs font-bold">
-            {initials}
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-semibold text-white truncate">
-                {user?.name || "User"}
-              </span>
-              <span className="text-[0.65rem] text-sidebar-foreground/50 truncate">
-                {user?.email || ""}
-              </span>
+      {/* Secondary navigation */}
+      <div className="border-t border-slate-200/80 px-3 py-3">
+        <div className="space-y-0.5">
+          {SECONDARY_NAV.map((item) => (
+            <div key={item.href} onClick={onNavigate}>
+              <NavRow item={item} collapsed={collapsed} />
             </div>
-          )}
-          {!collapsed && (
-            <button
-              onClick={logout}
-              className="p-1.5 rounded-md text-sidebar-foreground/40 hover:text-red-400 hover:bg-sidebar-accent transition-all duration-200"
-              title="Sign out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed((c) => !c)}
-        className="flex items-center justify-center h-10 border-t border-sidebar-border text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-all duration-200"
-      >
-        {collapsed ? (
-          <ChevronRight className="h-4 w-4" />
-        ) : (
-          <ChevronLeft className="h-4 w-4" />
-        )}
-      </button>
+      {/* Informational account footer (no interactive controls).
+          Account actions live in the navbar user menu. */}
+      <div className="border-t border-slate-200/80 p-3">
+        <div className="flex items-center gap-2.5 rounded-md p-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-slate-700 to-slate-900 text-[10.5px] font-semibold text-white">
+            {(user?.name || "AM")
+              .split(" ")
+              .map((segment) => segment[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()}
+          </span>
+          {!collapsed ? (
+            <div className="min-w-0 flex-1 leading-tight">
+              <p className="truncate text-[12.5px] font-medium text-slate-900">
+                {user?.name || "Signed in"}
+              </p>
+              <p className="truncate text-[11px] text-slate-500">
+                {user?.email || "—"}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </aside>
   );
 }

@@ -21,6 +21,11 @@ frontend/.env.local
 frontend/.next/
 frontend/out/
 frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Runtime artifacts
+artifacts/
+screenshots/
 
 # IDE
 .vscode/

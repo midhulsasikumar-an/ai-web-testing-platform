@@ -1,17 +1,16 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   title: string;
-  value: number;
+  value: string | number;
   icon: LucideIcon;
   trend?: string;
-  trendUp?: boolean;
+  trendIcon?: LucideIcon;
+  trendColor?: string;
   className?: string;
-  colorType?: "primary" | "green" | "red" | "amber" | "blue";
 }
 
 export function StatCard({
@@ -19,49 +18,34 @@ export function StatCard({
   value,
   icon: Icon,
   trend,
-  trendUp,
+  trendIcon: TrendIcon,
+  trendColor = "text-slate-500",
   className,
-  colorType = "primary",
 }: StatCardProps) {
-
-  const colors = {
-    primary: { bg: "bg-primary", text: "text-primary", light: "bg-primary/10" },
-    green: { bg: "bg-green-500", text: "text-green-600", light: "bg-green-500/10" },
-    red: { bg: "bg-red-500", text: "text-red-500", light: "bg-red-500/10" },
-    amber: { bg: "bg-amber-500", text: "text-amber-600", light: "bg-amber-500/10" },
-    blue: { bg: "bg-blue-500", text: "text-blue-500", light: "bg-blue-500/10" },
-  }[colorType];
-
   return (
-    <Card className={cn("relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group", className)}>
-      <div className={cn("absolute top-0 left-0 right-0 h-1 rounded-t-lg", colors.bg)} />
+    <div
+      className={cn(
+        "shell-surface rounded-xl border border-border p-5 shadow-xs-token flex flex-col justify-between gap-3",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-eyebrow">{title}</h3>
+        <Icon className="h-4 w-4 text-slate-400" />
+      </div>
 
-      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg transition-colors", colors.light)}>
-          <Icon className={cn("h-4 w-4", colors.text)} />
+      <div className="space-y-1.5">
+        <div className="text-h1 tracking-tight text-slate-900">
+          {typeof value === "number" ? value.toLocaleString() : value}
         </div>
-      </CardHeader>
-      <CardContent className="pb-4">
-        <div className="text-3xl font-bold tracking-tight">
-          {value.toLocaleString()}
-        </div>
+
         {trend && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            {trendUp !== undefined && (
-              <span className={cn(
-                "text-xs font-semibold",
-                trendUp ? "text-green-600" : "text-red-500"
-              )}>
-                {trendUp ? "↑" : "↓"}
-              </span>
-            )}
-            <p className="text-xs text-muted-foreground">{trend}</p>
+          <div className={cn("flex items-start gap-1.5", trendColor)}>
+            {TrendIcon && <TrendIcon className="h-3.5 w-3.5 mt-0.5 shrink-0" />}
+            <span className="text-[12px] leading-snug">{trend}</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

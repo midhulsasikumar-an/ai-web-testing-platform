@@ -6,7 +6,9 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "python -m uvicorn backend.server:app --reload --host 127.0.0.1 --port 8001",
     "install:all": "npm --prefix frontend install && python -m pip install -r backend/requirements.txt",
-    "build": "npm --prefix frontend run build"
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "test:backend": "python -m pytest -q backend/tests"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

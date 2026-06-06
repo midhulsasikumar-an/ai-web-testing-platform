@@ -39,7 +39,7 @@ export function BugDialog({ bug }: BugDialogProps) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Update Bug Status</DialogTitle>
-            <DialogDescription>{bug.id} — {bug.title}</DialogDescription>
+            <DialogDescription>{bug.bug_name || bug.title}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">

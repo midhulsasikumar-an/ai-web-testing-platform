@@ -36,5 +36,7 @@ export function generateBugsFromTests(
       ) || [],
 
       assignedTo: "AI System",
+
+      test_id: test.test_id,
     }));
 }

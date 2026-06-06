@@ -1,141 +1,263 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
-import {
-  loginUser,
-  signupUser,
-  getCurrentUser,
-} from "@/services/auth-api";
-
-// ── Types ──────────────────────────────────────────────────────────
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { AuthApiError, getCurrentUser, loginWithBackend, logoutWithBackend, signupWithBackend, toAuthErrorMessage } from "@/services/auth-api";
+import { clearAuthToken, clearRefreshToken, getStoredAuthToken, onAuthTokenCleared, storeAuthToken, storeRefreshToken } from "@/services/http";
 
 export interface User {
   id: string;
   name: string;
   email: string;
+  role?: string;
+}
+
+export interface InitWarning {
+  code: "BACKEND_UNAVAILABLE" | "NETWORK_ERROR" | "TIMEOUT" | "ENDPOINT_NOT_FOUND";
+  message: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  isReady: boolean;
+  initWarning: InitWarning | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  clearError: () => void;
+  clearInitWarning: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "signaltrack_token";
+type AuthSession = {
+  token: string;
+  user: User;
+};
 
-// ── Provider ───────────────────────────────────────────────────────
+function toUser(session: AuthSession | null): User | null {
+  return session ? session.user : null;
+}
+
+function decodeJwtFallbackUser(token: string): User | null {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) {
+      return null;
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+    const payloadJson = atob(`${normalized}${padding}`);
+    const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+    const expiresAt = typeof payload.exp === "number" ? payload.exp * 1000 : null;
+    if (expiresAt && expiresAt <= Date.now()) {
+      return null;
+    }
+
+    const id = String(payload.id || payload.user_id || payload.sub || "").trim();
+    const email = String(payload.email || "").trim();
+    const name = String(payload.name || email || id || "").trim();
+    if (!id || !email) {
+      return null;
+    }
+
+    return {
+      id,
+      name,
+      email,
+      role: String(payload.role || "user"),
+    };
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [initWarning, setInitWarning] = useState<InitWarning | null>(null);
 
-  // Hydrate session from stored JWT on mount
   useEffect(() => {
-    async function hydrate() {
-      const token = localStorage.getItem(TOKEN_KEY);
+    let active = true;
+
+    async function init() {
+      const token = getStoredAuthToken();
+
       if (!token) {
-        setIsLoading(false);
+        if (active) {
+          setSession(null);
+          setIsReady(true);
+        }
         return;
       }
 
       try {
-        const { user: userData } = await getCurrentUser(token);
-        setUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-        });
-      } catch {
-        // Token expired or invalid — clear it
-        localStorage.removeItem(TOKEN_KEY);
+        const currentUser = await getCurrentUser(token);
+        const restored: AuthSession = { token, user: currentUser };
+        storeAuthToken(token);
+
+        if (active) {
+          setSession(restored);
+          setInitWarning(null);
+        }
+      } catch (error) {
+        if (error instanceof AuthApiError) {
+          switch (error.code) {
+            case "UNAUTHORIZED":
+              clearAuthToken();
+              clearRefreshToken();
+              if (active) {
+                setSession(null);
+                setInitWarning(null);
+              }
+              break;
+
+            case "BACKEND_UNAVAILABLE":
+            case "NETWORK_ERROR":
+              if (active) {
+                const fallbackUser = decodeJwtFallbackUser(token);
+                setSession(fallbackUser ? { token, user: fallbackUser } : null);
+                setInitWarning({
+                  code: error.code as InitWarning["code"],
+                  message: error.message,
+                });
+              }
+              break;
+
+            case "SERVER_ERROR":
+              clearAuthToken();
+              clearRefreshToken();
+              if (active) {
+                setSession(null);
+                setInitWarning({
+                  code: "BACKEND_UNAVAILABLE",
+                  message: error.message,
+                });
+              }
+              break;
+
+            case "TIMEOUT":
+              if (active) {
+                const fallbackUser = decodeJwtFallbackUser(token);
+                setSession(fallbackUser ? { token, user: fallbackUser } : null);
+                setInitWarning({
+                  code: "TIMEOUT",
+                  message: error.message,
+                });
+              }
+              break;
+
+            default:
+              clearAuthToken();
+              clearRefreshToken();
+              if (active) {
+                setSession(null);
+                setInitWarning(null);
+              }
+              break;
+          }
+        } else {
+          clearAuthToken();
+          clearRefreshToken();
+          if (active) {
+            setSession(null);
+            setInitWarning(null);
+          }
+        }
       } finally {
-        setIsLoading(false);
+        if (active) setIsReady(true);
       }
     }
 
-    hydrate();
+    init();
+
+    const removeAuthListener = onAuthTokenCleared(() => {
+      if (active) {
+        setSession(null);
+        setInitWarning(null);
+      }
+    });
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "auth_token" && !event.newValue && active) {
+        setSession(null);
+        setInitWarning(null);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      active = false;
+      removeAuthListener();
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    setError(null);
+  const login = useCallback(async (email: string, password: string): Promise<void> => {
     try {
-      const { token, user: userData } = await loginUser(email, password);
-      localStorage.setItem(TOKEN_KEY, token);
-      setUser({
-        id: userData.id,
-        name: userData.name,
-        email: userData.email,
-      });
-      return true;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      setError(message);
-      return false;
+      const nextSession = await loginWithBackend(email, password);
+      storeAuthToken(nextSession.token);
+      if (nextSession.refreshToken) {
+        storeRefreshToken(nextSession.refreshToken);
+      }
+      setSession(nextSession);
+      setInitWarning(null);
+    } catch (error) {
+      throw new Error(toAuthErrorMessage(error));
     }
   }, []);
 
-  const signup = useCallback(
-    async (name: string, email: string, password: string): Promise<boolean> => {
-      setError(null);
-      try {
-        const { token, user: userData } = await signupUser(name, email, password);
-        localStorage.setItem(TOKEN_KEY, token);
-        setUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-        });
-        return true;
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Signup failed";
-        setError(message);
-        return false;
+  const signup = useCallback(async (name: string, email: string, password: string): Promise<void> => {
+    try {
+      const nextSession = await signupWithBackend(name, email, password);
+      storeAuthToken(nextSession.token);
+      if (nextSession.refreshToken) {
+        storeRefreshToken(nextSession.refreshToken);
       }
-    },
-    []
-  );
+      setSession(nextSession);
+      setInitWarning(null);
+    } catch (error) {
+      throw new Error(toAuthErrorMessage(error));
+    }
+  }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    setUser(null);
-    setError(null);
+    const token = session?.token ?? getStoredAuthToken();
+    if (token) {
+      void logoutWithBackend(token).catch(() => undefined);
+    }
+    clearRefreshToken();
+    clearAuthToken();
+    setSession(null);
+    setInitWarning(null);
+  }, [session?.token]);
+
+  const clearInitWarning = useCallback(() => {
+    setInitWarning(null);
   }, []);
 
-  const clearError = useCallback(() => setError(null), []);
+  const user = toUser(session);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
-        isLoading,
-        error,
+        token: session?.token ?? null,
+        isAuthenticated: !!session?.token,
+        isReady,
+        initWarning,
         login,
         signup,
         logout,
-        clearError,
+        clearInitWarning,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 }
-
-// ── Hook ───────────────────────────────────────────────────────────
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

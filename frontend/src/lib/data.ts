@@ -1,8 +1,10 @@
-import type { Bug, TestResult, AIFinding, LogEntry } from "@/types";
+import type { Bug, TestResult, AIFinding } from "@/types";
+
+// Only expose sample/demo data in development builds
+const DEV = typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development";
 
 // ── Seed bugs ──────────────────────────────────────────────────────
-
-export const sampleBugs: Bug[] = [
+export const sampleBugs: Bug[] = DEV ? [
   {
     id: "BUG-001",
     title: "Login Button Unresponsive on Mobile",
@@ -247,11 +249,11 @@ export const sampleBugs: Bug[] = [
       "Observe 404 page",
     ],
   },
-];
+] : [];
 
 // ── Seed test results ──────────────────────────────────────────────
 
-export const sampleTestResults: TestResult[] = [
+export const sampleTestResults: TestResult[] = DEV ? [
   {
     id: "TEST-001",
     url: "https://app.example.com/login",
@@ -485,11 +487,11 @@ export const sampleTestResults: TestResult[] = [
       { time: "00:05", level: "success", msg: "Scan complete. Duration: 1.35s" },
     ],
   },
-];
+] : [];
 
 // ── Sample AI Findings ─────────────────────────────────────────────
 
-export const sampleAIFindings: AIFinding[] = [
+export const sampleAIFindings: AIFinding[] = DEV ? [
   {
     id: "AI-001",
     title: "Potential XSS vulnerability in search input",
@@ -525,4 +527,4 @@ export const sampleAIFindings: AIFinding[] = [
     file: "src/pages/Checkout.tsx",
     timestamp: "2026-04-25T16:00:00Z",
   },
-];
+] : [];

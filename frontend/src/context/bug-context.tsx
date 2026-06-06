@@ -1,11 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
 import type { Bug, DashboardStats, AIFinding } from "@/types";
-import {sampleAIFindings } from "@/lib/data";
 import { getAllTests } from "@/services/test-api";
 import type { TestApiResponse } from "@/services/test-api";
-import { generateBugsFromTests } from "@/lib/bug-generators";
+import { getAllBugs, type BugApiResponse } from "@/services/bugs-api";
+import { ApiHttpError, getStoredAuthToken } from "@/services/http";
+import { truncateText } from "@/lib/test-display";
+import { useAuth } from "@/context/auth-context";
 
 // ── Context shape ──────────────────────────────────────────────────
 
@@ -26,35 +28,151 @@ const BugContext = createContext<BugContextType | undefined>(undefined);
 // ── Provider ───────────────────────────────────────────────────────
 
 export function BugProvider({ children }: { children: React.ReactNode }) {
-  const [bugs, setBugs] = useState<Bug[]>([]);
+  const { isReady, isAuthenticated } = useAuth();
+  const [backendBugs, setBackendBugs] = useState<Bug[]>([]);
   const [testResults, setTestResults] = useState<TestApiResponse[]>([]);
-  const [aiFindings] = useState<AIFinding[]>(sampleAIFindings);
+  const [aiFindings] = useState<AIFinding[]>([]);
+
+  const mapBugSeverity = useCallback((value?: string): Bug["severity"] => {
+    const normalized = (value ?? "").toLowerCase();
+    if (normalized === "critical" || normalized === "high" || normalized === "medium" || normalized === "low") {
+      return normalized;
+    }
+    return "medium";
+  }, []);
+
+  const mapBugStatus = useCallback((value?: string): Bug["status"] => {
+    const normalized = (value ?? "").toLowerCase();
+    if (normalized === "open" || normalized === "in-progress" || normalized === "resolved" || normalized === "closed") {
+      return normalized;
+    }
+    return "open";
+  }, []);
+
+  const toBug = useCallback((raw: BugApiResponse): Bug => {
+    const normalizeIssueType = (value?: string): string => {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      return text
+        .replace(/[_-]+/g, " ")
+        .split(" ")
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+    };
+
+    const generateShortTitle = (text: string): string => {
+      const lowered = text.toLowerCase();
+      if (/(button|click)/.test(lowered)) return "Button Interaction Failure";
+      if (/(link|navigate|navigation|redirect)/.test(lowered)) return "Link Navigation Failure";
+      if (/(validation|invalid|required|input)/.test(lowered)) return "Input Validation Failure";
+      if (/(load|timeout|network|page)/.test(lowered)) return "Page Load Failure";
+      if (/(missing|not found|locator)/.test(lowered)) return "Missing Element";
+      if (/(screenshot|visual|pixel)/.test(lowered)) return "Screenshot Mismatch";
+      if (/(accessibility|aria|contrast|a11y)/.test(lowered)) return "Accessibility Issue";
+      if (/(performance|slow|latency)/.test(lowered)) return "Performance Issue";
+      if (/(login|auth|credential|password)/.test(lowered)) return "Login Failure";
+      if (/(form|submit|submission)/.test(lowered)) return "Form Submission Failure";
+      return "General Issue";
+    };
+
+    const priorityName = (
+      String(raw.bug_name || "").trim() ||
+      normalizeIssueType(raw.issue_type) ||
+      String(raw.failed_step_name || raw.failed_step || raw.title || "").trim() ||
+      generateShortTitle(String(raw.bug_description || raw.description || raw.title || "")) ||
+      "General Issue"
+    );
+
+    const name = priorityName;
+    const description = String(raw.bug_description || raw.description || "No details provided").trim();
+    const bugName = truncateText(name || "Detected issue", 50);
+
+    return {
+      id: String(raw.bug_id || raw.execution_id || raw.test_id || `${bugName}-${raw.created_at || Date.now()}`),
+      title: bugName,
+      bug_name: bugName,
+      description,
+      bug_description: description,
+      severity: mapBugSeverity(raw.severity),
+      status: mapBugStatus(raw.status),
+      url: String(raw.url || ""),
+      createdAt: String(raw.created_at || new Date().toISOString()),
+      steps: [],
+      test_id: raw.test_id,
+      test_name: raw.test_name,
+    };
+  }, [mapBugSeverity, mapBugStatus]);
+
   useEffect(() => {
+    // Only fetch when the auth context is ready AND the user is
+    // authenticated. Without the second guard we issue unauthenticated
+    // GET /api/tests and GET /api/bugs requests during the brief window
+    // when isReady is true but isAuthenticated is still false (no token
+    // in localStorage, or the token has just been cleared). Both routes
+    // require Depends(get_current_user) and respond with 401, polluting
+    // the console and racing AppGuard's redirect to /login.
+    if (!isReady || !isAuthenticated) {
+      return;
+    }
+
+    // Defensive guard: if a token-clear event fires between the
+    // isAuthenticated check and the actual fetch, skip the call
+    // rather than firing a request we know will 401.
+    if (!getStoredAuthToken()) {
+      return;
+    }
+
+    let active = true;
+
     async function loadTests() {
       try {
-        const tests = await getAllTests();
+        const [tests, bugs] = await Promise.all([
+          getAllTests(),
+          getAllBugs(),
+        ]);
 
-        setTestResults(tests);
+        if (active) {
+          setTestResults(tests);
+          setBackendBugs(bugs.map(toBug));
+        }
       } catch (error) {
-        console.error("Failed to load tests:", error);
+        // 401 is handled end-to-end: the http wrapper clears the token
+        // and dispatches "auth-token-cleared", the auth context picks
+        // that up and sets isAuthenticated=false, and AppGuard then
+        // redirects to /login. We deliberately swallow the error here
+        // so we don't double-log it.
+        if (error instanceof ApiHttpError && error.status === 401) {
+          return;
+        }
+        console.error("Failed to load tests/bugs:", error);
       }
     }
 
     loadTests();
-  }, []);
 
-  useEffect(() => {
-    const generatedBugs = generateBugsFromTests(testResults);
+    return () => {
+      active = false;
+    };
+  }, [isReady, isAuthenticated, toBug]);
 
-    setBugs(generatedBugs);
-  }, [testResults]);
+  const visibleTestResults = useMemo(
+    () => (isReady && isAuthenticated ? testResults : []),
+    [isReady, isAuthenticated, testResults]
+  );
+  const bugs = useMemo(
+    () => (isReady && isAuthenticated ? backendBugs : []),
+    [isReady, isAuthenticated, backendBugs]
+  );
 
   const addBug = useCallback((bug: Bug) => {
-    setBugs((prev) => [bug, ...prev]);
+    setBackendBugs((prev) => [bug, ...prev]);
   }, []);
 
   const updateBugStatus = useCallback((id: string, status: Bug["status"]) => {
-    setBugs((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
+    setBackendBugs((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
   }, []);
 
   const addTestResult = useCallback((result: TestApiResponse) => {
@@ -67,33 +185,29 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
   );
 
   const getTestById = useCallback(
-    (id: string) => testResults.find((t) => t.test_id === id),
-    [testResults]
+    (id: string) => visibleTestResults.find((t) => t.test_id === id),
+    [visibleTestResults]
   );
 
-  const stats: DashboardStats = React.useMemo(() => ({
-    totalTests: testResults.length,
+  const stats: DashboardStats = {
+    totalTests: visibleTestResults.length,
 
-    passed: testResults.filter(
+    passed: visibleTestResults.filter(
       (t) => t.overall_status === "pass"
     ).length,
 
-    failed: testResults.filter(
+    failed: visibleTestResults.filter(
       (t) => t.overall_status === "fail"
     ).length,
 
     openBugs: bugs.filter(
       (b) => b.status === "open" || b.status === "in-progress"
     ).length,
-  }), [testResults, bugs]);
-
-  const contextValue = React.useMemo(() => ({
-    bugs, testResults, aiFindings, stats, addBug, updateBugStatus, addTestResult, getBugById, getTestById
-  }), [bugs, testResults, aiFindings, stats, addBug, updateBugStatus, addTestResult, getBugById, getTestById]);
+  };
 
   return (
     <BugContext.Provider
-      value={contextValue}
+      value={{ bugs, testResults, aiFindings, stats, addBug, updateBugStatus, addTestResult, getBugById, getTestById }}
     >
       {children}
     </BugContext.Provider>

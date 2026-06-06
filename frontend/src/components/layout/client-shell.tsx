@@ -1,53 +1,81 @@
 "use client";
 
-import { AuthProvider, useAuth } from "@/context/auth-context";
+import { AuthProvider } from "@/context/auth-context";
 import { BugProvider } from "@/context/bug-context";
 import { Sidebar } from "@/components/layout/sidebar";
-import LoginPage from "@/app/login/page";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { AppHeader } from "@/components/layout/app-header";
+import { useAuth } from "@/context/auth-context";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+function AppGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, isReady } = useAuth();
 
-  // Loading spinner during JWT hydration
-  if (isLoading) {
+  const publicRoutes = new Set(["/", "/login", "/signup"]);
+  const isPublicRoute = publicRoutes.has(pathname);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    if (!isAuthenticated && !isPublicRoute) {
+      router.replace("/login");
+      return;
+    }
+
+    if (isAuthenticated && isPublicRoute) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, isPublicRoute, isReady, router]);
+
+  if (!isReady) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a1a]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="auth-orbital-spinner">
-            <div className="orbital-ring" />
-            <div className="orbital-ring" style={{ animationDelay: "-0.4s", width: 36, height: 36 }} />
-            <div className="orbital-core" />
-          </div>
-          <p className="text-sm text-white/40 font-medium tracking-wide">Initializing…</p>
+      <div className="grid min-h-screen place-items-center bg-[var(--shell-bg)] text-sm text-slate-500">
+        <div className="flex items-center gap-2.5">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+          Loading session…
         </div>
       </div>
     );
   }
 
-  // Not logged in → show login page
-  if (!isAuthenticated) {
-    return <LoginPage />;
+  if (isPublicRoute) {
+    return <>{children}</>;
   }
 
-  // Authenticated → show the app
   return (
-    <BugProvider>
-      <div className="flex min-h-screen">
+    <div className="shell-bg flex min-h-screen text-slate-900">
+      {/* Desktop sidebar is fixed so the page never scrolls beneath it. */}
+      <div className="fixed inset-y-0 left-0 z-30 hidden lg:block">
         <Sidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+      </div>
+
+      <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
+
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
+        <AppHeader
+          showMobileMenuButton
+          onOpenMobileNav={() => setMobileNavOpen(true)}
+        />
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-[1400px] px-4 pb-10 pt-5 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>
       </div>
-    </BugProvider>
+    </div>
   );
 }
 
 export function ClientShell({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <AuthGate>{children}</AuthGate>
+      <BugProvider>
+        <AppGuard>{children}</AppGuard>
+      </BugProvider>
     </AuthProvider>
   );
 }
