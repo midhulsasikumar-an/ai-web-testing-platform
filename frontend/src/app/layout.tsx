@@ -14,9 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SignalTrack — AI Bug Tracking Dashboard",
+  title: {
+    default: "TestPulse AI",
+    template: "%s | TestPulse AI",
+  },
   description:
-    "AI-powered testing and bug tracking platform. Run automated probes, track bugs, and monitor system health with the Precision QA System.",
+    "AI-powered web testing platform. Run automated browser probes, track bugs, and monitor system health with TestPulse AI.",
+  applicationName: "TestPulse AI",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/testpulse-ai-logo.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/testpulse-ai-logo.png", type: "image/png", sizes: "512x512" }],
+  },
 };
 
 export default function RootLayout({
