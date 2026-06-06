@@ -1,82 +1,66 @@
-# SignalTrack — AI Web Testing Platform
+# SignalTrack - AI Web Testing Platform
 
 A collaborative AI-based website testing system built to automate test execution, generate and track bugs, and visualize testing insights through an interactive dashboard.
 
-## Quick Start
+## Run Locally
 
-Run everything from the **project root** with a single command:
+Run everything from the project root with one command:
 
-```bash
+```powershell
+npm run dev
+```
+
+This starts:
+
+- Frontend: `http://127.0.0.1:3000`
+- Backend: `http://127.0.0.1:8001`
+
+For first-time setup:
+
+```powershell
 npm install
-npm run dev
-```
-
-This starts both the **Next.js frontend** (port 3000) and the **FastAPI backend** (port 8000) concurrently.
-
-### First-Time Setup
-
-```bash
-# Install all dependencies (frontend npm + backend pip)
 npm run install:all
-
-# Start the development servers
 npm run dev
 ```
 
-### Individual Services
+If backend packages are missing:
 
-```bash
-# Frontend only
-npm run dev:frontend
-
-# Backend only
-npm run dev:backend
+```powershell
+python -m pip install -r backend\requirements.txt
 ```
 
-## Default Credentials
+## Deploy
 
-Create a new account via the signup form, or use the signup API:
+Deploy this repo as two services:
 
-```bash
-curl -X POST http://localhost:8000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Demo User", "email": "demo@bugtracker.io", "password": "demo123"}'
-```
+- Frontend: Vercel, with `frontend` as the root directory.
+- Backend: Render, using `render.yaml` from the repository root.
 
-## API Endpoints
+### Vercel Frontend
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/health` | MongoDB connection status |
-| `POST` | `/api/auth/signup` | Create new account |
-| `POST` | `/api/auth/login` | Authenticate & get JWT |
-| `GET` | `/api/auth/me` | Get current user (JWT required) |
-| `POST` | `/api/tests/start` | Start a new test run |
-| `GET` | `/api/tests` | List all test runs |
-| `GET` | `/api/tests/:id` | Get specific test run |
-| `GET` | `/api/bugs` | List all bugs |
-| `GET` | `/api/bugs/:id` | Get specific bug |
+Create a Vercel project from this repo and set:
+
+- Root Directory: `frontend`
+- Framework Preset: Next.js
+- Build Command: `npm run build`
+- Environment Variable: `NEXT_PUBLIC_API_URL=https://YOUR-RENDER-SERVICE.onrender.com`
+
+### Render Backend
+
+Create a Render Blueprint from this repo. The `render.yaml` file sets the build and start commands.
+
+Set these Render environment variables:
+
+- `MONGO_URL`
+- `FRONTEND_ORIGINS=https://YOUR-VERCEL-APP.vercel.app`
+- `GROQ_API_KEY`
+- `OPENAI_API_KEY` if you want OpenAI-backed features
+
+Render generates `JWT_SECRET_KEY` automatically from the blueprint.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, TailwindCSS 4, TypeScript
-- **Backend**: FastAPI, Uvicorn, Playwright
-- **Database**: MongoDB Atlas
-- **Auth**: bcrypt password hashing, JWT tokens
-
-## Environment Variables
-
-Backend `.env` file (`backend/.env`):
-
-```
-JWT_SECRET_KEY=your-secret-key
-JWT_ALGORITHM=HS256
-JWT_EXPIRY_HOURS=24
-MONGO_URL=your-mongodb-connection-string
-```
-
-## Notes
-
-- The backend requires Python 3.10+ and the packages listed in `backend/requirements.txt`.
-- The frontend runs on Next.js 16 with React 19.
-- Auth tokens are stored in `localStorage` and auto-validated on page load.
+- Frontend: Next.js 16, React 19, Tailwind CSS 4, TypeScript
+- Backend: FastAPI, Uvicorn, Playwright
+- Database: MongoDB Atlas
+- Auth: bcrypt password hashing, JWT tokens

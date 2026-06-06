@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,9 +11,17 @@ from backend.routes.auth_routes import router as auth_router
 
 
 app = FastAPI()
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later replace with frontend URL
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,9 +33,13 @@ app.include_router(auth_router)
 
 
 # ── Health check ────────────────────────────────────────────────────
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 
 @app.get("/api/health")
-def health_check():
+def api_health_check():
     """Check MongoDB connection status."""
     try:
         client.admin.command("ping")

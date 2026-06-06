@@ -4,18 +4,23 @@ frontend/node_modules/
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 venv/
 .venv/
+.venv*/
+.pytest_cache/
 
 # Environment
 .env
+.env.*
+!.env.example
 backend/.env
+frontend/.env.local
 
 # Next.js
 frontend/.next/
 frontend/out/
+frontend/*.tsbuildinfo
 
 # IDE
 .vscode/
