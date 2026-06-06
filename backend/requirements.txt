@@ -6,11 +6,14 @@ python-dotenv
 python-jose[cryptography]
 slowapi
 playwright
+passlib[argon2]
 argon2-cffi
 bcrypt
 Pillow
 pydantic[email]
 pydantic-settings
 groq
+openai
+reportlab
 requests
 beautifulsoup4
