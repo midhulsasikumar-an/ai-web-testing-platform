@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: ai-web-testing-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt && python -m playwright install chromium
+    startCommand: uvicorn backend.server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: SKIP_BROWSER_WARMUP
+        value: "1"
+      - key: STRICT_SECRETS
+        value: "1"
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: MONGO_URL
+        sync: false
+      - key: MONGO_DB_NAME
+        value: ai-web-testing
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+

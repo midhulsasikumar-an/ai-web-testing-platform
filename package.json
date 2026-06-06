@@ -1,0 +1,14 @@
+{
+  "name": "ai-web-testing-platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n FE,BE -c cyan,magenta \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "python -m uvicorn backend.server:app --reload --host 127.0.0.1 --port 8001",
+    "install:all": "npm --prefix frontend install && python -m pip install -r backend/requirements.txt",
+    "build": "npm --prefix frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
