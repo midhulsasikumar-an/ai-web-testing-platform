@@ -179,6 +179,7 @@ export default function AIWorkspacePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [instructionDrafts, setInstructionDrafts] = useState<Record<string, string>>({});
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
 
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const messagesBottomRef = useRef<HTMLDivElement>(null);
@@ -310,20 +311,33 @@ export default function AIWorkspacePage() {
     const confirmed = window.confirm(`Delete conversation \"${session.title}\"?`);
     if (!confirmed) return;
 
-    await deleteChatSession(session.session_id);
-    const next = sessions.filter((item) => item.session_id !== session.session_id);
-    setSessions(next);
+    setContextError(null);
+    setDeletingSessionId(session.session_id);
+    try {
+      await deleteChatSession(session.session_id);
+      const next = sessions.filter((item) => item.session_id !== session.session_id);
+      setSessions(next);
 
-    if (activeSessionId === session.session_id) {
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(STORAGE_SESSION_KEY);
+      if (activeSessionId === session.session_id) {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(STORAGE_SESSION_KEY);
+        }
+        if (next[0]?.session_id) {
+          await openSession(next[0].session_id);
+        } else {
+          setActiveSessionId(null);
+          setMessages([]);
+          setInput("");
+          setInstructionDrafts({});
+          setSidebarOpen(false);
+        }
       }
-      if (next[0]?.session_id) {
-        await openSession(next[0].session_id);
-      } else {
-        setActiveSessionId(null);
-        setMessages([]);
-      }
+      setSuccessToast("Conversation deleted");
+      window.setTimeout(() => setSuccessToast(null), 1600);
+    } catch (error) {
+      setContextError(error instanceof Error ? error.message : "Failed to delete conversation.");
+    } finally {
+      setDeletingSessionId(null);
     }
   };
 
@@ -545,14 +559,18 @@ export default function AIWorkspacePage() {
                     <div className="truncate text-[12.5px] font-medium text-slate-900">{session.title}</div>
                     <div className="truncate text-[11px] text-slate-500">Updated {formatTime(session.updated_at) || formatDate(session.updated_at)}</div>
                   </button>
-                  <div className="mt-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="mt-1.5 flex items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                     <button onClick={() => void handleRenameSession(session)} className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10.5px] text-slate-600 hover:bg-white">
                       <PencilLine className="h-3 w-3" />
                       Rename
                     </button>
-                    <button onClick={() => void handleDeleteSession(session)} className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10.5px] text-slate-600 hover:bg-white">
-                      <Trash2 className="h-3 w-3" />
-                      Delete
+                    <button
+                      onClick={() => void handleDeleteSession(session)}
+                      disabled={deletingSessionId === session.session_id}
+                      className="inline-flex items-center gap-1 rounded-md border border-red-100 px-1.5 py-0.5 text-[10.5px] text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {deletingSessionId === session.session_id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                      {deletingSessionId === session.session_id ? "Deleting" : "Delete"}
                     </button>
                   </div>
                 </div>

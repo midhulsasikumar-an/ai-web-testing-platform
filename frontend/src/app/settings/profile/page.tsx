@@ -19,13 +19,6 @@ import { formatDateTime } from "@/lib/session";
 
 type LoadState = "loading" | "ready" | "error";
 
-function initialsFromName(name: string | undefined | null): string {
-  if (!name) return "U";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-}
-
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const { user, token: contextToken } = useAuth();

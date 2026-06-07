@@ -184,20 +184,6 @@ function getGeneratedPlanForValidation(plan?: GeneratedExecutionPlan | null): Ge
   return { ...plan, steps };
 }
 
-function getPlanExecutionGoal(plan?: GeneratedExecutionPlan | null): string {
-  if (!plan) return "";
-  const firstCaseTitle = getPlanCases(plan)
-    .map((testCase) => String(testCase.title ?? "").trim())
-    .find(Boolean);
-
-  return (
-    String(plan.instruction ?? "").trim() ||
-    firstCaseTitle ||
-    String(plan.summary ?? "").trim() ||
-    "Execute the generated AI test plan."
-  );
-}
-
 export default function RunTestPage() {
   const workspace = useRunWorkspace();
   const {

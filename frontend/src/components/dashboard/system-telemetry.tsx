@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { Bot, Sparkles, AlertTriangle, Cpu, CheckCircle2, XCircle, OctagonAlert, ChevronRight } from "lucide-react";
+import { Bot, Sparkles, AlertTriangle, Cpu, CheckCircle2, OctagonAlert, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { DashboardStatsResponse, RecentTest } from "@/services/dashboard-api";
+import type { DashboardStatsResponse } from "@/services/dashboard-api";
 
 interface SystemTelemetryProps {
   stats: DashboardStatsResponse;

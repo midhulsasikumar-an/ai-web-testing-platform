@@ -1,5 +1,3 @@
-import type { TestApiResponse } from "@/services/test-api";
-
 export function extractHostname(rawUrl?: string | null): string {
   const value = String(rawUrl ?? "").trim();
   if (!value) {

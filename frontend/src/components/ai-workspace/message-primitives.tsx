@@ -1,8 +1,8 @@
 "use client";
 
-import { Bot, CheckCircle2, ChevronRight, Circle, Clock3, FileText, Loader2, RefreshCw, Sparkles, Bug as BugIcon, Target, BookOpen, Image as ImageIcon, Save, Copy, RotateCcw, Edit3, ChevronDown, Activity, GitBranch, AlertTriangle, Eye } from "lucide-react";
+import { Bot, CheckCircle2, Circle, Clock3, FileText, Loader2, RefreshCw, Sparkles, Bug as BugIcon, Target, BookOpen, Image as ImageIcon, Save, Copy, Edit3 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { UIIntent, UIMessage } from "@/components/ai-workspace/chat-primitives";
+import type { UIIntent } from "@/components/ai-workspace/chat-primitives";
 
 function getIntentMeta(intent: UIIntent) {
   switch (intent) {
@@ -133,12 +133,10 @@ export function MessageActions({
   onCopy,
   onRegenerate,
   onEdit,
-  tone = "slate",
 }: {
   onCopy?: () => void;
   onRegenerate?: () => void;
   onEdit?: () => void;
-  tone?: "violet" | "blue" | "red" | "emerald" | "slate";
 }) {
   const actions: { icon: React.ElementType; label: string; onClick?: () => void; key: string }[] = [
     { icon: Copy, label: "Copy", onClick: onCopy, key: "copy" },
