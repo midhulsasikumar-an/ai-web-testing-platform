@@ -5,7 +5,7 @@ import logging
 import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from backend.services.asyncio_windows import ensure_windows_event_loop_policy
 
@@ -20,8 +20,12 @@ BACKGROUND_TASK_TIMEOUT_SECONDS = int(os.getenv("BACKGROUND_TASK_TIMEOUT_SECONDS
 RUNNING_TEST_STALE_TIMEOUT_SECONDS = int(os.getenv("RUNNING_TEST_STALE_TIMEOUT_SECONDS", "21600"))
 EXECUTION_STALL_SECONDS = int(os.getenv("EXECUTION_STALL_SECONDS", "300"))
 STUCK_RUN_CLEANUP_INTERVAL_SECONDS = int(os.getenv("STUCK_RUN_CLEANUP_INTERVAL_SECONDS", "60"))
+DEFAULT_LIST_LIMIT = int(os.getenv("DEFAULT_LIST_LIMIT", "100"))
+MAX_LIST_LIMIT = int(os.getenv("MAX_LIST_LIMIT", "500"))
+MAX_CONCURRENT_TEST_RUNS = max(1, int(os.getenv("MAX_CONCURRENT_TEST_RUNS", "1")))
+_test_run_semaphore = asyncio.Semaphore(MAX_CONCURRENT_TEST_RUNS)
 
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Query, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -164,10 +168,11 @@ async def _run_ai_plan_task(test_data: dict, req: TestRequest, user_id: str) -> 
     test_id = test_data["test_id"]
     await _register_test_task(test_id, task)
     try:
-        await asyncio.wait_for(
-            run_ai_plan_and_update(test_data.copy(), req.url, user_id, req.ai_plan or {}),
-            timeout=BACKGROUND_TASK_TIMEOUT_SECONDS,
-        )
+        async with _test_run_semaphore:
+            await asyncio.wait_for(
+                run_ai_plan_and_update(test_data.copy(), req.url, user_id, req.ai_plan or {}),
+                timeout=BACKGROUND_TASK_TIMEOUT_SECONDS,
+            )
     except asyncio.TimeoutError:
         logger.warning("AI test execution timed out for test_id=%s", test_id)
         _mark_test_terminal(test_id, user_id, status="timed_out", failure_reason="background_task_timeout")
@@ -188,10 +193,11 @@ async def _run_legacy_test_task(test_data: dict, req: TestRequest, user_id: str)
     test_id = test_data["test_id"]
     await _register_test_task(test_id, task)
     try:
-        await asyncio.wait_for(
-            asyncio.to_thread(run_test_and_update, test_data.copy(), req.url, user_id),
-            timeout=BACKGROUND_TASK_TIMEOUT_SECONDS,
-        )
+        async with _test_run_semaphore:
+            await asyncio.wait_for(
+                asyncio.to_thread(run_test_and_update, test_data.copy(), req.url, user_id),
+                timeout=BACKGROUND_TASK_TIMEOUT_SECONDS,
+            )
     except asyncio.TimeoutError:
         logger.warning("Legacy test execution timed out for test_id=%s", test_id)
         _mark_test_terminal(test_id, user_id, status="timed_out", failure_reason="background_task_timeout")
@@ -380,8 +386,17 @@ async def cancel_test(test_id: str, current_user: dict = Depends(get_current_use
 
 
 @app.get("/api/tests")
-def get_tests(current_user: dict = Depends(get_current_user)):
-    tests = list(collection.find({"user_id": current_user["user_id"]}, {"_id": 0}))
+def get_tests(
+    current_user: dict = Depends(get_current_user),
+    limit: int = Query(DEFAULT_LIST_LIMIT, ge=1, le=MAX_LIST_LIMIT),
+    skip: int = Query(0, ge=0),
+):
+    tests = list(
+        collection.find({"user_id": current_user["user_id"]}, {"_id": 0})
+        .sort("created_at", -1)
+        .skip(skip)
+        .limit(limit)
+    )
     return tests
 
 @app.get("/api/tests/{test_id}")
@@ -411,12 +426,19 @@ def get_test_by_id(test_id: str, current_user: dict = Depends(get_current_user))
     return test
 
 @app.get("/api/bugs")
-def get_bugs(current_user: dict = Depends(get_current_user)):
+def get_bugs(
+    current_user: dict = Depends(get_current_user),
+    limit: int = Query(DEFAULT_LIST_LIMIT, ge=1, le=MAX_LIST_LIMIT),
+    skip: int = Query(0, ge=0),
+):
     bugs = list(
         bug_collection.find(
             {"user_id": current_user["user_id"]},
             {"_id": 0}
         )
+        .sort("created_at", -1)
+        .skip(skip)
+        .limit(limit)
     )
 
     # Ensure all returned bugs are normalized so frontend can rely on consistent fields

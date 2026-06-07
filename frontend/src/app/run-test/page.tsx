@@ -937,22 +937,26 @@ function useTestPolling(
       }
     };
 
-    let interval: number | null = null;
+    let timeout: number | null = null;
+    const scheduleNext = () => {
+      timeout = window.setTimeout(async () => {
+        const finished = await tick();
+        if (!cancelled && !finished) {
+          scheduleNext();
+        }
+      }, 5000);
+    };
+
     void (async () => {
       const done = await tick();
       if (cancelled) return;
       if (done) return;
-      interval = window.setInterval(async () => {
-        const finished = await tick();
-        if (finished && interval !== null) {
-          window.clearInterval(interval);
-        }
-      }, 2000);
+      scheduleNext();
     })();
 
     return () => {
       cancelled = true;
-      if (interval !== null) window.clearInterval(interval);
+      if (timeout !== null) window.clearTimeout(timeout);
     };
   }, [testId, enabled, setTestData, setRunning]);
 }

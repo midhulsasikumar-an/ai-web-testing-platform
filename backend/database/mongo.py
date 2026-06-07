@@ -65,10 +65,19 @@ _safe_create_index(bug_collection, "fingerprint", unique=True, sparse=True, name
 _safe_create_index(bug_lifecycle_collection, "fingerprint", unique=True, sparse=True, name="lifecycle_fingerprint_unique")
 _safe_create_index(bug_lifecycle_collection, [("user_id", ASCENDING), ("status", ASCENDING)], name="lifecycle_user_status")
 _safe_create_index(bug_lifecycle_collection, [("user_id", ASCENDING), ("updated_at", DESCENDING)], name="lifecycle_user_updated")
+_safe_create_index(bug_lifecycle_collection, [("status", ASCENDING), ("updated_at", DESCENDING)], name="lifecycle_status_updated")
 
 # Reports (report_repository.py also creates an index; align names to avoid collisions)
 _safe_create_index(db["reports"], "report_key", unique=True, name="report_key_unique")
 _safe_create_index(db["reports"], [("user_id", ASCENDING), ("report_type", ASCENDING)], name="reports_user_type")
+_safe_create_index(db["reports"], [("user_id", ASCENDING), ("created_at", DESCENDING)], name="reports_user_created")
+
+# AI workspace
+_safe_create_index(ai_chat_sessions, [("user_id", ASCENDING), ("updated_at", DESCENDING)], name="ai_sessions_user_updated")
+_safe_create_index(ai_chat_messages, [("user_id", ASCENDING), ("session_id", ASCENDING), ("timestamp", ASCENDING)], name="ai_messages_session_time")
+_safe_create_index(ai_memory_collection, [("user_id", ASCENDING), ("created_at", DESCENDING)], name="ai_memory_user_created")
+_safe_create_index(ai_memory_collection, [("user_id", ASCENDING), ("importance", DESCENDING), ("created_at", DESCENDING)], name="ai_memory_user_importance")
+_safe_create_index(selector_cache_collection, [("cache_key", ASCENDING), ("selector", ASCENDING)], name="selector_cache_key_selector")
 
 # Revoked tokens (logout / admin revoke)
 _safe_create_index(revoked_tokens_collection, "jti", unique=True, name="revoked_jti_unique")

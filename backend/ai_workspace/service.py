@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import asyncio
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -95,7 +96,8 @@ class AIWorkspaceService:
 
         if self.groq_client is not None:
             try:
-                response = self.groq_client.chat.completions.create(
+                response = await asyncio.to_thread(
+                    self.groq_client.chat.completions.create,
                     model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
                     messages=messages,
                     temperature=0.2,

@@ -200,5 +200,5 @@ export async function getTestById(testId: string): Promise<TestApiResponse> {
 }
 
 export async function getAllTests(): Promise<TestApiResponse[]> {
-  return apiJson<TestApiResponse[]>(`/api/tests`);
+  return apiJson<TestApiResponse[]>(`/api/tests?limit=100`);
 }

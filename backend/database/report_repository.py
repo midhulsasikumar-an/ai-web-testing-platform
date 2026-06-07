@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -11,10 +13,12 @@ from backend.utils.url_utils import canonicalize_url as _canonicalize_url
 
 
 REPORT_COLLECTION = db["reports"]
+DEFAULT_REPORT_LIST_LIMIT = int(os.getenv("DEFAULT_REPORT_LIST_LIMIT", "100"))
+MAX_REPORT_LIST_LIMIT = int(os.getenv("MAX_REPORT_LIST_LIMIT", "500"))
 
 try:
-    REPORT_COLLECTION.create_index("report_key", unique=True)
-    REPORT_COLLECTION.create_index([("user_id", 1), ("created_at", -1)])
+    REPORT_COLLECTION.create_index("report_key", unique=True, name="report_key_unique")
+    REPORT_COLLECTION.create_index([("user_id", 1), ("created_at", -1)], name="reports_user_created")
 except Exception:
     pass
 
@@ -85,27 +89,32 @@ def list_reports_for_user(
     query: Optional[str] = None,
     report_type: Optional[str] = None,
     status: Optional[str] = None,
+    limit: int = DEFAULT_REPORT_LIST_LIMIT,
+    skip: int = 0,
 ) -> List[Dict[str, Any]]:
+    limit = max(1, min(int(limit or DEFAULT_REPORT_LIST_LIMIT), MAX_REPORT_LIST_LIMIT))
+    skip = max(0, int(skip or 0))
     filters: Dict[str, Any] = {"user_id": user_id}
     if report_type and report_type.lower() != "all":
         filters["report_type"] = _normalize_report_type(report_type)
     if status and status.lower() != "all":
         filters["status"] = status
-
-    reports = list(REPORT_COLLECTION.find(filters, {"_id": 0}))
     if query:
-        q = query.strip().lower()
-        reports = [
-            item
-            for item in reports
-            if q in str(item.get("title", "")).lower()
-            or q in str(item.get("summary", "")).lower()
-            or q in str(item.get("website", "")).lower()
-            or q in str(item.get("report_type", "")).lower()
-            or q in str(item.get("test_run_id", "")).lower()
+        pattern = re.compile(re.escape(query.strip()), re.IGNORECASE)
+        filters["$or"] = [
+            {"title": pattern},
+            {"summary": pattern},
+            {"website": pattern},
+            {"report_type": pattern},
+            {"test_run_id": pattern},
         ]
 
-    reports = sorted(reports, key=_sort_key, reverse=True)
+    reports = list(
+        REPORT_COLLECTION.find(filters, {"_id": 0})
+        .sort("created_at", -1)
+        .skip(skip)
+        .limit(limit)
+    )
 
     # Merge in bug reports derived from the user's bug_lifecycle records.
     # Bug reports are not stored in the `reports` collection -- they are
@@ -113,12 +122,16 @@ def list_reports_for_user(
     # the test reports without duplicating storage.
     include_bugs = _should_include_bug_reports(report_type)
     if include_bugs:
-        for bug_report in list_bug_reports_for_user(user_id, status=status):
-            if not _matches_query(bug_report, query):
-                continue
-            reports.append(bug_report)
+        remaining = max(0, limit - len(reports))
+        if remaining > 0:
+            for bug_report in list_bug_reports_for_user(user_id, status=status, limit=remaining):
+                if not _matches_query(bug_report, query):
+                    continue
+                reports.append(bug_report)
+                if len(reports) >= limit:
+                    break
 
-    return sorted(reports, key=_sort_key, reverse=True)
+    return sorted(reports, key=_sort_key, reverse=True)[:limit]
 
 
 def _should_include_bug_reports(report_type: Optional[str]) -> bool:
@@ -160,6 +173,7 @@ def list_bug_reports_for_user(
     user_id: str,
     *,
     status: Optional[str] = None,
+    limit: int = DEFAULT_REPORT_LIST_LIMIT,
 ) -> List[Dict[str, Any]]:
     """Materialise the user's bug_lifecycle records as ReportLibraryItem-shaped bug reports.
 
@@ -176,7 +190,7 @@ def list_bug_reports_for_user(
 
     if not user_id:
         return []
-    lifecycle_records = list_bug_lifecycle(user_id=user_id) or []
+    lifecycle_records = list_bug_lifecycle(user_id=user_id, limit=limit) or []
 
     status_filter = (status or "").strip().lower()
     bug_reports: List[Dict[str, Any]] = []

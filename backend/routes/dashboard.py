@@ -76,54 +76,42 @@ def _derive_risk_level(total_tests: int, failed: int, average_health: int, open_
 
 @router.get("/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
     projection = {
         "overall_status": 1,
         "health_score": 1,
         "created_at": 1,
-        "insights": 1,
         "test_id": 1,
         "test_name": 1,
         "name": 1,
         "project": 1,
         "url": 1,
         "test_type": 1,
-        "results": 1,
     }
 
-    tests = list(collection.find({"user_id": current_user["user_id"]}, projection))
+    total_tests = collection.count_documents({"user_id": user_id})
 
-    total_tests = len(tests)
+    status_counts = {
+        str(row.get("_id") or "unknown"): int(row.get("count") or 0)
+        for row in collection.aggregate([
+            {"$match": {"user_id": user_id}},
+            {"$group": {"_id": "$overall_status", "count": {"$sum": 1}}},
+        ])
+    }
 
-    passed = len([
-        t for t in tests
-        if t.get("overall_status") == "pass"
-    ])
+    passed = status_counts.get("pass", 0)
+    failed = status_counts.get("fail", 0)
+    warnings = status_counts.get("warning", 0)
 
-    failed = len([
-        t for t in tests
-        if t.get("overall_status") == "fail"
-    ])
-
-    warnings = len([
-        t for t in tests
-        if t.get("overall_status") == "warning"
-    ])
-
-    health_scores = [
-        t.get("health_score", 0)
-        for t in tests
-        if t.get("health_score") is not None
-    ]
-
-    average_health = (
-        round(sum(health_scores) / len(health_scores))
-        if health_scores
-        else 0
-    )
+    avg_rows = list(collection.aggregate([
+        {"$match": {"user_id": user_id, "health_score": {"$ne": None}}},
+        {"$group": {"_id": None, "average_health": {"$avg": "$health_score"}}},
+    ]))
+    average_health = round(avg_rows[0].get("average_health", 0)) if avg_rows else 0
 
     try:
         open_bugs = bug_collection.count_documents({
-            "user_id": current_user["user_id"],
+            "user_id": user_id,
             "status": {"$in": ["open", "in-progress", "Open", "In Progress"]},
         })
     except Exception:
@@ -131,51 +119,57 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
     risk_level = _derive_risk_level(total_tests, failed, average_health, open_bugs)
 
-    activity_map = defaultdict(lambda: {
-        "passed": 0,
-        "failed": 0
-    })
-
-    try:
-        for test in tests:
-            created_at = test.get("created_at")
-
-            if not created_at or not isinstance(created_at, str):
-                continue
-
-            day = created_at[:10]
-
-            status = test.get("overall_status")
-
-            if status == "pass":
-                activity_map[day]["passed"] += 1
-
-            elif status == "fail":
-                activity_map[day]["failed"] += 1
-    except Exception as e:
-        print("Activity processing error:", e)
-
     test_activity = sorted(
         [
             {
-                "day": day,
-                "passed": values["passed"],
-                "failed": values["failed"]
+                "day": row.get("_id"),
+                "passed": int(row.get("passed") or 0),
+                "failed": int(row.get("failed") or 0),
             }
-            for day, values in activity_map.items()
+            for row in collection.aggregate([
+                {"$match": {"user_id": user_id, "created_at": {"$type": "string"}}},
+                {
+                    "$group": {
+                        "_id": {"$substr": ["$created_at", 0, 10]},
+                        "passed": {"$sum": {"$cond": [{"$eq": ["$overall_status", "pass"]}, 1, 0]}},
+                        "failed": {"$sum": {"$cond": [{"$eq": ["$overall_status", "fail"]}, 1, 0]}},
+                    }
+                },
+                {"$sort": {"_id": -1}},
+                {"$limit": 7},
+            ])
         ],
         key=lambda x: x["day"]
-    )[-7:]
+    )
 
-    critical_count = 0
-    moderate_count = 0
-    minor_count = 0
-    for test in tests:
-        insights = test.get("insights") or {}
-
-        critical_count += len(insights.get("critical", []))
-        moderate_count += len(insights.get("moderate", []))
-        minor_count += len(insights.get("minor", []))
+    insight_rows = list(collection.aggregate([
+        {"$match": {"user_id": user_id}},
+        {
+            "$project": {
+                "critical": {
+                    "$cond": [{"$isArray": "$insights.critical"}, {"$size": "$insights.critical"}, 0]
+                },
+                "moderate": {
+                    "$cond": [{"$isArray": "$insights.moderate"}, {"$size": "$insights.moderate"}, 0]
+                },
+                "minor": {
+                    "$cond": [{"$isArray": "$insights.minor"}, {"$size": "$insights.minor"}, 0]
+                },
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "critical": {"$sum": "$critical"},
+                "moderate": {"$sum": "$moderate"},
+                "minor": {"$sum": "$minor"},
+            }
+        },
+    ]))
+    insight_totals = insight_rows[0] if insight_rows else {}
+    critical_count = int(insight_totals.get("critical") or 0)
+    moderate_count = int(insight_totals.get("moderate") or 0)
+    minor_count = int(insight_totals.get("minor") or 0)
 
     ai_logs = generate_ai_logs(
         total_tests=total_tests,
@@ -187,13 +181,13 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
     recent_tests = []
 
-    sorted_tests = sorted(
-        tests,
-        key=_recent_tests_sort_key,
-        reverse=True,
+    sorted_tests = list(
+        collection.find({"user_id": user_id}, projection)
+        .sort("created_at", -1)
+        .limit(5)
     )
 
-    for test in sorted_tests[:5]:
+    for test in sorted_tests:
         recent_tests.append({
             "test_id": str(test.get("test_id") or test.get("_id", "")),
             "test_name": test.get("test_name") or test.get("name") or test.get("project") or "",

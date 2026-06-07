@@ -77,7 +77,7 @@ export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
         {!collapsed ? (
           <div className="flex min-w-0 flex-col leading-tight">
             <span className="text-[14px] font-semibold tracking-tight text-slate-900">
-              TestPilot <span className="text-blue-600">AI</span>
+              TestPulse <span className="text-blue-600">AI</span>
             </span>
             <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">
               v2.0 · Pro

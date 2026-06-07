@@ -56,20 +56,28 @@ def _text_match(doc: Dict[str, Any], query: str, fields: Tuple[str, ...]) -> boo
     return all(token in haystack for token in lowered.split() if token)
 
 
-def _run_docs(user_id: str) -> List[Dict[str, Any]]:
-    return _sort_docs(list(test_runs_collection.find({"user_id": user_id}, {"_id": 0})))
+def _limited_recent(cursor: Any, limit: int, sort_field: str = "created_at") -> List[Dict[str, Any]]:
+    try:
+        cursor = cursor.sort(sort_field, -1).limit(limit)
+    except (AttributeError, TypeError):
+        pass
+    return _sort_docs(list(cursor))[:limit]
 
 
-def _report_docs(user_id: str) -> List[Dict[str, Any]]:
-    return _sort_docs(list_reports_for_user(user_id))
+def _run_docs(user_id: str, limit: int = 200) -> List[Dict[str, Any]]:
+    return _limited_recent(test_runs_collection.find({"user_id": user_id}, {"_id": 0}), limit)
 
 
-def _bug_docs(user_id: str) -> List[Dict[str, Any]]:
-    return _sort_docs(list(bug_collection.find({"user_id": user_id}, {"_id": 0})))
+def _report_docs(user_id: str, limit: int = 200) -> List[Dict[str, Any]]:
+    return _sort_docs(list_reports_for_user(user_id, limit=limit))
 
 
-def _memory_docs(user_id: str) -> List[Dict[str, Any]]:
-    return _sort_docs(list(ai_memory_collection.find({"user_id": user_id}, {"_id": 0})))
+def _bug_docs(user_id: str, limit: int = 200) -> List[Dict[str, Any]]:
+    return _limited_recent(bug_collection.find({"user_id": user_id}, {"_id": 0}), limit)
+
+
+def _memory_docs(user_id: str, limit: int = 200) -> List[Dict[str, Any]]:
+    return _limited_recent(ai_memory_collection.find({"user_id": user_id}, {"_id": 0}), limit)
 
 
 def _run_label(doc: Dict[str, Any]) -> str:

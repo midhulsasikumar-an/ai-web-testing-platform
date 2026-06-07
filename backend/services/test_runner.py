@@ -87,7 +87,10 @@ def run_test(url: str, test_id: str, user_id: str | None = None):
         # ---- STEP 2: Scroll in stages ----
         for i in range(3):
             page.mouse.wheel(0, 2000)
-            page.wait_for_timeout(1000)
+            try:
+                page.wait_for_load_state("networkidle", timeout=500)
+            except Exception:
+                page.wait_for_timeout(150)
 
             {
                 "test": "Scroll Coverage",

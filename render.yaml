@@ -3,7 +3,7 @@ services:
     name: ai-web-testing-backend
     runtime: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt && python -m playwright install chromium
+    buildCommand: pip install -r backend/requirements.txt && python -m playwright install chromium chromium-headless-shell
     startCommand: uvicorn backend.server:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
@@ -11,6 +11,8 @@ services:
       - key: SKIP_BROWSER_WARMUP
         value: "1"
       - key: STRICT_SECRETS
+        value: "1"
+      - key: MAX_CONCURRENT_TEST_RUNS
         value: "1"
       - key: FRONTEND_ORIGINS
         sync: false

@@ -2,7 +2,10 @@ import os
 
 def test_page_load(page, folder_path, test_id: str,screenshots):
     try:
-        page.wait_for_timeout(3000) #small buffer to ensure all resources are loaded
+        try:
+            page.wait_for_load_state("networkidle", timeout=1500)
+        except Exception:
+            page.wait_for_load_state("domcontentloaded", timeout=1000)
 
         home_path = f"{folder_path}/home.png"
 

@@ -9,7 +9,10 @@ def test_console_errors(page):
 
     try:
         page.reload()
-        page.wait_for_timeout(2000)
+        try:
+            page.wait_for_load_state("networkidle", timeout=1500)
+        except Exception:
+            page.wait_for_load_state("domcontentloaded", timeout=1000)
 
         return {
             "test": "Console Errors",
@@ -17,4 +20,4 @@ def test_console_errors(page):
             "details": errors[:3] if errors else "No console errors"     }
 
     except Exception as e:
-        return {"test": "Console Errors", "status": "fail", "error": str(e)}    
+        return {"test": "Console Errors", "status": "fail", "error": str(e)}

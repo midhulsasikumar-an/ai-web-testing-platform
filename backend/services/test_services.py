@@ -1741,7 +1741,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             # Mirror manually-closed bugs from the bugs collection so
             # lifecycle stays in sync (best-effort).
             try:
-                synced = sync_bugs_collection_to_lifecycle()
+                synced = sync_bugs_collection_to_lifecycle(user_id=user_id)
                 if synced:
                     logger.info(
                         "Synced %d manually-closed bug(s) into bug_lifecycle",

@@ -30,8 +30,10 @@ def test_buttons(page, folder_path, test_id, screenshots):
                 # --- REAL INTERACTION ---
                 btn.click(force=True, timeout=3000)
 
-                # wait for UI update/navigation
-                page.wait_for_timeout(2000)
+                try:
+                    page.wait_for_load_state("networkidle", timeout=1000)
+                except Exception:
+                    page.wait_for_timeout(250)
 
                 # --- SCREENSHOT AFTER INTERACTION ---
                 screenshot_path = (

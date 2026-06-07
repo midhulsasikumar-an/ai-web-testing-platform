@@ -34,9 +34,9 @@ const TERMINAL_TEST_STATUSES = new Set([
   "timed_out",
 ]);
 
-const POLL_INTERVAL_MS = 3000;
-const MAX_POLL_ITERATIONS = 600;
-const STUCK_THRESHOLD = 20; // 20 polls * 3s = 60s with no status change => stuck
+const POLL_INTERVAL_MS = 5000;
+const MAX_POLL_ITERATIONS = 720;
+const STUCK_THRESHOLD = 12; // 12 polls * 5s = 60s with no status change => stuck
 
 // ── Hook ──────────────────────────────────────
 

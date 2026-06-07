@@ -49,7 +49,7 @@ class AIRetrievalSystem:
         return items[:limit]
 
     def retrieve_reports(self, user_id: str, query: str, limit: int = 5) -> List[Dict[str, Any]]:
-        reports = list_reports_for_user(user_id)
+        reports = list_reports_for_user(user_id, limit=max(limit, 10))
         if query:
             reports = [item for item in reports if self._match_query(" ".join(map(str, [item.get("title", ""), item.get("summary", ""), item.get("website", ""), item.get("report_type", ""), item.get("status", "") ])), query)]
         return reports[:limit]

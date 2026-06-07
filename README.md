@@ -132,7 +132,7 @@ ai-web-testing-platform/
 ```bash
 npm install
 npm run install:all
-python -m playwright install chromium
+python -m playwright install chromium chromium-headless-shell
 ```
 
 `npm install` installs the root development helper dependencies.
@@ -221,7 +221,7 @@ The backend is configured with `render.yaml`.
 
 ```text
 Build command:
-pip install -r backend/requirements.txt && python -m playwright install chromium
+pip install -r backend/requirements.txt && python -m playwright install chromium chromium-headless-shell
 
 Start command:
 uvicorn backend.server:app --host 0.0.0.0 --port $PORT

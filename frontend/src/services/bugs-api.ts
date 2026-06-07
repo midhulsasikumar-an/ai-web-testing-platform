@@ -21,7 +21,7 @@ export interface BugApiResponse {
 }
 
 export async function getAllBugs(): Promise<BugApiResponse[]> {
-  return apiJson<BugApiResponse[]>("/api/bugs");
+  return apiJson<BugApiResponse[]>("/api/bugs?limit=100");
 }
 
 export async function getBugById(bugId: string): Promise<BugApiResponse> {

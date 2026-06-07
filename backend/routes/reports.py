@@ -74,14 +74,18 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _list_report_docs(current_user_id: str) -> List[Dict[str, Any]]:
-    docs = list_reports_for_user(current_user_id)
+def _list_report_docs(current_user_id: str, *, limit: int = 100, skip: int = 0) -> List[Dict[str, Any]]:
+    docs = list_reports_for_user(current_user_id, limit=limit, skip=skip)
     return [_map_report(doc) for doc in docs]
 
 
 @router.get("/reports")
-def get_reports(current_user: dict = Depends(get_current_user)):
-    return {"items": _list_report_docs(current_user["user_id"])}
+def get_reports(
+    current_user: dict = Depends(get_current_user),
+    limit: int = Query(default=100, ge=1, le=500),
+    skip: int = Query(default=0, ge=0),
+):
+    return {"items": _list_report_docs(current_user["user_id"], limit=limit, skip=skip)}
 
 
 @router.get("/reports/{report_id}")
@@ -119,7 +123,7 @@ def export_all_reports(
     status: str | None = Query(default=None),
     current_user: dict = Depends(get_current_user),
 ):
-    reports = _list_report_docs(current_user["user_id"])
+    reports = _list_report_docs(current_user["user_id"], limit=500)
     if q:
         query = q.lower().strip()
         reports = [item for item in reports if query in item["test_name"].lower() or query in item["website"].lower() or query in item["report_type"].lower() or query in item["summary"].lower()]

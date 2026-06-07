@@ -21,9 +21,11 @@ def list_report_library(
     query: Optional[str] = None,
     report_type: Optional[str] = None,
     status: Optional[str] = None,
+    limit: int = 100,
 ) -> List[Dict[str, Any]]:
-    tests = list(collection.find({"user_id": user_id}, {"_id": 0}))
-    bugs = list(bug_collection.find({"user_id": user_id}, {"_id": 0}))
+    limit = max(1, min(int(limit or 100), 500))
+    tests = list(collection.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).limit(limit))
+    bugs = list(bug_collection.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).limit(limit))
 
     test_lookup = {str(t.get("test_id")): t for t in tests if t.get("test_id")}
     items: List[Dict[str, Any]] = []
@@ -68,7 +70,7 @@ def list_report_library(
         )
 
     filtered = _apply_filters(items, query=query, report_type=report_type, status=status)
-    return sorted(filtered, key=lambda item: item.get("generated_date", ""), reverse=True)
+    return sorted(filtered, key=lambda item: item.get("generated_date", ""), reverse=True)[:limit]
 
 
 def export_single_report_pdf(user_id: str, report_id: str) -> Path:
@@ -91,7 +93,7 @@ def export_all_reports_zip(
     report_type: Optional[str] = None,
     status: Optional[str] = None,
 ) -> Path:
-    items = list_report_library(user_id, query=query, report_type=report_type, status=status)
+    items = list_report_library(user_id, query=query, report_type=report_type, status=status, limit=500)
     if not items:
         raise ValueError("No reports available for export")
 

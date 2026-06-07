@@ -179,7 +179,7 @@ def reconcile_bugs_on_passing_run(
     return _apply_resolution_events(resolution_events, test_id=test_id, user_id=user_id)
 
 
-def sync_bugs_collection_to_lifecycle() -> int:
+def sync_bugs_collection_to_lifecycle(user_id: Optional[str] = None) -> int:
     """One-way mirror: any ``bugs`` document whose status is "resolved"
     or "closed" propagates into the corresponding ``bug_lifecycle`` record.
 
@@ -187,7 +187,10 @@ def sync_bugs_collection_to_lifecycle() -> int:
     """
     from backend.database.mongo import bug_collection as _bugs  # local import to avoid cycle
 
-    closed_bugs = list(_bugs.find({"status": {"$in": ["resolved", "closed"]}}))
+    query: Dict[str, Any] = {"status": {"$in": ["resolved", "closed"]}}
+    if user_id:
+        query["user_id"] = user_id
+    closed_bugs = list(_bugs.find(query).sort("updated_at", -1).limit(500))
     if not closed_bugs:
         return 0
 
@@ -224,6 +227,7 @@ def list_bug_lifecycle(
     status: Optional[str] = None,
     website: Optional[str] = None,
     workflow_stage: Optional[str] = None,
+    limit: int = 500,
 ) -> List[Dict[str, Any]]:
     query: Dict[str, Any] = {}
     if user_id:
@@ -234,14 +238,15 @@ def list_bug_lifecycle(
         query["website"] = website
     if workflow_stage:
         query["workflow_stage"] = workflow_stage
-    return list(BUG_LIFECYCLE_COLLECTION.find(query, {"_id": 0}).sort("updated_at", -1))
+    limit = max(1, min(int(limit or 500), 1000))
+    return list(BUG_LIFECYCLE_COLLECTION.find(query, {"_id": 0}).sort("updated_at", -1).limit(limit))
 
 
 def summarize_bug_lifecycle(user_id: Optional[str] = None) -> Dict[str, Any]:
     query: Dict[str, Any] = {}
     if user_id:
         query["user_id"] = user_id
-    records = list(BUG_LIFECYCLE_COLLECTION.find(query, {"_id": 0}))
+    records = list(BUG_LIFECYCLE_COLLECTION.find(query, {"_id": 0}).sort("updated_at", -1).limit(1000))
     by_status = Counter(str(record.get("status", "Monitoring")) for record in records)
     by_website = Counter(str(record.get("website", "unknown")) for record in records)
     by_workflow = Counter(str(record.get("workflow_stage", "unknown")) for record in records)

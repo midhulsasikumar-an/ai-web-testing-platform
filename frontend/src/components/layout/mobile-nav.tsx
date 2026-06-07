@@ -67,7 +67,7 @@ export function MobileNav({ open: externalOpen, onOpenChange }: { open?: boolean
               <Sparkles className="h-4 w-4" />
             </span>
             <span className="text-[14px] font-semibold tracking-tight text-slate-900">
-              TestPilot <span className="text-blue-600">AI</span>
+              TestPulse <span className="text-blue-600">AI</span>
             </span>
           </Link>
           <button
