@@ -133,6 +133,8 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     failed = verdict_counts.get("fail", 0)
     blocked = verdict_counts.get("blocked", 0)
     warnings = blocked
+    pass_rate = round((passed / total_tests) * 100, 1) if total_tests else 0
+    blocked_rate = round((blocked / total_tests) * 100, 1) if total_tests else 0
     environment_failures = sum(
         failure_type_counts.get(item, 0)
         for item in ("browser_error", "execution_error", "timeout")
@@ -146,6 +148,19 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         {"$group": {"_id": None, "average_health": {"$avg": "$health_score"}}},
     ]))
     average_health = round(avg_rows[0].get("average_health", 0)) if avg_rows else 0
+
+    duration_rows = list(collection.aggregate([
+        {"$match": {"user_id": user_id, "duration_seconds": {"$type": "number"}}},
+        {
+            "$group": {
+                "_id": None,
+                "average_duration_seconds": {"$avg": "$duration_seconds"},
+                "slowest_duration_seconds": {"$max": "$duration_seconds"},
+            }
+        },
+    ]))
+    average_duration_seconds = round(duration_rows[0].get("average_duration_seconds", 0), 2) if duration_rows else 0
+    slowest_duration_seconds = round(duration_rows[0].get("slowest_duration_seconds", 0), 2) if duration_rows else 0
 
     try:
         open_bugs = bug_collection.count_documents({
@@ -249,8 +264,13 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "passed": passed,
         "failed": failed,
         "blocked": blocked,
+        "pass_rate": pass_rate,
+        "blocked_rate": blocked_rate,
         "environment_failures": environment_failures,
         "target_blocked": target_blocked,
+        "average_duration_seconds": average_duration_seconds,
+        "slowest_duration_seconds": slowest_duration_seconds,
+        "failure_breakdown": failure_type_counts,
         "open_bugs": open_bugs,
         "average_health": average_health,
         "test_activity": test_activity,

@@ -10,6 +10,8 @@ import { useAuth } from "@/context/auth-context";
 import {
   Activity,
   AlertTriangle,
+  Ban,
+  Timer,
   Scale,
   ShieldCheck,
 } from "lucide-react";
@@ -172,6 +174,28 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <StatCard
+              title="True Pass Rate"
+              value={`${stats.pass_rate ?? 0}%`}
+              icon={ShieldCheck}
+              trend={`${stats.passed ?? 0} passed · ${stats.failed ?? 0} website failure(s)`}
+              trendColor="text-emerald-600"
+            />
+            <StatCard
+              title="Blocked Runs"
+              value={stats.blocked ?? 0}
+              icon={Ban}
+              trend={`${stats.blocked_rate ?? 0}% blocked · ${stats.target_blocked ?? 0} target checkpoint(s)`}
+              trendColor={(stats.blocked ?? 0) > 0 ? "text-amber-600" : "text-slate-500"}
+            />
+            <StatCard
+              title="Avg Runtime"
+              value={stats.average_duration_seconds ? `${stats.average_duration_seconds}s` : "—"}
+              icon={Timer}
+              trend={stats.slowest_duration_seconds ? `Slowest ${stats.slowest_duration_seconds}s` : "No runtime data yet"}
+            />
+          </div>
           <SystemTelemetry stats={stats} />
         </div>
 

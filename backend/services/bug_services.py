@@ -167,6 +167,33 @@ def _compute_bug_fingerprint(test_data: dict, result: dict) -> str:
         if isinstance(result.get("original_step"), dict)
         else {}
     )
+
+
+def _severity_score(severity: str) -> int:
+    return {
+        "critical": 100,
+        "high": 80,
+        "medium": 55,
+        "low": 30,
+        "info": 10,
+    }.get(str(severity or "").lower(), 45)
+
+
+def _bug_intelligence_payload(*, severity: str, failure_category: str, root_cause: str | None, fingerprint: str, existing: dict | None = None) -> dict:
+    occurrences = int((existing or {}).get("occurrences") or 0) + 1
+    recurrence = "recurring" if occurrences > 1 else "new"
+    confidence = 0.86 if root_cause else 0.68
+    return {
+        "severity_score": _severity_score(severity),
+        "recurrence": recurrence,
+        "occurrences": occurrences,
+        "duplicate_key": fingerprint,
+        "diagnosis_confidence": confidence,
+        "triage_hint": (
+            f"{failure_category or 'UNKNOWN'} failure with root cause {root_cause or 'UNKNOWN'}."
+            " Re-run after fixing to verify lifecycle resolution."
+        ),
+    }
     step_index = (
         step.get("step_index")
         or step.get("index")
@@ -240,16 +267,35 @@ def create_bugs_from_test(test_data):
 
         existing = bug_collection.find_one({"fingerprint": fingerprint})
         if existing:
+            intelligence = _bug_intelligence_payload(
+                severity=severity,
+                failure_category=failure_category,
+                root_cause=root_cause,
+                fingerprint=fingerprint,
+                existing=existing,
+            )
+            bug_collection.update_one(
+                {"_id": existing["_id"]},
+                {"$set": {"updated_at": now_iso, "last_seen_test_id": test_data.get("test_id"), "intelligence": intelligence}, "$inc": {"occurrences": 1}},
+            )
             if not existing.get("bug_id"):
                 bug_collection.update_one(
                     {"_id": existing["_id"]},
                     {"$set": {"bug_id": str(uuid.uuid4())}},
                 )
             bug = dict(existing)
+            bug["intelligence"] = intelligence
+            bug["occurrences"] = intelligence["occurrences"]
             bug.pop("_id", None)
             created_bugs.append(bug)
             continue
 
+        intelligence = _bug_intelligence_payload(
+            severity=severity,
+            failure_category=failure_category,
+            root_cause=root_cause,
+            fingerprint=fingerprint,
+        )
         bug = {
             "bug_id": str(uuid.uuid4()),
             "fingerprint": fingerprint,
@@ -280,6 +326,9 @@ def create_bugs_from_test(test_data):
             "created_at": now_iso,
             "updated_at": now_iso,
             "occurrences": 1,
+            "first_seen_test_id": test_data.get("test_id"),
+            "last_seen_test_id": test_data.get("test_id"),
+            "intelligence": intelligence,
         }
 
         try:

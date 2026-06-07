@@ -39,6 +39,7 @@ from backend.services.action_translation_service import translate_test_case
 from backend.services.failure_classifier import classify_failure_category, collect_failure_category_counts
 from backend.services.root_cause_classifier import classify_root_cause
 from backend.services.run_outcome import apply_run_outcome
+from backend.services.execution_timeline import build_blocked_diagnostics, build_execution_timeline
 
 logger = logging.getLogger("services.test")
 
@@ -722,6 +723,7 @@ def run_test_and_update(test_data, url, user_id: str):
     """
     from backend.services.execution_watchdog import _force_terminal
 
+    legacy_started = perf_counter()
     results: list = []
     artifacts: dict = {}
     try:
@@ -777,7 +779,10 @@ def run_test_and_update(test_data, url, user_id: str):
         filename = os.path.basename(path)
         screenshot_urls.append(build_artifact_url(user_id, f"artifacts/{test_data['test_id']}/{filename}"))
 
+    test_data["duration_seconds"] = round(perf_counter() - legacy_started, 2)
     apply_run_outcome(test_data)
+    test_data["timeline"] = build_execution_timeline(test_data)
+    test_data["blocked_diagnostics"] = build_blocked_diagnostics(test_data)
     test_data["ai_report"] = {
         "user_id": user_id,
         "execution_id": test_data["test_id"],
@@ -1311,6 +1316,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 "discovery_error": plan.get("discovery_error") or "target_blocked",
                 "results": [],
                 "summary": {"total": 0, "passed": 0, "failed": 0, "info": 0},
+                "duration_seconds": duration_s,
                 "health_score": None,
                 "overall_status": None,
                 "recommendations": [
@@ -1345,6 +1351,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 "screenshot_paths": [],
             })
             apply_run_outcome(test_data)
+            test_data["timeline"] = build_execution_timeline(test_data)
+            test_data["blocked_diagnostics"] = build_blocked_diagnostics(test_data)
             test_data["ai_report"] = {
                 "user_id": user_id,
                 "execution_id": test_data["test_id"],
@@ -1750,6 +1758,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
 
         # ---- Emit explicit terminal completion event ----
         total_duration_s = round(perf_counter() - overall_started, 2)
+        test_data["duration_seconds"] = total_duration_s
         final_status = test_data["status"]
         summary = test_data.get("summary", {})
         total_scenarios = summary.get("total", len(scenario_results))
@@ -1792,6 +1801,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         test_data["stream_logs"] = stream_logs
         test_data["screenshot_paths"] = screenshot_paths
         apply_run_outcome(test_data)
+        test_data["timeline"] = build_execution_timeline(test_data)
+        test_data["blocked_diagnostics"] = build_blocked_diagnostics(test_data)
         test_data["ai_report"] = {
             "user_id": user_id,
             "execution_id": test_data["test_id"],
@@ -1917,6 +1928,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
 
         # ---- Emit explicit terminal cancellation event ----
         cancel_duration_s = round(perf_counter() - overall_started, 2)
+        test_data["duration_seconds"] = cancel_duration_s
         cancel_passed = sum(1 for r in partial_results if isinstance(r, dict) and r.get("status") == "pass")
         cancel_failed = sum(1 for r in partial_results if isinstance(r, dict) and r.get("status") == "fail")
         cancel_summary_text = (
@@ -1942,6 +1954,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         })
         test_data["stream_logs"] = cancel_logs
         apply_run_outcome(test_data)
+        test_data["timeline"] = build_execution_timeline(test_data)
+        test_data["blocked_diagnostics"] = build_blocked_diagnostics(test_data)
 
         async def _create_bugs_cancel() -> None:
             try:
@@ -1999,6 +2013,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
 
         # ---- Emit explicit terminal failure event ----
         error_duration_s = round(perf_counter() - overall_started, 2)
+        test_data["duration_seconds"] = error_duration_s
         error_summary_text = (
             f"[ERROR] Test execution failed\n"
             f"  Error           : {str(e)[:200]}\n"
@@ -2018,6 +2033,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         })
         test_data["stream_logs"] = error_logs
         apply_run_outcome(test_data)
+        test_data["timeline"] = build_execution_timeline(test_data)
+        test_data["blocked_diagnostics"] = build_blocked_diagnostics(test_data)
 
         async def _create_bugs_exc() -> None:
             try:

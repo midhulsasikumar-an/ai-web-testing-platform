@@ -56,6 +56,8 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
     related_bug_id = _pick_first(report, "related_bug_id", "bug_id")
     scenario_tree = report.get("scenario_tree") if isinstance(report.get("scenario_tree"), dict) else None
     risk_summary = report.get("risk_summary") if isinstance(report.get("risk_summary"), dict) else None
+    timeline = report.get("timeline") if isinstance(report.get("timeline"), list) else None
+    blocked_diagnostics = report.get("blocked_diagnostics") if isinstance(report.get("blocked_diagnostics"), dict) else None
     test_type = _pick_first(report, "test_type", "run_type")
 
     return {
@@ -78,6 +80,9 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
         "test_type": test_type or None,
         "scenario_tree": scenario_tree,
         "risk_summary": risk_summary,
+        "timeline": timeline,
+        "blocked_diagnostics": blocked_diagnostics,
+        "duration_seconds": report.get("duration_seconds"),
         "objective_coverage": report.get("objective_coverage") if isinstance(report.get("objective_coverage"), list) else None,
     }
 

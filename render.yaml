@@ -14,6 +14,10 @@ services:
         value: "1"
       - key: MAX_CONCURRENT_TEST_RUNS
         value: "1"
+      - key: RUN_QUEUE_MODE
+        value: inline
+      - key: EXECUTION_STREAM_MODE
+        value: sse
       - key: FRONTEND_ORIGINS
         sync: false
       - key: MONGO_URL

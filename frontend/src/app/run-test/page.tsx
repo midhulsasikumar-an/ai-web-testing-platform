@@ -3,7 +3,7 @@
 import { Play, Link as LinkIcon, Bot, X, FilePlus2, Save, Sparkles, Lock } from "lucide-react";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import AIChatPanel from "@/components/ai-chat-panel/AIChatPanel";
-import { startTest, getTestById, getTestStream, TestApiResponse, AIPlanResponse } from "@/services/test-api";
+import { startTest, getTestById, getTestStream, streamTestEvents, TestApiResponse, AIPlanResponse } from "@/services/test-api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -744,6 +744,21 @@ function TestPlanPanel({
         <div className="flex-1 overflow-y-auto p-5">
           {plan ? (
             <div className="space-y-4">
+              {plan.target_blocked ? (
+                <BlockedTargetNotice
+                  diagnostics={{
+                    title: "Target blocked automation",
+                    reason: plan.target_blocked_reason || "security_checkpoint",
+                    message: "The target served a security checkpoint instead of the requested app page.",
+                    is_testpulse_bug: false,
+                    recommended_actions: [
+                      "Use a staging or preview URL without bot protection.",
+                      "Allowlist the Render backend or test user agent.",
+                      "Confirm the page is reachable in a normal browser before re-running.",
+                    ],
+                  }}
+                />
+              ) : null}
               <div className="space-y-2 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-white p-4 shadow-xs-token">
                 <p className="text-eyebrow">Scenario</p>
                 <p className="text-[16px] font-semibold leading-snug text-slate-900">
@@ -827,6 +842,28 @@ function TestPlanPanel({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function BlockedTargetNotice({
+  diagnostics,
+}: {
+  diagnostics?: TestApiResponse["blocked_diagnostics"] | null;
+}) {
+  if (!diagnostics) return null;
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-900">
+      <div className="font-semibold">{diagnostics.title}</div>
+      <div className="mt-1">{diagnostics.message}</div>
+      <div className="mt-2 grid gap-1">
+        {(diagnostics.recommended_actions ?? []).map((item) => (
+          <div key={item} className="flex gap-2">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -934,6 +971,12 @@ function useTestPolling(
     let cancelled = false;
 
     let pollCount = 0;
+    const mergePartial = (data: Partial<TestApiResponse>) => {
+      setTestData((prev) => {
+        const base = (prev ?? {}) as TestApiResponse;
+        return { ...base, ...data } as TestApiResponse;
+      });
+    };
 
     const tick = async () => {
       try {
@@ -946,10 +989,7 @@ function useTestPolling(
         if (useFullPayload) {
           setTestData(data as TestApiResponse);
         } else {
-          setTestData((prev) => {
-            const base = (prev ?? {}) as TestApiResponse;
-            return { ...base, ...data } as TestApiResponse;
-          });
+          mergePartial(data);
         }
         const status = (data.status ?? "").toLowerCase();
         const terminal = Boolean(data.is_terminal) || (status && status !== "running" && status !== "queued" && status !== "planning" && status !== "cancel_requested");
@@ -975,7 +1015,7 @@ function useTestPolling(
         if (!cancelled && !finished) {
           scheduleNext();
         }
-      }, 1500);
+      }, 6000);
     };
 
     void (async () => {
@@ -984,6 +1024,26 @@ function useTestPolling(
       if (done) return;
       scheduleNext();
     })();
+
+    void streamTestEvents(testId, async (event) => {
+      if (cancelled) return;
+      if (event.type === "snapshot") {
+        mergePartial(event.data);
+        const status = String(event.data.status || "").toLowerCase();
+        if (event.data.is_terminal || (status && !["running", "queued", "planning", "cancel_requested"].includes(status))) {
+          const finalData = (await getTestById(testId)) as TestApiResponse;
+          if (!cancelled) setTestData(finalData);
+          setRunning(false);
+        }
+      }
+      if (event.type === "done") {
+        const finalData = (await getTestById(testId)) as TestApiResponse;
+        if (!cancelled) setTestData(finalData);
+        setRunning(false);
+      }
+    }).catch((error) => {
+      if (!cancelled) console.error("Execution stream failed; polling fallback remains active", error);
+    });
 
     return () => {
       cancelled = true;

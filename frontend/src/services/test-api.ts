@@ -42,6 +42,11 @@ export interface AIPlanResponse {
   test_case: AIPlanTestCase;
   test_cases: AIPlanTestCase[];
   raw_plan?: Record<string, unknown> | null;
+  target_blocked?: boolean;
+  target_blocked_reason?: string;
+  discovery_status?: string;
+  discovery_error?: string | null;
+  step_limit?: number;
 }
 
 export interface TestStepResult {
@@ -145,6 +150,26 @@ export interface TestApiResponse {
     type?: string;
     details?: Record<string, unknown>;
   }>;
+  timeline?: Array<{
+    id: string;
+    time?: string;
+    phase: string;
+    label: string;
+    message: string;
+    level: string;
+    scenario_id?: string | null;
+    scenario_name?: string | null;
+    step_index?: number | null;
+    duration_seconds?: number | null;
+    screenshot?: string | null;
+  }>;
+  blocked_diagnostics?: {
+    title: string;
+    reason: string;
+    message: string;
+    is_testpulse_bug: boolean;
+    recommended_actions: string[];
+  } | null;
 
   ai_plan?: AIPlanResponse;
   screenshot_paths?: string[];
@@ -207,6 +232,40 @@ export async function getTestById(testId: string): Promise<TestApiResponse> {
 
 export async function getTestStream(testId: string): Promise<Partial<TestApiResponse>> {
   return apiJson<Partial<TestApiResponse>>(`/api/tests/${testId}/stream`);
+}
+
+export async function streamTestEvents(
+  testId: string,
+  onEvent: (event: { type: "snapshot"; data: Partial<TestApiResponse> } | { type: "done"; data: Record<string, unknown> } | { type: "error"; data: Record<string, unknown> }) => void
+): Promise<void> {
+  const response = await apiFetch(`/api/tests/${testId}/events`);
+  if (!response.body) return;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  const flushEvent = (raw: string) => {
+    const lines = raw.split(/\r?\n/);
+    const eventName = lines.find((line) => line.startsWith("event:"))?.slice(6).trim() || "snapshot";
+    const dataLine = lines.find((line) => line.startsWith("data:"));
+    if (!dataLine) return;
+    const parsed = JSON.parse(dataLine.slice(5).trim()) as Record<string, unknown>;
+    if (eventName === "snapshot") onEvent({ type: "snapshot", data: parsed as Partial<TestApiResponse> });
+    if (eventName === "done") onEvent({ type: "done", data: parsed });
+    if (eventName === "error") onEvent({ type: "error", data: parsed });
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split(/\n\n/);
+    buffer = events.pop() || "";
+    events.forEach((event) => {
+      if (event.trim()) flushEvent(event);
+    });
+  }
+  if (buffer.trim()) flushEvent(buffer);
 }
 
 export async function getAllTests(): Promise<TestApiResponse[]> {

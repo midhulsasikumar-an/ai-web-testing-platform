@@ -21,6 +21,10 @@ export interface RecentTest {
   project: string;
   url: string;
   overall_status: string;
+  execution_status?: string;
+  test_verdict?: string;
+  failure_type?: string;
+  outcome_label?: string;
   health_score: number;
   test_type: string;
   date: string;
@@ -30,6 +34,14 @@ export interface DashboardStatsResponse {
   total_tests: number;
   passed: number;
   failed: number;
+  blocked: number;
+  pass_rate: number;
+  blocked_rate: number;
+  environment_failures: number;
+  target_blocked: number;
+  average_duration_seconds: number;
+  slowest_duration_seconds: number;
+  failure_breakdown: Record<string, number>;
   open_bugs: number;
   average_health: number;
   ai_summary?: AISummary;
@@ -38,6 +50,7 @@ export interface DashboardStatsResponse {
     day: string;
     passed: number;
     failed: number;
+    blocked?: number;
   }[];
 
   bug_distribution: {

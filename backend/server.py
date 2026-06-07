@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import sys
 import logging
@@ -28,7 +29,7 @@ _test_run_semaphore = asyncio.Semaphore(MAX_CONCURRENT_TEST_RUNS)
 from fastapi import FastAPI, HTTPException, Depends, Query, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from backend.models.schema import TestRequest
 
 from backend.services.test_services import create_test_run, run_test_and_update
@@ -37,6 +38,7 @@ from backend.database.mongo import collection, bug_collection, client
 from backend.database.report_repository import get_report
 from backend.services.bug_services import normalize_bug_record
 from backend.services.run_outcome import apply_run_outcome
+from backend.services.execution_timeline import build_blocked_diagnostics, build_execution_timeline
 from bson.objectid import ObjectId
 from backend.services.auth import get_current_user, get_current_user_from_token
 from backend.services.asset_auth import (
@@ -120,6 +122,10 @@ def _authenticate_asset_request(request: Request) -> Optional[str]:
 
 def _resolve_user_id_for_request(current_user: dict) -> str:
     return str(current_user.get("user_id") or current_user.get("id") or "")
+
+
+def _sse(event: str, data: Dict[str, Any]) -> str:
+    return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
 
 
 async def _register_test_task(test_id: str, task: asyncio.Task) -> None:
@@ -419,6 +425,9 @@ def get_test_stream(test_id: str, current_user: dict = Depends(get_current_user)
         "overall_status": 1,
         "failure_reason": 1,
         "stream_logs": 1,
+        "timeline": 1,
+        "blocked_diagnostics": 1,
+        "duration_seconds": 1,
         "screenshot_paths": 1,
         "updated_at": 1,
         "created_at": 1,
@@ -427,7 +436,61 @@ def get_test_stream(test_id: str, current_user: dict = Depends(get_current_user)
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
     apply_run_outcome(test)
+    test["timeline"] = build_execution_timeline(test)
+    test["blocked_diagnostics"] = build_blocked_diagnostics(test)
     return test
+
+
+@app.get("/api/tests/{test_id}/events")
+async def get_test_events(test_id: str, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
+
+    async def events():
+        last_signature = None
+        for _ in range(1800):
+            test = collection.find_one(
+                {"test_id": test_id, "user_id": user_id},
+                {
+                    "_id": 0,
+                    "test_id": 1,
+                    "status": 1,
+                    "execution_status": 1,
+                    "test_verdict": 1,
+                    "failure_type": 1,
+                    "outcome_label": 1,
+                    "is_terminal": 1,
+                    "overall_status": 1,
+                    "failure_reason": 1,
+                    "stream_logs": 1,
+                    "screenshot_paths": 1,
+                    "duration_seconds": 1,
+                    "updated_at": 1,
+                    "created_at": 1,
+                },
+            )
+            if not test:
+                yield _sse("error", {"message": "Test not found", "test_id": test_id})
+                return
+            apply_run_outcome(test)
+            logs = test.get("stream_logs") if isinstance(test.get("stream_logs"), list) else []
+            signature = (
+                test.get("status"),
+                test.get("execution_status"),
+                test.get("test_verdict"),
+                len(logs),
+                test.get("updated_at"),
+            )
+            if signature != last_signature:
+                last_signature = signature
+                test["timeline"] = build_execution_timeline(test)
+                test["blocked_diagnostics"] = build_blocked_diagnostics(test)
+                yield _sse("snapshot", test)
+            if test.get("is_terminal"):
+                yield _sse("done", {"test_id": test_id, "status": test.get("status")})
+                return
+            await asyncio.sleep(1)
+
+    return StreamingResponse(events(), media_type="text/event-stream")
 
 @app.get("/api/tests/{test_id}")
 def get_test_by_id(test_id: str, current_user: dict = Depends(get_current_user)):
@@ -452,6 +515,9 @@ def get_test_by_id(test_id: str, current_user: dict = Depends(get_current_user))
     report = get_report(test_id, current_user["user_id"])
     if report and report.get("bug_lifecycle"):
         test["bug_lifecycle"] = report.get("bug_lifecycle")
+    apply_run_outcome(test)
+    test["timeline"] = build_execution_timeline(test)
+    test["blocked_diagnostics"] = build_blocked_diagnostics(test)
 
     return test
 

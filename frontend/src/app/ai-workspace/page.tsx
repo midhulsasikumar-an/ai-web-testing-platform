@@ -9,7 +9,7 @@ import {
   getChatSession,
   listChatSessions,
   renameChatSession,
-  sendChatMessage,
+  sendChatMessageStream,
   type AIChatMessage,
   type AIChatResponse,
   type AIChatSession,
@@ -410,9 +410,45 @@ export default function AIWorkspacePage() {
     setLoadingChat(true);
 
     try {
-      const result = await sendChatMessage({ session_id: sessionId, message: content });
-      const assistant = buildAssistantUiMessage(result);
-      setMessages((prev) => [...prev, assistant]);
+      const streamMessageId = `${new Date().toISOString()}-assistant-stream`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: streamMessageId,
+          role: "assistant",
+          content: "",
+          timestamp: new Date().toISOString(),
+          intent: "general_chat",
+          retrievedData: [],
+        },
+      ]);
+
+      const result = await sendChatMessageStream(
+        { session_id: sessionId, message: content },
+        (event) => {
+          if (event.type === "status") {
+            setChatPhase(event.message || CHAT_PHASES[0]);
+            return;
+          }
+          if (event.type === "delta") {
+            setMessages((prev) => prev.map((message) => (
+              message.id === streamMessageId
+                ? { ...message, content: `${message.content}${event.text}` }
+                : message
+            )));
+            return;
+          }
+          if (event.type === "error") {
+            setMessages((prev) => prev.map((message) => (
+              message.id === streamMessageId
+                ? { ...message, content: event.message }
+                : message
+            )));
+          }
+        }
+      );
+      const assistant = { ...buildAssistantUiMessage(result), id: streamMessageId };
+      setMessages((prev) => prev.map((message) => (message.id === streamMessageId ? assistant : message)));
 
       if (assistant.intent === "instruction_generation") {
         setInstructionDrafts((prev) => ({ ...prev, [assistant.id]: assistant.content }));

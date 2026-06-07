@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+import asyncio
+import json
+from typing import Any, AsyncIterator, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 
 from backend.ai_workspace.memory import memory_engine
 from backend.ai_workspace.intelligence import delete_memory_by_query, generate_instruction_template, list_memories, resolve_entity_query, resolve_memory_action, save_memory
@@ -23,6 +26,10 @@ from backend.ai_workspace.service import workspace_service
 from backend.services.auth import get_current_user
 
 router = APIRouter()
+
+
+def _sse(event: str, data: Dict[str, Any]) -> str:
+    return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
 
 
 @router.get("/sessions")
@@ -72,6 +79,44 @@ async def ai_chat(req: ChatRequest, current_user: dict = Depends(get_current_use
         active_context=session.active_context,
     )
     return result
+
+
+@router.post("/chat/stream")
+async def ai_chat_stream(req: ChatRequest, current_user: dict = Depends(get_current_user)):
+    session = memory_engine.get_or_create_session(req.session_id, current_user["user_id"], req.context)
+
+    async def events() -> AsyncIterator[str]:
+        phases = [
+            ("context", "Reading workspace context"),
+            ("retrieval", "Retrieving related runs, reports, bugs, and memory"),
+            ("model", "Model is responding"),
+        ]
+        for phase, message in phases:
+            yield _sse("status", {"phase": phase, "message": message, "session_id": session.session_id})
+            await asyncio.sleep(0.05)
+
+        result = await workspace_service.generate_response(
+            user_id=current_user["user_id"],
+            session_id=session.session_id,
+            query=req.message,
+            active_context=session.active_context,
+        )
+
+        response_text = str(result.get("response") or "")
+        words = response_text.split()
+        if words:
+            chunk: list[str] = []
+            for word in words:
+                chunk.append(word)
+                if len(chunk) >= 8:
+                    yield _sse("delta", {"text": " ".join(chunk) + " "})
+                    chunk = []
+                    await asyncio.sleep(0.02)
+            if chunk:
+                yield _sse("delta", {"text": " ".join(chunk)})
+        yield _sse("done", result)
+
+    return StreamingResponse(events(), media_type="text/event-stream")
 
 
 @router.get("/chat/{session_id}/messages")

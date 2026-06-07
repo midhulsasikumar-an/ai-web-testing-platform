@@ -47,6 +47,12 @@ export type AIChatResponse = {
   assistant_payload?: Record<string, unknown>;
 };
 
+export type AIChatStreamEvent =
+  | { type: "status"; phase?: string; message?: string; session_id?: string }
+  | { type: "delta"; text: string }
+  | ({ type: "done" } & AIChatResponse)
+  | { type: "error"; message: string };
+
 export type AIInstructionResponse = {
   topic: string;
   instructions: string;
@@ -95,6 +101,63 @@ export async function sendChatMessage(payload: { session_id?: string | null; mes
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+export async function sendChatMessageStream(
+  payload: { session_id?: string | null; message: string; context?: AIWorkspaceContext | null },
+  onEvent: (event: AIChatStreamEvent) => void
+): Promise<AIChatResponse> {
+  const response = await apiFetch("/api/ai-workspace/chat/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.body) {
+    const fallback = await response.json() as AIChatResponse;
+    onEvent({ type: "done", ...fallback });
+    return fallback;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finalResult: AIChatResponse | null = null;
+
+  const flushEvent = (raw: string) => {
+    const lines = raw.split(/\r?\n/);
+    const eventName = (lines.find((line) => line.startsWith("event:"))?.slice(6).trim() || "message") as AIChatStreamEvent["type"];
+    const dataLine = lines.find((line) => line.startsWith("data:"));
+    if (!dataLine) return;
+    const parsed = JSON.parse(dataLine.slice(5).trim()) as Record<string, unknown>;
+    if (eventName === "done") {
+      finalResult = parsed as AIChatResponse;
+      onEvent({ type: "done", ...(parsed as AIChatResponse) });
+    } else if (eventName === "delta") {
+      onEvent({ type: "delta", text: String(parsed.text || "") });
+    } else if (eventName === "status") {
+      onEvent({ type: "status", phase: String(parsed.phase || ""), message: String(parsed.message || ""), session_id: String(parsed.session_id || "") });
+    } else if (eventName === "error") {
+      onEvent({ type: "error", message: String(parsed.message || "Stream error") });
+    }
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split(/\n\n/);
+    buffer = events.pop() || "";
+    events.forEach((event) => {
+      if (event.trim()) flushEvent(event);
+    });
+  }
+  if (buffer.trim()) flushEvent(buffer);
+
+  if (!finalResult) {
+    throw new Error("AI stream ended before returning a final response.");
+  }
+  return finalResult;
 }
 
 export async function listMemories(): Promise<AIMemory[]> {
