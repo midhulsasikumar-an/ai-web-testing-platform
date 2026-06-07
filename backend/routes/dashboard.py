@@ -74,11 +74,32 @@ def _derive_risk_level(total_tests: int, failed: int, average_health: int, open_
     return "low"
 
 
+_VERDICT_PROJECT = {
+    "$ifNull": [
+        "$test_verdict",
+        {
+            "$switch": {
+                "branches": [
+                    {"case": {"$eq": ["$overall_status", "pass"]}, "then": "pass"},
+                    {"case": {"$in": ["$overall_status", ["fail", "warning"]]}, "then": "fail"},
+                    {"case": {"$in": ["$status", ["failed", "timed_out", "timeout"]]}, "then": "blocked"},
+                ],
+                "default": "unknown",
+            }
+        },
+    ]
+}
+
+
 @router.get("/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     user_id = current_user["user_id"]
     projection = {
         "overall_status": 1,
+        "execution_status": 1,
+        "test_verdict": 1,
+        "failure_type": 1,
+        "outcome_label": 1,
         "health_score": 1,
         "created_at": 1,
         "test_id": 1,
@@ -91,20 +112,37 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
 
     total_tests = collection.count_documents({"user_id": user_id})
 
-    status_counts = {
+    verdict_counts = {
         str(row.get("_id") or "unknown"): int(row.get("count") or 0)
         for row in collection.aggregate([
             {"$match": {"user_id": user_id}},
-            {"$group": {"_id": "$overall_status", "count": {"$sum": 1}}},
+            {"$project": {"verdict": _VERDICT_PROJECT}},
+            {"$group": {"_id": "$verdict", "count": {"$sum": 1}}},
         ])
     }
 
-    passed = status_counts.get("pass", 0)
-    failed = status_counts.get("fail", 0)
-    warnings = status_counts.get("warning", 0)
+    failure_type_counts = {
+        str(row.get("_id") or "none"): int(row.get("count") or 0)
+        for row in collection.aggregate([
+            {"$match": {"user_id": user_id}},
+            {"$group": {"_id": "$failure_type", "count": {"$sum": 1}}},
+        ])
+    }
+
+    passed = verdict_counts.get("pass", 0)
+    failed = verdict_counts.get("fail", 0)
+    blocked = verdict_counts.get("blocked", 0)
+    warnings = blocked
+    environment_failures = sum(
+        failure_type_counts.get(item, 0)
+        for item in ("browser_error", "execution_error", "timeout")
+    )
+    target_blocked = failure_type_counts.get("target_blocked", 0)
 
     avg_rows = list(collection.aggregate([
         {"$match": {"user_id": user_id, "health_score": {"$ne": None}}},
+        {"$project": {"health_score": 1, "verdict": _VERDICT_PROJECT}},
+        {"$match": {"verdict": {"$in": ["pass", "fail"]}}},
         {"$group": {"_id": None, "average_health": {"$avg": "$health_score"}}},
     ]))
     average_health = round(avg_rows[0].get("average_health", 0)) if avg_rows else 0
@@ -125,14 +163,17 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
                 "day": row.get("_id"),
                 "passed": int(row.get("passed") or 0),
                 "failed": int(row.get("failed") or 0),
+                "blocked": int(row.get("blocked") or 0),
             }
             for row in collection.aggregate([
                 {"$match": {"user_id": user_id, "created_at": {"$type": "string"}}},
+                {"$project": {"created_at": 1, "verdict": _VERDICT_PROJECT}},
                 {
                     "$group": {
                         "_id": {"$substr": ["$created_at", 0, 10]},
-                        "passed": {"$sum": {"$cond": [{"$eq": ["$overall_status", "pass"]}, 1, 0]}},
-                        "failed": {"$sum": {"$cond": [{"$eq": ["$overall_status", "fail"]}, 1, 0]}},
+                        "passed": {"$sum": {"$cond": [{"$eq": ["$verdict", "pass"]}, 1, 0]}},
+                        "failed": {"$sum": {"$cond": [{"$eq": ["$verdict", "fail"]}, 1, 0]}},
+                        "blocked": {"$sum": {"$cond": [{"$eq": ["$verdict", "blocked"]}, 1, 0]}},
                     }
                 },
                 {"$sort": {"_id": -1}},
@@ -194,6 +235,10 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
             "project": test.get("project", "Unknown"),
             "url": test.get("url", ""),
             "overall_status": test.get("overall_status", "unknown"),
+            "execution_status": test.get("execution_status") or test.get("status") or "unknown",
+            "test_verdict": test.get("test_verdict") or test.get("overall_status") or "unknown",
+            "failure_type": test.get("failure_type") or "none",
+            "outcome_label": test.get("outcome_label") or "",
             "health_score": test.get("health_score", 0),
             "test_type": test.get("test_type", "full"),
             "date": str(test.get("created_at", ""))[:10]
@@ -203,6 +248,9 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "total_tests": total_tests,
         "passed": passed,
         "failed": failed,
+        "blocked": blocked,
+        "environment_failures": environment_failures,
+        "target_blocked": target_blocked,
         "open_bugs": open_bugs,
         "average_health": average_health,
         "test_activity": test_activity,
@@ -220,7 +268,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
             ),
             "insights": [
                 f"{critical_count} critical finding(s) across all runs.",
-                f"{failed} failed test(s) in the active dataset.",
+                f"{failed} website failure(s) and {blocked} blocked run(s) in the active dataset.",
             ] if total_tests > 0 else [],
             "risk_level": risk_level,
         },

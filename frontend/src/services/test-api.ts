@@ -66,6 +66,11 @@ export interface TestApiResponse {
   status: string;
 
   overall_status?: "pass" | "warning" | "fail";
+  execution_status?: string;
+  test_verdict?: "pass" | "fail" | "blocked" | "unknown";
+  failure_type?: "none" | "app_bug" | "environment_error" | "target_blocked" | "timeout" | "browser_error" | "execution_error" | string;
+  outcome_label?: string;
+  is_terminal?: boolean;
 
   health_score?: number;
 
@@ -151,6 +156,7 @@ export interface TestApiResponse {
   };
 
   created_at?: string;
+  updated_at?: string;
 }
 
 export async function startTest(
@@ -197,6 +203,10 @@ export async function generateTestPlan(url: string, instruction: string, testTyp
 
 export async function getTestById(testId: string): Promise<TestApiResponse> {
   return apiJson<TestApiResponse>(`/api/tests/${testId}`);
+}
+
+export async function getTestStream(testId: string): Promise<Partial<TestApiResponse>> {
+  return apiJson<Partial<TestApiResponse>>(`/api/tests/${testId}/stream`);
 }
 
 export async function getAllTests(): Promise<TestApiResponse[]> {

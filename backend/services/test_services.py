@@ -38,6 +38,7 @@ from backend.services.dom_service import extract_page_elements
 from backend.services.action_translation_service import translate_test_case
 from backend.services.failure_classifier import classify_failure_category, collect_failure_category_counts
 from backend.services.root_cause_classifier import classify_root_cause
+from backend.services.run_outcome import apply_run_outcome
 
 logger = logging.getLogger("services.test")
 
@@ -679,6 +680,11 @@ def create_test_run(req: TestRequest, user_id: str):
         "summary": None,
         "health_score": None,
         "overall_status": None,
+        "execution_status": "running",
+        "test_verdict": "unknown",
+        "failure_type": "none",
+        "outcome_label": "In progress",
+        "is_terminal": False,
         "insights": None,
         "priority_issues": [],
         "recommendations": [],
@@ -693,6 +699,7 @@ def create_test_run(req: TestRequest, user_id: str):
         "created_at": datetime.utcnow().isoformat()
     }
 
+    apply_run_outcome(test_data)
     collection.insert_one(test_data)
     db["artifacts"].insert_one({
         "user_id": user_id,
@@ -770,6 +777,7 @@ def run_test_and_update(test_data, url, user_id: str):
         filename = os.path.basename(path)
         screenshot_urls.append(build_artifact_url(user_id, f"artifacts/{test_data['test_id']}/{filename}"))
 
+    apply_run_outcome(test_data)
     test_data["ai_report"] = {
         "user_id": user_id,
         "execution_id": test_data["test_id"],
@@ -782,6 +790,10 @@ def run_test_and_update(test_data, url, user_id: str):
         "insights": test_data.get("insights", {}),
         "recovery_summary": _collect_recovery_summary(results or []),
         "run_status": test_data.get("status"),
+        "execution_status": test_data.get("execution_status"),
+        "test_verdict": test_data.get("test_verdict"),
+        "failure_type": test_data.get("failure_type"),
+        "outcome_label": test_data.get("outcome_label"),
     }
     test_data["screenshot_paths"] = screenshot_urls
 
@@ -1288,6 +1300,86 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         if not test_data.get("url"):
             test_data["url"] = _canonicalize_url(url)
         test_data["target_url"] = _canonicalize_url(test_data.get("target_url") or test_data.get("url") or url)
+        if plan.get("target_blocked"):
+            duration_s = round(perf_counter() - overall_started, 2)
+            test_data.update({
+                "status": "failed",
+                "failure_reason": plan.get("target_blocked_reason") or "target_blocked",
+                "ai_plan": plan,
+                "discovery": plan.get("discovery") or {},
+                "discovery_status": "blocked",
+                "discovery_error": plan.get("discovery_error") or "target_blocked",
+                "results": [],
+                "summary": {"total": 0, "passed": 0, "failed": 0, "info": 0},
+                "health_score": None,
+                "overall_status": None,
+                "recommendations": [
+                    "Open the target in a normal browser and complete/disable the checkpoint before running automation.",
+                    "If this is your site, allow the Render backend user agent or test from a staging URL without bot protection.",
+                ],
+                "ai_summary": "Execution blocked before testing because the target presented an automation/security checkpoint.",
+                "stream_logs": [
+                    {
+                        "time": datetime.utcnow().isoformat(),
+                        "level": "warning",
+                        "msg": "Target page is blocked by a security checkpoint; skipping generated workflow execution.",
+                        "type": "target_blocked",
+                        "details": {"reason": plan.get("target_blocked_reason") or "target_blocked"},
+                    },
+                    {
+                        "time": datetime.utcnow().isoformat(),
+                        "level": "error",
+                        "msg": (
+                            "[ERROR] Test execution blocked\n"
+                            "  Reason          : Target security checkpoint\n"
+                            f"  Duration        : {duration_s}s"
+                        ),
+                        "type": "terminal_summary",
+                        "details": {
+                            "final_status": "failed",
+                            "failure_type": "target_blocked",
+                            "duration_seconds": duration_s,
+                        },
+                    },
+                ],
+                "screenshot_paths": [],
+            })
+            apply_run_outcome(test_data)
+            test_data["ai_report"] = {
+                "user_id": user_id,
+                "execution_id": test_data["test_id"],
+                "website_health_score": None,
+                "workflow_completion": None,
+                "critical_issues": 0,
+                "warnings": 0,
+                "screenshots": [],
+                "report": test_data["ai_summary"],
+                "generated_plan": plan,
+                "run_status": test_data["status"],
+                "execution_status": test_data.get("execution_status"),
+                "test_verdict": test_data.get("test_verdict"),
+                "failure_type": test_data.get("failure_type"),
+                "outcome_label": test_data.get("outcome_label"),
+            }
+            collection.update_one(
+                {"test_id": test_data["test_id"], "user_id": user_id},
+                {"$set": test_data},
+                upsert=True,
+            )
+            try:
+                save_report(
+                    test_data,
+                    report_type="ai",
+                    user_id=user_id,
+                    test_run_id=test_data["test_id"],
+                    title=test_data.get("project") or test_data["test_id"],
+                    summary=test_data["ai_summary"],
+                    status=test_data.get("status"),
+                )
+            except Exception:
+                logger.exception("save_report failed for blocked target test_id=%s", test_data.get("test_id"))
+            return test_data
+
         is_valid_plan, plan_validation_payload = _validate_plan_objectives(plan)
         if not is_valid_plan:
             test_data["status"] = "failed"
@@ -1323,6 +1415,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                     },
                 },
             ]
+            apply_run_outcome(test_data)
             collection.update_one(
                 {
                     "test_id": test_data["test_id"],
@@ -1375,6 +1468,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             test_data["status"] = status
             if failure_reason:
                 test_data["failure_reason"] = failure_reason
+            apply_run_outcome(test_data)
             collection.update_one(
                 {
                     "test_id": test_data["test_id"],
@@ -1387,6 +1481,11 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                         "stream_logs": list(stream_logs),
                         "screenshot_paths": list(screenshot_paths),
                         "status": status,
+                        "execution_status": test_data.get("execution_status"),
+                        "test_verdict": test_data.get("test_verdict"),
+                        "failure_type": test_data.get("failure_type"),
+                        "outcome_label": test_data.get("outcome_label"),
+                        "is_terminal": test_data.get("is_terminal"),
                         **({"failure_reason": failure_reason} if failure_reason else {}),
                     }
                 },
@@ -1440,7 +1539,17 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                     "user_id": user_id,
                     "status": {"$in": ["running", "cancel_requested"]},
                 },
-                {"$set": {"stream_logs": stream_logs, "status": "running", "ai_plan": plan, "screenshot_paths": screenshot_paths}},
+                {"$set": {
+                    "stream_logs": stream_logs,
+                    "status": "running",
+                    "execution_status": "running",
+                    "test_verdict": "unknown",
+                    "failure_type": "none",
+                    "outcome_label": "In progress",
+                    "is_terminal": False,
+                    "ai_plan": plan,
+                    "screenshot_paths": screenshot_paths,
+                }},
                 upsert=True,
             )
 
@@ -1682,6 +1791,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         })
         test_data["stream_logs"] = stream_logs
         test_data["screenshot_paths"] = screenshot_paths
+        apply_run_outcome(test_data)
         test_data["ai_report"] = {
             "user_id": user_id,
             "execution_id": test_data["test_id"],
@@ -1704,6 +1814,10 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             "risk_summary": test_data.get("risk_summary"),
             "recovery_summary": _collect_recovery_summary(scenario_results),
             "run_status": test_data["status"],
+            "execution_status": test_data.get("execution_status"),
+            "test_verdict": test_data.get("test_verdict"),
+            "failure_type": test_data.get("failure_type"),
+            "outcome_label": test_data.get("outcome_label"),
         }
 
         # ---- GUARANTEED TERMINAL WRITE (no status guard) ----
@@ -1827,6 +1941,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             },
         })
         test_data["stream_logs"] = cancel_logs
+        apply_run_outcome(test_data)
 
         async def _create_bugs_cancel() -> None:
             try:
@@ -1902,6 +2017,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             },
         })
         test_data["stream_logs"] = error_logs
+        apply_run_outcome(test_data)
 
         async def _create_bugs_exc() -> None:
             try:

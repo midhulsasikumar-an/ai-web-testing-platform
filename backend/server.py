@@ -36,6 +36,7 @@ from backend.services.test_services import run_ai_plan_and_update
 from backend.database.mongo import collection, bug_collection, client
 from backend.database.report_repository import get_report
 from backend.services.bug_services import normalize_bug_record
+from backend.services.run_outcome import apply_run_outcome
 from bson.objectid import ObjectId
 from backend.services.auth import get_current_user, get_current_user_from_token
 from backend.services.asset_auth import (
@@ -152,6 +153,7 @@ def _mark_test_terminal(test_id: str, user_id: str, *, status: str, failure_reas
             existing_results = []
         existing_results.append({"error": error})
         payload["results"] = existing_results
+    apply_run_outcome(payload)
     try:
         collection.update_one(
             {"test_id": test_id, "user_id": user_id},
@@ -277,13 +279,15 @@ async def _stuck_run_cleanup_loop() -> None:
                         logger.exception("Failed to cancel stuck task for test_id=%s", test_id)
                 # Unconditional terminal write
                 try:
+                    payload = {
+                        "status": "timed_out",
+                        "failure_reason": "stuck_run_cleanup",
+                        "updated_at": datetime.utcnow().isoformat(),
+                    }
+                    apply_run_outcome(payload)
                     collection.update_one(
                         {"test_id": test_id, "user_id": user_id},
-                        {"$set": {
-                            "status": "timed_out",
-                            "failure_reason": "stuck_run_cleanup",
-                            "updated_at": datetime.utcnow().isoformat(),
-                        }},
+                        {"$set": payload},
                         upsert=True,
                     )
                     logger.warning(
@@ -398,6 +402,32 @@ def get_tests(
         .limit(limit)
     )
     return tests
+
+
+@app.get("/api/tests/{test_id}/stream")
+def get_test_stream(test_id: str, current_user: dict = Depends(get_current_user)):
+    projection = {
+        "_id": 0,
+        "test_id": 1,
+        "execution_id": 1,
+        "status": 1,
+        "execution_status": 1,
+        "test_verdict": 1,
+        "failure_type": 1,
+        "outcome_label": 1,
+        "is_terminal": 1,
+        "overall_status": 1,
+        "failure_reason": 1,
+        "stream_logs": 1,
+        "screenshot_paths": 1,
+        "updated_at": 1,
+        "created_at": 1,
+    }
+    test = collection.find_one({"test_id": test_id, "user_id": current_user["user_id"]}, projection)
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+    apply_run_outcome(test)
+    return test
 
 @app.get("/api/tests/{test_id}")
 def get_test_by_id(test_id: str, current_user: dict = Depends(get_current_user)):

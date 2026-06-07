@@ -35,6 +35,12 @@ import {
 
 const STORAGE_SESSION_KEY = "ai_workspace_active_session";
 const STORAGE_PENDING_RUN_TEST_KEY = "ai_workspace_pending_run_test";
+const CHAT_PHASES = [
+  "Reading workspace context",
+  "Retrieving related runs and bugs",
+  "Model is composing",
+  "Preparing final answer",
+];
 
 type SessionBucket = "Today" | "Yesterday" | "Older";
 type UIIntent =
@@ -168,6 +174,7 @@ export default function AIWorkspacePage() {
   const [conversationSearch, setConversationSearch] = useState("");
   const [input, setInput] = useState("");
   const [loadingChat, setLoadingChat] = useState(false);
+  const [chatPhase, setChatPhase] = useState(CHAT_PHASES[0]);
   const [contextError, setContextError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [instructionDrafts, setInstructionDrafts] = useState<Record<string, string>>({});
@@ -181,6 +188,20 @@ export default function AIWorkspacePage() {
       messagesBottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, loadingChat]);
+
+  useEffect(() => {
+    if (!loadingChat) {
+      return undefined;
+    }
+
+    let index = 0;
+    const interval = window.setInterval(() => {
+      index = Math.min(index + 1, CHAT_PHASES.length - 1);
+      setChatPhase(CHAT_PHASES[index]);
+    }, 1400);
+
+    return () => window.clearInterval(interval);
+  }, [loadingChat]);
 
   useEffect(() => {
     const node = composerRef.current;
@@ -385,6 +406,7 @@ export default function AIWorkspacePage() {
     }
 
     setInput("");
+    setChatPhase(CHAT_PHASES[0]);
     setLoadingChat(true);
 
     try {
@@ -549,7 +571,7 @@ export default function AIWorkspacePage() {
             {loadingChat ? (
               <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                Thinking
+                {chatPhase}
               </div>
             ) : (
               <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
@@ -682,7 +704,14 @@ export default function AIWorkspacePage() {
                 {loadingChat ? (
                   <div className="flex items-center gap-2.5 text-slate-500">
                     <div className="rounded-full border border-slate-200 bg-slate-50 p-1.5"><Bot className="h-3.5 w-3.5" /></div>
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12.5px] shadow-xs-token">Analyzing context and preparing answer...</div>
+                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12.5px] shadow-xs-token">
+                      <span>{chatPhase}</span>
+                      <span className="ml-1 inline-flex gap-0.5 align-middle">
+                        <span className="h-1 w-1 animate-pulse rounded-full bg-blue-500" />
+                        <span className="h-1 w-1 animate-pulse rounded-full bg-blue-500 [animation-delay:120ms]" />
+                        <span className="h-1 w-1 animate-pulse rounded-full bg-blue-500 [animation-delay:240ms]" />
+                      </span>
+                    </div>
                   </div>
                 ) : null}
 

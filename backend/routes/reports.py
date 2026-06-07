@@ -42,6 +42,10 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
     website = _pick_first(report, "website", "url", "target_url", default="")
     generated_date = _pick_first(report, "generated_date", "created_at", "updated_at", default="")
     status = _pick_first(report, "status", "overall_status", default="completed")
+    execution_status = _pick_first(report, "execution_status", default=status)
+    test_verdict = _pick_first(report, "test_verdict", "overall_status", default="unknown")
+    failure_type = _pick_first(report, "failure_type", default="none")
+    outcome_label = _pick_first(report, "outcome_label", default="")
     score_raw = report.get("score", report.get("health_score", report.get("website_health_score")))
     try:
         score = None if score_raw is None else float(score_raw)
@@ -62,6 +66,10 @@ def _map_report(report: Dict[str, Any]) -> Dict[str, Any]:
         "website": website,
         "generated_date": generated_date,
         "status": status,
+        "execution_status": execution_status,
+        "test_verdict": test_verdict,
+        "failure_type": failure_type,
+        "outcome_label": outcome_label,
         "score": score,
         "related_test_id": related_test_id or None,
         "related_bug_id": related_bug_id or None,

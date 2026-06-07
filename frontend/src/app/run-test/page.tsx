@@ -3,7 +3,7 @@
 import { Play, Link as LinkIcon, Bot, X, FilePlus2, Save, Sparkles, Lock } from "lucide-react";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import AIChatPanel from "@/components/ai-chat-panel/AIChatPanel";
-import { startTest, getTestById, TestApiResponse, AIPlanResponse } from "@/services/test-api";
+import { startTest, getTestById, getTestStream, TestApiResponse, AIPlanResponse } from "@/services/test-api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -278,7 +278,14 @@ export default function RunTestPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useTestPolling(state.testId, hydrated, (data) => update({ testData: data }), (running) => update({ running }));
+  useTestPolling(
+    state.testId,
+    hydrated,
+    (next) => update((prev) => ({
+      testData: typeof next === "function" ? next(prev.testData) : next,
+    })),
+    (running) => update({ running })
+  );
 
   const streamLogs = useMemo(
     () => ((state.testData?.stream_logs ?? []) as Array<{ time: string; level: string; msg: string; type?: string; details?: Record<string, unknown> }>),
@@ -852,6 +859,12 @@ function ExecutionTerminal({
           <p className="text-muted-sm">Live terminal-style logs from the current run.</p>
         </div>
         <div className="flex items-center gap-2">
+          {status === "running" || status === "queued" || status === "planning" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+              Live
+            </span>
+          ) : null}
           <button
             type="button"
             onClick={onToggleFollow}
@@ -912,7 +925,7 @@ function ExecutionTerminal({
 function useTestPolling(
   testId: string | null,
   enabled: boolean,
-  setTestData: (data: TestApiResponse | null) => void,
+  setTestData: (data: TestApiResponse | null | ((prev: TestApiResponse | null) => TestApiResponse | null)) => void,
   setRunning: (running: boolean) => void
 ) {
   useEffect(() => {
@@ -920,13 +933,31 @@ function useTestPolling(
 
     let cancelled = false;
 
+    let pollCount = 0;
+
     const tick = async () => {
       try {
-        const data = (await getTestById(testId)) as TestApiResponse;
+        pollCount += 1;
+        const useFullPayload = pollCount === 1 || pollCount % 5 === 0;
+        const data = useFullPayload
+          ? ((await getTestById(testId)) as TestApiResponse)
+          : ((await getTestStream(testId)) as Partial<TestApiResponse>);
         if (cancelled) return;
-        setTestData(data);
+        if (useFullPayload) {
+          setTestData(data as TestApiResponse);
+        } else {
+          setTestData((prev) => {
+            const base = (prev ?? {}) as TestApiResponse;
+            return { ...base, ...data } as TestApiResponse;
+          });
+        }
         const status = (data.status ?? "").toLowerCase();
-        if (status && status !== "running" && status !== "queued" && status !== "planning") {
+        const terminal = Boolean(data.is_terminal) || (status && status !== "running" && status !== "queued" && status !== "planning" && status !== "cancel_requested");
+        if (terminal) {
+          if (!useFullPayload) {
+            const finalData = (await getTestById(testId)) as TestApiResponse;
+            if (!cancelled) setTestData(finalData);
+          }
           setRunning(false);
           return true;
         }
@@ -944,7 +975,7 @@ function useTestPolling(
         if (!cancelled && !finished) {
           scheduleNext();
         }
-      }, 5000);
+      }, 1500);
     };
 
     void (async () => {

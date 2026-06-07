@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { AIPlanResponse, TestApiResponse } from "@/services/test-api";
 import { generateTestPlan } from "@/services/test-api";
 import { Bot, ChevronRight, Loader2, RefreshCw, Send, Sparkles, Trash2, BookOpen, LogIn, Search, FileText } from "lucide-react";
@@ -35,6 +35,13 @@ interface AIChatPanelProps {
   initialInput?: string;
   busy?: boolean;
 }
+
+const COPILOT_PHASES = [
+  "Reading target page",
+  "Discovering workflows",
+  "Model is drafting steps",
+  "Validating executable plan",
+];
 
 function normalizeStatus(value?: string | null): string {
   const status = String(value ?? "").trim().toLowerCase();
@@ -73,8 +80,11 @@ export default function AIChatPanel({
   const hasAppliedInitialRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copilotPhase, setCopilotPhase] = useState(COPILOT_PHASES[0]);
 
   const executionState = normalizeStatus(executionStatus ?? testData?.status ?? testData?.overall_status ?? null);
+  const effectiveBusy = busy || isGenerating;
   const currentContext = useMemo(() => {
     const url = String(targetUrl || testData?.target_url || testData?.url || "").trim();
     if (!url) return "Awaiting target URL";
@@ -94,7 +104,19 @@ export default function AIChatPanel({
   useEffect(() => {
     const node = messagesRef.current;
     if (node) node.scrollTop = node.scrollHeight;
-  }, [messages]);
+  }, [messages, isGenerating, copilotPhase]);
+
+  useEffect(() => {
+    if (!isGenerating) {
+      return undefined;
+    }
+    let index = 0;
+    const interval = window.setInterval(() => {
+      index = Math.min(index + 1, COPILOT_PHASES.length - 1);
+      setCopilotPhase(COPILOT_PHASES[index]);
+    }, 1300);
+    return () => window.clearInterval(interval);
+  }, [isGenerating]);
 
   useEffect(() => {
     const node = textareaRef.current;
@@ -115,6 +137,8 @@ export default function AIChatPanel({
     onInputChange("");
 
     try {
+      setCopilotPhase(COPILOT_PHASES[0]);
+      setIsGenerating(true);
       const plan = await generateTestPlan(targetUrl, instruction, testType);
       onInstructionUsed(instruction);
       onPlanGenerated(plan);
@@ -132,6 +156,8 @@ export default function AIChatPanel({
         text: `AI plan request failed: ${message}`,
         timestamp: Date.now(),
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -158,7 +184,7 @@ export default function AIChatPanel({
   };
 
   const handleRefresh = async () => {
-    if (busy) return;
+    if (effectiveBusy) return;
     const instruction = currentPlan?.instruction?.trim() ?? "";
     if (instruction && targetUrl.trim()) {
       await generatePlan(instruction, false);
@@ -261,7 +287,7 @@ export default function AIChatPanel({
         <button
           type="button"
           onClick={handleRefresh}
-          disabled={busy}
+          disabled={effectiveBusy}
           className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
         >
           <RefreshCw className={cn("h-3 w-3", busy && "animate-spin")} />
@@ -270,14 +296,14 @@ export default function AIChatPanel({
         <button
           type="button"
           onClick={handleNewChat}
-          disabled={busy}
+          disabled={effectiveBusy}
           className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
         >
           <Trash2 className="h-3 w-3" />
           New chat
         </button>
         <span className="ml-auto text-[10.5px] text-slate-400">
-          {messages.length} message{messages.length === 1 ? "" : "s"}
+          {isGenerating ? copilotPhase : `${messages.length} message${messages.length === 1 ? "" : "s"}`}
         </span>
       </div>
 
@@ -310,6 +336,18 @@ export default function AIChatPanel({
                 </div>
               </div>
             ))}
+            {isGenerating ? (
+              <div className="flex justify-start">
+                <div className="max-w-[92%] rounded-xl border border-blue-100 bg-white px-3 py-2 text-[12.5px] leading-relaxed text-slate-700 shadow-xs-token">
+                  <span>{copilotPhase}</span>
+                  <span className="ml-1 inline-flex gap-0.5 align-middle">
+                    <span className="h-1 w-1 animate-pulse rounded-full bg-blue-500" />
+                    <span className="h-1 w-1 animate-pulse rounded-full bg-blue-500 [animation-delay:120ms]" />
+                    <span className="h-1 w-1 animate-pulse rounded-full bg-blue-500 [animation-delay:240ms]" />
+                  </span>
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
       </div>
@@ -338,10 +376,10 @@ export default function AIChatPanel({
               onClick={() => {
                 void sendMessage();
               }}
-              disabled={busy || !input.trim()}
+              disabled={effectiveBusy || !input.trim()}
               title="Send"
             >
-              {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+              {effectiveBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
               Send
             </button>
           </div>
