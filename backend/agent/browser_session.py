@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -14,6 +16,10 @@ LAUNCH_TIMEOUT_SECONDS = 30
 NEW_CONTEXT_TIMEOUT_SECONDS = 15
 NEW_PAGE_TIMEOUT_SECONDS = 10
 MAX_SESSION_START_ATTEMPTS = 3
+PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS = int(os.getenv("PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS", "180"))
+
+_browser_install_lock = asyncio.Lock()
+_browser_install_attempted = False
 
 
 @dataclass
@@ -77,10 +83,24 @@ class BrowserSessionManager:
             )
 
         if self._browser is None:
-            self._browser = await asyncio.wait_for(
-                self._playwright.chromium.launch(headless=self.headless),
-                timeout=LAUNCH_TIMEOUT_SECONDS,
-            )
+            try:
+                self._browser = await asyncio.wait_for(
+                    self._playwright.chromium.launch(headless=self.headless),
+                    timeout=LAUNCH_TIMEOUT_SECONDS,
+                )
+            except Exception as exc:
+                if not _is_missing_browser_executable(exc):
+                    raise
+                await self._shutdown_locked(reason="missing playwright browser executable")
+                await _install_playwright_browsers_once()
+                self._playwright = await asyncio.wait_for(
+                    async_playwright().start(),
+                    timeout=LAUNCH_TIMEOUT_SECONDS,
+                )
+                self._browser = await asyncio.wait_for(
+                    self._playwright.chromium.launch(headless=self.headless),
+                    timeout=LAUNCH_TIMEOUT_SECONDS,
+                )
 
     async def _shutdown_locked(self, reason: str = "shutdown") -> None:
         browser = self._browser
@@ -193,3 +213,55 @@ class BrowserSessionManager:
             await dialog.dismiss()
         except Exception:
             pass
+
+
+def _is_missing_browser_executable(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return (
+        "executable doesn't exist" in message
+        or "browser executable doesn't exist" in message
+        or "please run the following command" in message and "playwright install" in message
+    )
+
+
+async def _install_playwright_browsers_once() -> None:
+    global _browser_install_attempted
+    if os.getenv("DISABLE_PLAYWRIGHT_RUNTIME_INSTALL", "").strip().lower() in {"1", "true", "yes"}:
+        raise RuntimeError("Playwright browser executable is missing and runtime install is disabled")
+
+    async with _browser_install_lock:
+        if _browser_install_attempted:
+            logger.warning("Playwright browser install was already attempted; retrying launch without reinstall")
+            return
+
+        _browser_install_attempted = True
+        command = [
+            sys.executable,
+            "-m",
+            "playwright",
+            "install",
+            "chromium",
+            "chromium-headless-shell",
+        ]
+        logger.warning("Playwright browser executable missing; running runtime install: %s", " ".join(command))
+        process = await asyncio.create_subprocess_exec(
+            *command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS)
+        except asyncio.TimeoutError as exc:
+            try:
+                process.kill()
+            except Exception:
+                pass
+            raise RuntimeError("Timed out installing Playwright browsers at runtime") from exc
+
+        if process.returncode != 0:
+            raise RuntimeError(
+                "Failed to install Playwright browsers at runtime: "
+                f"stdout={stdout.decode(errors='replace')[-1000:]} "
+                f"stderr={stderr.decode(errors='replace')[-1000:]}"
+            )
+        logger.warning("Playwright browsers installed at runtime; retrying browser launch")
