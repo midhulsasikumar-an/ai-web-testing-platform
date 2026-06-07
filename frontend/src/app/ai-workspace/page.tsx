@@ -180,6 +180,9 @@ export default function AIWorkspacePage() {
   const [instructionDrafts, setInstructionDrafts] = useState<Record<string, string>>({});
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [pendingDeleteSessionId, setPendingDeleteSessionId] = useState<string | null>(null);
+  const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
+  const [renamingTitle, setRenamingTitle] = useState("");
 
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const messagesBottomRef = useRef<HTMLDivElement>(null);
@@ -276,6 +279,8 @@ export default function AIWorkspacePage() {
     const detail = await getChatSession(sessionId);
     setActiveSessionId(sessionId);
     setMessages(mapHistoryToUiMessages(detail.history ?? []));
+    setPendingDeleteSessionId(null);
+    cancelRenameSession();
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_SESSION_KEY, sessionId);
     }
@@ -294,6 +299,8 @@ export default function AIWorkspacePage() {
     setActiveSessionId(created.session_id);
     setMessages([]);
     setInput("");
+    setPendingDeleteSessionId(null);
+    cancelRenameSession();
     setSidebarOpen(false);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_SESSION_KEY, created.session_id);
@@ -301,15 +308,37 @@ export default function AIWorkspacePage() {
   };
 
   const handleRenameSession = async (session: AIChatSession) => {
-    const nextTitle = window.prompt("Rename conversation", session.title);
-    if (!nextTitle?.trim()) return;
-    const updated = await renameChatSession(session.session_id, nextTitle.trim());
-    setSessions((prev) => prev.map((item) => (item.session_id === updated.session_id ? updated : item)));
+    setRenamingSessionId(session.session_id);
+    setRenamingTitle(session.title);
+  };
+
+  const cancelRenameSession = () => {
+    setRenamingSessionId(null);
+    setRenamingTitle("");
+  };
+
+  const submitRenameSession = async (session: AIChatSession) => {
+    const nextTitle = renamingTitle.trim();
+    if (!nextTitle || nextTitle === session.title) {
+      cancelRenameSession();
+      return;
+    }
+
+    setContextError(null);
+    try {
+      const updated = await renameChatSession(session.session_id, nextTitle);
+      setSessions((prev) => prev.map((item) => (item.session_id === updated.session_id ? updated : item)));
+      cancelRenameSession();
+    } catch (error) {
+      setContextError(error instanceof Error ? error.message : "Failed to rename conversation.");
+    }
   };
 
   const handleDeleteSession = async (session: AIChatSession) => {
-    const confirmed = window.confirm(`Delete conversation \"${session.title}\"?`);
-    if (!confirmed) return;
+    if (pendingDeleteSessionId !== session.session_id) {
+      setPendingDeleteSessionId(session.session_id);
+      return;
+    }
 
     setContextError(null);
     setDeletingSessionId(session.session_id);
@@ -317,6 +346,7 @@ export default function AIWorkspacePage() {
       await deleteChatSession(session.session_id);
       const next = sessions.filter((item) => item.session_id !== session.session_id);
       setSessions(next);
+      setPendingDeleteSessionId(null);
 
       if (activeSessionId === session.session_id) {
         if (typeof window !== "undefined") {
@@ -367,8 +397,6 @@ export default function AIWorkspacePage() {
       created_at: new Date().toISOString()
     };
 
-    console.log("Sending payload", payload);
-    console.log("Payload instruction length:", payload.instruction?.length);
     window.localStorage.setItem(STORAGE_PENDING_RUN_TEST_KEY, JSON.stringify(payload));
     
     setSuccessToast("Instruction sent to Run Test!");
@@ -555,22 +583,65 @@ export default function AIWorkspacePage() {
                     activeSessionId === session.session_id ? "border-blue-200 bg-blue-50" : "border-transparent bg-white hover:bg-slate-50"
                   )}
                 >
-                  <button className="w-full text-left" onClick={() => void openSession(session.session_id)}>
-                    <div className="truncate text-[12.5px] font-medium text-slate-900">{session.title}</div>
-                    <div className="truncate text-[11px] text-slate-500">Updated {formatTime(session.updated_at) || formatDate(session.updated_at)}</div>
-                  </button>
+                  {renamingSessionId === session.session_id ? (
+                    <div className="space-y-1.5">
+                      <input
+                        value={renamingTitle}
+                        onChange={(event) => setRenamingTitle(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            void submitRenameSession(session);
+                          }
+                          if (event.key === "Escape") {
+                            cancelRenameSession();
+                          }
+                        }}
+                        className="h-7 w-full rounded-md border border-blue-200 bg-white px-2 text-[12px] font-medium text-slate-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => void submitRenameSession(session)}
+                          className="inline-flex h-6 items-center rounded-md bg-slate-900 px-2 text-[10.5px] font-medium text-white"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={cancelRenameSession}
+                          className="inline-flex h-6 items-center rounded-md border border-slate-200 px-2 text-[10.5px] font-medium text-slate-600 hover:bg-white"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button className="w-full text-left" onClick={() => void openSession(session.session_id)}>
+                      <div className="truncate text-[12.5px] font-medium text-slate-900">{session.title}</div>
+                      <div className="truncate text-[11px] text-slate-500">Updated {formatTime(session.updated_at) || formatDate(session.updated_at)}</div>
+                    </button>
+                  )}
                   <div className="mt-1.5 flex items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
-                    <button onClick={() => void handleRenameSession(session)} className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10.5px] text-slate-600 hover:bg-white">
+                    <button
+                      onClick={() => void handleRenameSession(session)}
+                      disabled={renamingSessionId === session.session_id}
+                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10.5px] text-slate-600 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
                       <PencilLine className="h-3 w-3" />
                       Rename
                     </button>
                     <button
                       onClick={() => void handleDeleteSession(session)}
                       disabled={deletingSessionId === session.session_id}
-                      className="inline-flex items-center gap-1 rounded-md border border-red-100 px-1.5 py-0.5 text-[10.5px] text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10.5px] disabled:cursor-not-allowed disabled:opacity-60",
+                        pendingDeleteSessionId === session.session_id
+                          ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                          : "border-red-100 text-red-600 hover:bg-red-50"
+                      )}
                     >
                       {deletingSessionId === session.session_id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-                      {deletingSessionId === session.session_id ? "Deleting" : "Delete"}
+                      {deletingSessionId === session.session_id ? "Deleting" : pendingDeleteSessionId === session.session_id ? "Confirm" : "Delete"}
                     </button>
                   </div>
                 </div>

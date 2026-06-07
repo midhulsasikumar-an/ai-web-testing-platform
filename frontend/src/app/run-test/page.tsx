@@ -199,6 +199,7 @@ export default function RunTestPage() {
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [terminalCollapsed, setTerminalCollapsed] = useState(false);
+  const [resetConfirming, setResetConfirming] = useState(false);
   const aiPanelHostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<HTMLDivElement | null>(null);
   const [generating] = useState(false);
@@ -285,6 +286,7 @@ export default function RunTestPage() {
   const executionStatus = normalizeStatus(
     state.testData?.status ?? (state.running ? "running" : "idle")
   );
+  const persisted = Boolean(state.testId || state.testData || state.aiPlan || state.chatMessages.length > 0);
 
   const terminalLogs = useMemo(() => {
     if (streamLogs.length > 0) {
@@ -336,9 +338,6 @@ export default function RunTestPage() {
     const testGoal = (state.chatInput.trim() || readLatestCopilotText(aiPanelHostRef.current)).trim();
     const executionPlan = activePlan as GeneratedExecutionPlan | null;
     const generatedPlan = getGeneratedPlanForValidation(executionPlan);
-    const generatedStepsCount =
-      generatedPlan?.steps.length ?? Number(executionPlan?.plan_metrics?.generated_steps ?? 0);
-    const workspaceRestored = persisted;
     const hasInstruction = Boolean(testGoal?.trim());
     const hasGeneratedPlan = Boolean(
       generatedPlan &&
@@ -346,19 +345,6 @@ export default function RunTestPage() {
         generatedPlan.steps.length > 0
     );
     const canRun = hasInstruction || hasGeneratedPlan;
-
-    console.log("RUN TEST DEBUG", {
-      testGoal,
-      activePlan,
-      executionPlan,
-      generatedPlan,
-      generatedStepsCount,
-      workspaceRestored,
-      canRun,
-      planSuppressed: state.planSuppressed,
-      stateAiPlan: state.aiPlan,
-      testDataAiPlan: state.testData?.ai_plan,
-    });
 
     if (!normalizedUrl) nextErrors.targetUrl = "Target URL is required.";
     if (!normalizedTestName) nextErrors.testName = "Test Name is required.";
@@ -370,6 +356,7 @@ export default function RunTestPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     try {
+      setResetConfirming(false);
       update({ running: true, testData: null, testId: null, planSuppressed: false });
       setFormErrors({});
       const res = await startTest({
@@ -394,15 +381,16 @@ export default function RunTestPage() {
   };
 
   const handleNewTest = useCallback(() => {
-    if (typeof window !== "undefined") {
-      const confirmed = window.confirm("Reset the workspace and clear the current execution?");
-      if (!confirmed) return;
+    if (persisted && !resetConfirming) {
+      setResetConfirming(true);
+      return;
     }
     clearRunTestStorage();
     reset();
     setFormErrors({});
     setTerminalCollapsed(false);
-  }, [reset]);
+    setResetConfirming(false);
+  }, [persisted, reset, resetConfirming]);
 
   useEffect(() => {
     if (state.followTimeline && state.running && terminalRef.current) {
@@ -425,8 +413,6 @@ export default function RunTestPage() {
     return null;
   }, [streamLogs]);
 
-  const persisted = Boolean(state.testId || state.testData || state.aiPlan || state.chatMessages.length > 0);
-
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col gap-3 overflow-hidden">
       <div className="grid h-full min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -438,6 +424,7 @@ export default function RunTestPage() {
             running={state.running}
             status={executionStatus}
             persisted={persisted}
+            resetConfirming={resetConfirming}
             onTargetUrlChange={(value) => update({ targetUrl: value })}
             onTestNameChange={(value) => update({ testName: value })}
             onRun={runTest}
@@ -576,6 +563,7 @@ function RunTestForm({
   running,
   status,
   persisted,
+  resetConfirming,
   onTargetUrlChange,
   onTestNameChange,
   onRun,
@@ -587,6 +575,7 @@ function RunTestForm({
   running: boolean;
   status: string;
   persisted: boolean;
+  resetConfirming: boolean;
   onTargetUrlChange: (value: string) => void;
   onTestNameChange: (value: string) => void;
   onRun: () => void;
@@ -644,11 +633,14 @@ function RunTestForm({
               variant="outline"
               size="default"
               onClick={onNewTest}
-              title="Reset the workspace and start a new test"
-              className="gap-1.5"
+              title={resetConfirming ? "Click again to reset the workspace" : "Reset the workspace and start a new test"}
+              className={cn(
+                "gap-1.5",
+                resetConfirming ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100" : undefined
+              )}
             >
               <FilePlus2 className="h-3.5 w-3.5" />
-              New Test
+              {resetConfirming ? "Confirm Reset" : "New Test"}
             </Button>
             <Button
               onClick={onRun}

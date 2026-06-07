@@ -101,34 +101,6 @@ def get_reports(
     return {"items": _list_report_docs(current_user["user_id"], limit=limit, skip=skip)}
 
 
-@router.get("/reports/{report_id}")
-def get_report_detail(report_id: str, current_user: dict = Depends(get_current_user)):
-    doc = get_report(report_id, user_id=current_user["user_id"])
-    if not doc:
-        raise HTTPException(status_code=404, detail="Report not found")
-    return _map_report(doc)
-
-
-@router.get("/reports/{report_id}/download")
-def download_report(report_id: str, current_user: dict = Depends(get_current_user)):
-    try:
-        export_report_to_pdf(report_id, user_id=current_user["user_id"], include_screenshots=False)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-
-    exports = list_report_exports(report_id, user_id=current_user["user_id"])
-    export = exports[0] if exports else None
-    if not export:
-        raise HTTPException(status_code=404, detail="Export not found")
-
-    file_path = export.get("file_path")
-    if not file_path:
-        raise HTTPException(status_code=404, detail="Export file not available")
-
-    filename = f"{export.get('title', 'report')}.pdf"
-    return FileResponse(file_path, media_type="application/pdf", filename=filename)
-
-
 @router.get("/reports/export-all")
 def export_all_reports(
     q: str | None = Query(default=None),
@@ -164,3 +136,31 @@ def export_all_reports(
     zip_buffer.seek(0)
     headers = {"Content-Disposition": 'attachment; filename="reports-export.zip"'}
     return StreamingResponse(zip_buffer, media_type="application/zip", headers=headers)
+
+
+@router.get("/reports/{report_id}")
+def get_report_detail(report_id: str, current_user: dict = Depends(get_current_user)):
+    doc = get_report(report_id, user_id=current_user["user_id"])
+    if not doc:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return _map_report(doc)
+
+
+@router.get("/reports/{report_id}/download")
+def download_report(report_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        export_report_to_pdf(report_id, user_id=current_user["user_id"], include_screenshots=False)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    exports = list_report_exports(report_id, user_id=current_user["user_id"])
+    export = exports[0] if exports else None
+    if not export:
+        raise HTTPException(status_code=404, detail="Export not found")
+
+    file_path = export.get("file_path")
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Export file not available")
+
+    filename = f"{export.get('title', 'report')}.pdf"
+    return FileResponse(file_path, media_type="application/pdf", filename=filename)
