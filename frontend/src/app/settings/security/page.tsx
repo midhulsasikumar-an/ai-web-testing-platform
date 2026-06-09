@@ -19,7 +19,6 @@ import { Header } from "@/components/layout/header";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { SettingsFormField } from "@/components/settings/settings-form-field";
 import { SettingsStatus, StatusPill } from "@/components/settings/settings-status";
-import { UnsupportedCallout } from "@/components/settings/unsupported-callout";
 import { changePassword, revokeAllSessions, toAccountErrorMessage } from "@/services/profile-api";
 import { useAuth } from "@/context/auth-context";
 import { getStoredAuthToken } from "@/services/http";
@@ -40,7 +39,7 @@ function passwordIssues(value: string): string[] {
 
 export default function SecuritySettingsPage() {
   const router = useRouter();
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, refreshUser } = useAuth();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -90,15 +89,13 @@ export default function SecuritySettingsPage() {
         { currentPassword: current, newPassword: next },
         token ?? getStoredAuthToken()
       );
+      await refreshUser();
       setStatus("success");
       setCurrent("");
       setNext("");
       setConfirm("");
       if (result.revokedSessions) {
-        window.setTimeout(() => {
-          logout();
-          router.replace("/login");
-        }, 1200);
+        setError(null);
       }
     } catch (err) {
       setStatus("error");
@@ -112,6 +109,7 @@ export default function SecuritySettingsPage() {
     setRevokeMessage(null);
     try {
       await revokeAllSessions(token ?? getStoredAuthToken());
+      await refreshUser();
       setRevokeStatus("success");
       setRevokeMessage("All other sessions have been revoked.");
     } catch (err) {
@@ -130,9 +128,6 @@ export default function SecuritySettingsPage() {
   const expiryLabel = session?.expiresAt ? formatDateTime(session.expiresAt) : "—";
   const expiryRelative = session?.expiresAt ? formatRelativeTime(session.expiresAt) : "—";
 
-  const isUnsupported = (msg: string | null) =>
-    Boolean(msg && /not available|not exposed|not implemented|contact/i.test(msg));
-
   return (
     <div className="flex flex-col gap-5">
       <Header
@@ -150,7 +145,7 @@ export default function SecuritySettingsPage() {
             <SettingsStatus
               status={status}
               errorMessage={error}
-              successLabel={status === "success" ? "Password updated. Re-authenticating…" : undefined}
+              successLabel={status === "success" ? "Password updated. Other sessions were invalidated." : undefined}
               loadingLabel="Updating password…"
             />
             <div className="flex items-center gap-2 sm:ml-auto">
@@ -251,12 +246,6 @@ export default function SecuritySettingsPage() {
               />
             </SettingsFormField>
           </div>
-          {status === "error" && isUnsupported(error) ? (
-            <UnsupportedCallout
-              title="Password changes aren't available yet"
-              description="The current backend does not expose a password change endpoint. Until it does, please sign out and use the signup flow to set a new password or contact your administrator."
-            />
-          ) : null}
         </form>
       </SettingsSection>
 
@@ -341,15 +330,9 @@ export default function SecuritySettingsPage() {
           </div>
         }
       >
-        <UnsupportedCallout
-          title="This action depends on a backend endpoint"
-          description="If the backend exposes /api/auth/sessions/revoke-all it will be invoked here. Otherwise the request fails safely and you'll see an explanatory error below — no other devices are affected."
-        />
         {revokeStatus === "error" ? (
           <p className="text-[12px] text-red-600">
-            {isUnsupported(revokeError)
-              ? "Revoking all sessions isn't supported by the current backend. Only this device can be signed out for now."
-              : revokeError}
+            {revokeError}
           </p>
         ) : null}
       </SettingsSection>

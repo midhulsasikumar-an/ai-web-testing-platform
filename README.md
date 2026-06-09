@@ -203,7 +203,7 @@ FRONTEND_ORIGINS=https://ai-web-testing-platform.vercel.app
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | Yes | Public backend URL used by the browser. |
+| `NEXT_PUBLIC_API_URL` | Recommended | Public backend URL used by the browser. Defaults to the Render backend in production and `http://127.0.0.1:8001` locally. |
 | `NEXT_PUBLIC_API_HEALTH_PATH` | Recommended | Usually `/health`. |
 | `NEXT_PUBLIC_AUTH_TIMEOUT_MS` | Recommended | Auth request timeout, for example `10000`. |
 

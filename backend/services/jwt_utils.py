@@ -24,6 +24,7 @@ _PLACEHOLDER_SECRETS = {
 }
 
 _MIN_SECRET_LENGTH = 32
+_LOCAL_DEVELOPMENT_SECRET = "local-development-jwt-secret-for-testpulse-ai-only"
 
 
 def _parse_expiry_minutes() -> int:
@@ -56,7 +57,7 @@ if JWT_SECRET_KEY is None or not JWT_SECRET_KEY.strip():
             "`python -c \"import secrets; print(secrets.token_urlsafe(48))\"`. "
             "Set JWT_ALLOW_WEAK_SECRET=1 only for ephemeral local development."
         )
-    JWT_SECRET_KEY = secrets.token_urlsafe(48)
+    JWT_SECRET_KEY = _LOCAL_DEVELOPMENT_SECRET
 
 _normalized_secret = JWT_SECRET_KEY.strip()
 if _normalized_secret.lower() in _PLACEHOLDER_SECRETS or len(_normalized_secret) < _MIN_SECRET_LENGTH:
@@ -67,7 +68,8 @@ if _normalized_secret.lower() in _PLACEHOLDER_SECRETS or len(_normalized_secret)
             "Generate one with `python -c \"import secrets; print(secrets.token_urlsafe(48))\"`. "
             "Set JWT_ALLOW_WEAK_SECRET=1 only for ephemeral local development."
         )
-    JWT_SECRET_KEY = secrets.token_urlsafe(48)
+    JWT_SECRET_KEY = _LOCAL_DEVELOPMENT_SECRET
+    _normalized_secret = JWT_SECRET_KEY.strip()
 
 JWT_SECRET_KEY = _normalized_secret
 del _normalized_secret

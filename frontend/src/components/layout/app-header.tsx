@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
   ChevronDown,
@@ -25,6 +25,12 @@ interface AppHeaderProps {
   showMobileMenuButton?: boolean;
 }
 
+const SEARCH_TARGETS = [
+  ...PRIMARY_NAV.flatMap((section) => section.items),
+  { href: "/settings/profile", label: "Profile", icon: User, description: "Account details" },
+  { href: "/settings/security", label: "Security", icon: KeyRound, description: "Password and sessions" },
+];
+
 function getInitials(name?: string | null, fallback = "AM"): string {
   if (!name) return fallback;
   return name
@@ -40,17 +46,25 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
   const router = useRouter();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const searchRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
-    if (!menuOpen) return;
     const handleClick = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+      }
     };
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setSearchOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClick);
     document.addEventListener("keydown", handleKey);
@@ -58,11 +72,12 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
       document.removeEventListener("mousedown", handleClick);
       document.removeEventListener("keydown", handleKey);
     };
-  }, [menuOpen]);
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false);
+    setSearchOpen(false);
   }, [pathname]);
 
   const breadcrumbs = getBreadcrumbs(pathname);
@@ -70,6 +85,13 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
   const displayName = user?.name || "Guest";
   const displayEmail = user?.email || "Not signed in";
   const roleLabel = user?.role === "admin" ? "Admin" : "Member";
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return SEARCH_TARGETS.slice(0, 5);
+    return SEARCH_TARGETS.filter((item) =>
+      `${item.label} ${item.description ?? ""}`.toLowerCase().includes(query)
+    ).slice(0, 6);
+  }, [searchQuery]);
 
   const handleLogout = () => {
     logout();
@@ -79,7 +101,17 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
 
   const goTo = (href: string) => {
     setMenuOpen(false);
+    setSearchOpen(false);
+    setSearchQuery("");
     router.push(href);
+  };
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const firstResult = searchResults[0];
+    if (firstResult) {
+      goTo(firstResult.href);
+    }
   };
 
   return (
@@ -124,19 +156,54 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
 
       <div className="flex items-center gap-1.5 sm:gap-2">
         <div className="hidden md:flex items-center">
-          <label className="relative block">
+          <form ref={searchRef} className="relative block" onSubmit={handleSearchSubmit}>
             <span className="sr-only">Quick search</span>
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               placeholder="Search tests, bugs, reports…"
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
               className="h-8 w-56 rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 text-[13px] text-slate-700 placeholder:text-slate-400 transition-all focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
             <span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 lg:inline-flex">
               <span>⌘</span>
               <span>K</span>
             </span>
-          </label>
+            {searchOpen ? (
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg-token">
+                {searchResults.length > 0 ? (
+                  <div className="p-1">
+                    {searchResults.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.href}
+                          type="button"
+                          onClick={() => goTo(item.href)}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-100"
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-50 text-slate-500">
+                            <Icon className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-[13px] font-medium text-slate-800">{item.label}</span>
+                            <span className="block truncate text-[11.5px] text-slate-500">{item.description}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="px-3 py-2.5 text-[12.5px] text-slate-500">No matching destination.</p>
+                )}
+              </div>
+            ) : null}
+          </form>
         </div>
 
         <Link
@@ -150,6 +217,7 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
         <button
           type="button"
           aria-label="Ask AI"
+          onClick={() => goTo("/ai-workspace")}
           className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 transition-colors hover:bg-blue-100"
           title="Ask AI"
         >
@@ -168,6 +236,7 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
         <button
           type="button"
           aria-label="Help"
+          onClick={() => goTo("/support")}
           className="hidden h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:inline-flex"
         >
           <HelpCircle className="h-4 w-4" />

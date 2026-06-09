@@ -139,11 +139,9 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
           setBackendBugs(bugs.map(toBug));
         }
       } catch (error) {
-        // 401 is handled end-to-end: the http wrapper clears the token
-        // and dispatches "auth-token-cleared", the auth context picks
-        // that up and sets isAuthenticated=false, and AppGuard then
-        // redirects to /login. We deliberately swallow the error here
-        // so we don't double-log it.
+        // A stale session can make these dashboard-side requests return 401.
+        // Keep the shell mounted and let the page render an empty state instead
+        // of forcing a global logout/redirect from a background load.
         if (error instanceof ApiHttpError && error.status === 401) {
           return;
         }

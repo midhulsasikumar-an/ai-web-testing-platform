@@ -1,4 +1,4 @@
-import { ApiHttpError, apiFetch } from "@/services/http";
+import { ApiHttpError, apiFetch, storeAuthToken, storeRefreshToken } from "@/services/http";
 
 export type AccountDetails = {
   id: string;
@@ -10,6 +10,20 @@ export type AccountDetails = {
 export type ChangePasswordPayload = {
   currentPassword: string;
   newPassword: string;
+};
+
+export type UpdateAccountPayload = {
+  name?: string;
+  email?: string;
+};
+
+type SessionMutationResponse = {
+  token?: string;
+  access_token?: string;
+  refresh_token?: string;
+  revoked?: number;
+  revoked_sessions?: boolean;
+  user?: AccountDetails;
 };
 
 export class AccountApiError extends Error {
@@ -63,6 +77,34 @@ export async function fetchAccountDetails(token?: string | null): Promise<Accoun
   }
 }
 
+export async function updateAccountDetails(
+  payload: UpdateAccountPayload,
+  token?: string | null
+): Promise<AccountDetails> {
+  try {
+    const response = await apiFetch(
+      "/api/auth/me",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+      { authToken: token ?? null }
+    );
+    const data = (await response.json()) as { user: AccountDetails };
+    return data.user;
+  } catch (error) {
+    throw normalizeError(error, "Unable to update account information.");
+  }
+}
+
+function persistReturnedSession(data: SessionMutationResponse): void {
+  const accessToken = (data.access_token || data.token || "").trim();
+  if (accessToken) storeAuthToken(accessToken);
+  const refreshToken = (data.refresh_token || "").trim();
+  if (refreshToken) storeRefreshToken(refreshToken);
+}
+
 export async function changePassword(
   payload: ChangePasswordPayload,
   token?: string | null
@@ -80,7 +122,8 @@ export async function changePassword(
       },
       { authToken: token ?? null }
     );
-    const data = (await response.json().catch(() => ({}))) as { revoked_sessions?: boolean };
+    const data = (await response.json().catch(() => ({}))) as SessionMutationResponse;
+    persistReturnedSession(data);
     return { revokedSessions: Boolean(data.revoked_sessions) };
   } catch (error) {
     throw normalizeError(error, "Unable to change password.");
@@ -94,7 +137,8 @@ export async function revokeAllSessions(token?: string | null): Promise<{ revoke
       { method: "POST" },
       { authToken: token ?? null }
     );
-    const data = (await response.json().catch(() => ({}))) as { revoked?: number };
+    const data = (await response.json().catch(() => ({}))) as SessionMutationResponse;
+    persistReturnedSession(data);
     return { revoked: Number(data.revoked ?? 0) };
   } catch (error) {
     throw normalizeError(error, "Unable to revoke other sessions.");

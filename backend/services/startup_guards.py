@@ -92,8 +92,8 @@ def _check_jwt_secret_rotation() -> None:
     if os.getenv("JWT_ALLOW_WEAK_SECRET", "").strip().lower() in {"1", "true", "yes"}:
         _record(
             "warning",
-            "JWT_ALLOW_WEAK_SECRET=1 is set. JWT_SECRET_KEY will be auto-generated per-process; "
-            "all tokens will be invalidated on restart and the server is not safe for production.",
+            "JWT_ALLOW_WEAK_SECRET=1 is set. A stable local-development JWT secret will be used; "
+            "set a strong JWT_SECRET_KEY and disable this flag in production.",
         )
 
 

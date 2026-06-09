@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Send, Square, Paperclip, Sparkles } from "lucide-react";
+import { Send, Square, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatComposerProps {
@@ -87,16 +87,7 @@ export function ChatComposer({
           className="block w-full resize-none border-0 bg-transparent px-4 pb-1.5 pt-3 text-[13.5px] leading-relaxed text-slate-900 outline-none placeholder:text-slate-400"
         />
         <div className="flex items-center justify-between gap-2 px-2 pb-2">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label="Attach file"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-              title="Attach (coming soon)"
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
-          </div>
+          <div />
           <div className="flex items-center gap-1.5 pr-1 text-[10.5px] text-slate-400">
             <span className="hidden items-center gap-1 sm:inline-flex">
               <kbd className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5 font-mono text-[10px] text-slate-500">Enter</kbd>

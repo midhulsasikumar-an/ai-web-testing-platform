@@ -223,9 +223,9 @@ export function LandingLogin() {
           © 2024 TestPulse AI. Built for technical precision and human warmth.
         </div>
         <div className="flex items-center gap-6">
-          <Link href="#" className="hover:text-gray-900">Privacy</Link>
-          <Link href="#" className="hover:text-gray-900">Terms</Link>
-          <Link href="#" className="hover:text-gray-900">Support</Link>
+          <Link href="/privacy" className="hover:text-gray-900">Privacy</Link>
+          <Link href="/terms" className="hover:text-gray-900">Terms</Link>
+          <Link href="/support" className="hover:text-gray-900">Support</Link>
         </div>
       </footer>
     </div>

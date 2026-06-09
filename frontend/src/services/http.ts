@@ -2,6 +2,7 @@ import { API_BASE_URL, buildApiUrl } from "@/config/api";
 
 const AUTH_STORAGE_KEY = "auth_token";
 const REFRESH_STORAGE_KEY = "auth_refresh_token";
+const AUTH_USER_STORAGE_KEY = "auth_user";
 const AUTH_TOKEN_CLEARED_EVENT = "auth-token-cleared";
 
 export class ApiHttpError extends Error {
@@ -22,6 +23,7 @@ export type ApiFetchOptions = {
   auth?: boolean;
   authToken?: string | null;
   skipAuthRefresh?: boolean;
+  clearAuthOnUnauthorized?: boolean;
 };
 
 export function getStoredAuthToken(): string | null {
@@ -64,6 +66,35 @@ export function storeRefreshToken(token: string): void {
   window.localStorage.setItem(REFRESH_STORAGE_KEY, token);
 }
 
+export function getStoredAuthUser<T = unknown>(): T | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const value = window.localStorage.getItem(AUTH_USER_STORAGE_KEY);
+    return value ? JSON.parse(value) as T : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storeAuthUser(user: unknown): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
+}
+
+export function clearAuthUser(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+}
+
 export function clearRefreshToken(): void {
   if (typeof window === "undefined") {
     return;
@@ -78,6 +109,7 @@ export function clearAuthToken(): void {
   }
 
   window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  clearAuthUser();
   window.dispatchEvent(new CustomEvent(AUTH_TOKEN_CLEARED_EVENT));
 }
 
@@ -152,7 +184,7 @@ export async function apiFetch(path: string, init: RequestInit = {}, options: Ap
 
   if (!response.ok) {
     const body = await response.text();
-    if (response.status === 401) {
+    if (response.status === 401 && options.clearAuthOnUnauthorized === true) {
       clearRefreshToken();
       clearAuthToken();
     }

@@ -185,6 +185,13 @@ def _reject_unauthorized(detail: str = "Unauthorized") -> HTTPException:
     return HTTPException(status_code=401, detail=detail)
 
 
+def _token_session_version(payload: Dict[str, Any]) -> int:
+    try:
+        return int(payload.get("session_version") or 0)
+    except (TypeError, ValueError):
+        raise _reject_unauthorized("Invalid token")
+
+
 def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> Dict[str, str]:
     if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials.strip():
         raise _reject_unauthorized()
@@ -215,10 +222,16 @@ def get_current_user_from_token(token: str) -> Dict[str, str]:
         raise _reject_unauthorized("Invalid token")
 
     normalized_user = persist_normalized_user(user)
+    expected_session_version = int(normalized_user.get("session_version") or 0)
+    token_session_version = _token_session_version(payload)
+    if token_session_version != expected_session_version:
+        raise _reject_unauthorized("Token has been revoked")
+
     return {
         "id": str(normalized_user.get("id") or user_id or ""),
         "user_id": str(normalized_user.get("id") or user_id or ""),
         "email": str(normalized_user.get("email") or email or ""),
         "name": str(normalized_user.get("name") or payload.get("name") or ""),
         "role": str(normalized_user.get("role") or payload.get("role") or "user"),
+        "session_version": str(expected_session_version),
     }

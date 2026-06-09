@@ -88,16 +88,14 @@ export function Sidebar({ onNavigate, variant = "desktop" }: SidebarProps) {
 
       {/* Quick action */}
       <div className="px-3 pt-3">
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          title="Project workspaces ship in a future release. Use the AI Workspace to start new tests for now."
-          className="group flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-[12.5px] font-medium text-slate-400 transition-colors"
+        <Link
+          href="/run-test"
+          onClick={onNavigate}
+          className="group flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[12.5px] font-medium text-blue-700 transition-colors hover:bg-blue-100"
         >
           <Plus className="h-3.5 w-3.5" />
-          {!collapsed ? <span>New project</span> : null}
-        </button>
+          {!collapsed ? <span>New test</span> : null}
+        </Link>
       </div>
 
       {/* Primary navigation */}

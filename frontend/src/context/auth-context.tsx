@@ -2,7 +2,16 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { AuthApiError, getCurrentUser, loginWithBackend, logoutWithBackend, signupWithBackend, toAuthErrorMessage } from "@/services/auth-api";
-import { clearAuthToken, clearRefreshToken, getStoredAuthToken, onAuthTokenCleared, storeAuthToken, storeRefreshToken } from "@/services/http";
+import {
+  clearAuthToken,
+  clearRefreshToken,
+  getStoredAuthToken,
+  getStoredAuthUser,
+  onAuthTokenCleared,
+  storeAuthToken,
+  storeAuthUser,
+  storeRefreshToken,
+} from "@/services/http";
 
 export interface User {
   id: string;
@@ -25,6 +34,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   clearInitWarning: () => void;
 }
 
@@ -73,6 +83,19 @@ function decodeJwtFallbackUser(token: string): User | null {
   }
 }
 
+function restoreStoredSession(): AuthSession | null {
+  const token = getStoredAuthToken();
+  if (!token) return null;
+
+  const storedUser = getStoredAuthUser<User>();
+  if (storedUser?.id && storedUser.email) {
+    return { token, user: storedUser };
+  }
+
+  const fallbackUser = decodeJwtFallbackUser(token);
+  return fallbackUser ? { token, user: fallbackUser } : null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -82,9 +105,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let active = true;
 
     async function init() {
-      const token = getStoredAuthToken();
+      const restoredSession = restoreStoredSession();
 
-      if (!token) {
+      if (!restoredSession) {
         if (active) {
           setSession(null);
           setIsReady(true);
@@ -92,10 +115,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      setSession(restoredSession);
+      setIsReady(true);
+
       try {
+        const token = restoredSession.token;
         const currentUser = await getCurrentUser(token);
         const restored: AuthSession = { token, user: currentUser };
         storeAuthToken(token);
+        storeAuthUser(currentUser);
 
         if (active) {
           setSession(restored);
@@ -105,19 +133,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error instanceof AuthApiError) {
           switch (error.code) {
             case "UNAUTHORIZED":
-              clearAuthToken();
-              clearRefreshToken();
               if (active) {
-                setSession(null);
-                setInitWarning(null);
+                setInitWarning({
+                  code: "BACKEND_UNAVAILABLE",
+                  message: "Saved session could not be validated. Sign in again if protected actions fail.",
+                });
               }
               break;
 
             case "BACKEND_UNAVAILABLE":
             case "NETWORK_ERROR":
               if (active) {
-                const fallbackUser = decodeJwtFallbackUser(token);
-                setSession(fallbackUser ? { token, user: fallbackUser } : null);
                 setInitWarning({
                   code: error.code as InitWarning["code"],
                   message: error.message,
@@ -126,10 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               break;
 
             case "SERVER_ERROR":
-              clearAuthToken();
-              clearRefreshToken();
               if (active) {
-                setSession(null);
                 setInitWarning({
                   code: "BACKEND_UNAVAILABLE",
                   message: error.message,
@@ -139,8 +162,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             case "TIMEOUT":
               if (active) {
-                const fallbackUser = decodeJwtFallbackUser(token);
-                setSession(fallbackUser ? { token, user: fallbackUser } : null);
                 setInitWarning({
                   code: "TIMEOUT",
                   message: error.message,
@@ -149,20 +170,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               break;
 
             default:
-              clearAuthToken();
-              clearRefreshToken();
               if (active) {
-                setSession(null);
-                setInitWarning(null);
+                setInitWarning({
+                  code: "BACKEND_UNAVAILABLE",
+                  message: "Saved session could not be validated. Sign in again if protected actions fail.",
+                });
               }
               break;
           }
         } else {
-          clearAuthToken();
-          clearRefreshToken();
           if (active) {
-            setSession(null);
-            setInitWarning(null);
+            setInitWarning({
+              code: "BACKEND_UNAVAILABLE",
+              message: "Saved session could not be validated. Sign in again if protected actions fail.",
+            });
           }
         }
       } finally {
@@ -199,6 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const nextSession = await loginWithBackend(email, password);
       storeAuthToken(nextSession.token);
+      storeAuthUser(nextSession.user);
       if (nextSession.refreshToken) {
         storeRefreshToken(nextSession.refreshToken);
       }
@@ -213,6 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const nextSession = await signupWithBackend(name, email, password);
       storeAuthToken(nextSession.token);
+      storeAuthUser(nextSession.user);
       if (nextSession.refreshToken) {
         storeRefreshToken(nextSession.refreshToken);
       }
@@ -234,6 +257,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setInitWarning(null);
   }, [session?.token]);
 
+  const refreshUser = useCallback(async (): Promise<void> => {
+    const token = getStoredAuthToken();
+    if (!token) {
+      setSession(null);
+      return;
+    }
+    const currentUser = await getCurrentUser(token);
+    storeAuthUser(currentUser);
+    setSession({ token, user: currentUser });
+    setInitWarning(null);
+  }, []);
+
   const clearInitWarning = useCallback(() => {
     setInitWarning(null);
   }, []);
@@ -251,6 +286,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         signup,
         logout,
+        refreshUser,
         clearInitWarning,
       }}
     >

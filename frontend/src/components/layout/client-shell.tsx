@@ -14,7 +14,7 @@ function AppGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isAuthenticated, isReady } = useAuth();
 
-  const publicRoutes = new Set(["/", "/login", "/signup"]);
+  const publicRoutes = new Set(["/", "/login", "/signup", "/privacy", "/terms", "/support"]);
   const isPublicRoute = publicRoutes.has(pathname);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -26,9 +26,6 @@ function AppGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (isAuthenticated && isPublicRoute) {
-      router.replace("/dashboard");
-    }
   }, [isAuthenticated, isPublicRoute, isReady, router]);
 
   if (!isReady) {

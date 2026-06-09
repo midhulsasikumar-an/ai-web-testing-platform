@@ -6,6 +6,8 @@ type ApiConfig = {
 
 const DEFAULT_HEALTH_PATH = "/health";
 const DEFAULT_AUTH_TIMEOUT_MS = 10000;
+const LOCAL_API_URL = "http://127.0.0.1:8001";
+const PRODUCTION_API_URL = "https://ai-web-testing-platform.onrender.com";
 
 function normalizeBaseUrl(value: string): string {
   return value.trim().replace(/\/+$/, "");
@@ -25,12 +27,10 @@ function parseTimeout(rawValue: string | undefined): number {
 }
 
 function resolveApiBaseUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const raw =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === "production" ? PRODUCTION_API_URL : LOCAL_API_URL);
   const normalized = normalizeBaseUrl(raw);
-
-  if (!normalized) {
-    throw new Error("Missing NEXT_PUBLIC_API_URL environment variable");
-  }
 
   try {
     const url = new URL(normalized);
