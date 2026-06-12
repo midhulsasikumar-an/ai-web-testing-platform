@@ -309,6 +309,17 @@ export default function RunTestPage() {
         }))
       );
     }
+    if (isActiveRunStatus(executionStatus)) {
+      return [
+        {
+          time: new Date().toLocaleTimeString("en-GB", { hour12: false }),
+          level: "LIVE",
+          text: "Run is active. Waiting for the next backend execution log...",
+          color: "text-emerald-400",
+          status: "running",
+        },
+      ];
+    }
     return compressTimelineRows(
       results.map((r) => ({
         time: (r.time as string) ?? new Date().toLocaleTimeString("en-GB", { hour12: false }),
@@ -320,7 +331,7 @@ export default function RunTestPage() {
         status: String(r.status ?? ""),
       }))
     );
-  }, [streamLogs, results]);
+  }, [streamLogs, results, executionStatus]);
 
   const activePlan = state.aiPlan ?? state.testData?.ai_plan ?? null;
 
@@ -931,7 +942,9 @@ function ExecutionTerminal({
               ))
             ) : (
               <div className="rounded-md border border-dashed border-slate-800/80 bg-slate-950/80 px-3 py-3 text-slate-400">
-                No execution logs yet. Start a test to see live output.
+                {isActiveRunStatus(status)
+                  ? "Waiting for live execution logs..."
+                  : "No execution logs yet. Start a test to see live output."}
               </div>
             )}
           </div>

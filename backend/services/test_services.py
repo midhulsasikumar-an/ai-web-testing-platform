@@ -659,6 +659,7 @@ async def _run_scenario_with_replanning(url: str, scenario_case: TestCase, dom: 
 
 def create_test_run(req: TestRequest, user_id: str):
     test_id = str(uuid.uuid4())
+    now_iso = datetime.utcnow().isoformat()
 
     test_data = {
         "user_id": user_id,
@@ -676,7 +677,19 @@ def create_test_run(req: TestRequest, user_id: str):
         "execution_settings": req.execution_settings,
         "status": "running",
         "results": [],
-        "stream_logs": [],
+        "stream_logs": [
+            {
+                "time": now_iso,
+                "level": "info",
+                "msg": "Test run accepted. Preparing execution workspace.",
+                "type": "run_status",
+                "details": {
+                    "test_id": test_id,
+                    "test_type": req.test_type,
+                    "target_url": _canonicalize_url(req.url),
+                },
+            }
+        ],
         "screenshot": None,
         "summary": None,
         "health_score": None,
@@ -697,7 +710,8 @@ def create_test_run(req: TestRequest, user_id: str):
         "risk_summary": {},
         "scenario_tree": {},
         "ai_plan": req.ai_plan,
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": now_iso,
+        "updated_at": now_iso,
     }
 
     apply_run_outcome(test_data)
@@ -726,6 +740,21 @@ def run_test_and_update(test_data, url, user_id: str):
     legacy_started = perf_counter()
     results: list = []
     artifacts: dict = {}
+    legacy_logs = test_data.get("stream_logs") if isinstance(test_data.get("stream_logs"), list) else []
+    legacy_logs.append({
+        "time": datetime.utcnow().isoformat(),
+        "level": "info",
+        "msg": "Starting standard browser test runner.",
+        "type": "run_status",
+        "details": {"mode": "legacy"},
+    })
+    test_data["stream_logs"] = legacy_logs
+    test_data["updated_at"] = datetime.utcnow().isoformat()
+    collection.update_one(
+        {"test_id": test_data["test_id"], "user_id": user_id, "status": {"$in": ["running", "cancel_requested"]}},
+        {"$set": {"stream_logs": legacy_logs, "updated_at": test_data["updated_at"]}},
+        upsert=True,
+    )
     try:
         results, artifacts = run_test(url, test_data["test_id"], user_id=user_id)
         artifacts = _tokenize_artifact_urls(artifacts, user_id)
@@ -1465,9 +1494,45 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         test_data["discovery_status"] = plan.get("discovery_status") or ("ready" if test_data["discovery"].get("feature_map") else "partial")
         test_data["discovery_error"] = plan.get("discovery_error")
         test_data["scenario_tree"] = plan.get("scenario_tree") or {}
-        dom = await extract_page_elements(url)
-        stream_logs: List[Dict[str, Any]] = []
+        stream_logs: List[Dict[str, Any]] = list(test_data.get("stream_logs") or [])
         screenshot_paths: List[str] = []
+        stream_logs.append({
+            "time": datetime.utcnow().isoformat(),
+            "level": "info",
+            "msg": "AI execution plan loaded. Discovering target page elements.",
+            "type": "run_status",
+            "details": {
+                "scenario_count": len(scenario_cases),
+                "discovery_status": test_data["discovery_status"],
+            },
+        })
+        test_data["stream_logs"] = list(stream_logs)
+        test_data["updated_at"] = datetime.utcnow().isoformat()
+        collection.update_one(
+            {"test_id": test_data["test_id"], "user_id": user_id, "status": {"$in": ["running", "cancel_requested"]}},
+            {"$set": {
+                "stream_logs": list(stream_logs),
+                "ai_plan": plan,
+                "discovery_status": test_data["discovery_status"],
+                "updated_at": test_data["updated_at"],
+            }},
+            upsert=True,
+        )
+        dom = await extract_page_elements(url)
+        stream_logs.append({
+            "time": datetime.utcnow().isoformat(),
+            "level": "info",
+            "msg": "Target page discovery complete. Starting browser session.",
+            "type": "run_status",
+            "details": {"scenario_count": len(scenario_cases)},
+        })
+        test_data["stream_logs"] = list(stream_logs)
+        test_data["updated_at"] = datetime.utcnow().isoformat()
+        collection.update_one(
+            {"test_id": test_data["test_id"], "user_id": user_id, "status": {"$in": ["running", "cancel_requested"]}},
+            {"$set": {"stream_logs": list(stream_logs), "updated_at": test_data["updated_at"]}},
+            upsert=True,
+        )
 
         def _persist_partial_state(status: str = "running", failure_reason: str | None = None) -> None:
             now_iso = datetime.utcnow().isoformat()
@@ -1571,7 +1636,19 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
 
         session_manager = BrowserSessionManager(headless=True)
         try:
+            if progress_callback:
+                await progress_callback({
+                    "type": "run_status",
+                    "message": "Launching browser session for live execution.",
+                    "scenario_count": len(scenario_cases),
+                })
             await session_manager.start()
+            if progress_callback:
+                await progress_callback({
+                    "type": "run_status",
+                    "message": "Browser session is ready. Executing scenarios.",
+                    "scenario_count": len(scenario_cases),
+                })
             for raw_test_case in scenario_cases:
                 elapsed_overall = perf_counter() - overall_started
                 remaining_overall = OVERALL_EXECUTION_TIMEOUT_SECONDS - elapsed_overall
