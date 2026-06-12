@@ -154,4 +154,8 @@ def derive_run_outcome(run: Dict[str, Any]) -> Dict[str, Any]:
 def apply_run_outcome(run: Dict[str, Any]) -> Dict[str, Any]:
     outcome = derive_run_outcome(run)
     run.update(outcome)
+    if outcome.get("test_verdict") == "pass":
+        run["overall_status"] = "pass"
+    elif outcome.get("test_verdict") in {"fail", "blocked"}:
+        run["overall_status"] = "fail"
     return run

@@ -284,13 +284,23 @@ export default function RunTestPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const setPolledTestData = useCallback(
+    (next: TestApiResponse | null | ((prev: TestApiResponse | null) => TestApiResponse | null)) => update((prev) => ({
+      testData: typeof next === "function" ? next(prev.testData) : next,
+    })),
+    [update]
+  );
+
+  const setPollingRunning = useCallback(
+    (running: boolean) => update({ running }),
+    [update]
+  );
+
   useTestPolling(
     state.testId,
     hydrated,
-    (next) => update((prev) => ({
-      testData: typeof next === "function" ? next(prev.testData) : next,
-    })),
-    (running) => update({ running })
+    setPolledTestData,
+    setPollingRunning
   );
 
   const streamLogs = useMemo(
@@ -1060,6 +1070,7 @@ function useTestPolling(
     if (!enabled || !testId) return;
 
     let cancelled = false;
+    const streamController = new AbortController();
     setRunning(true);
 
     let pollCount = 0;
@@ -1137,12 +1148,14 @@ function useTestPolling(
         if (!cancelled) setTestData(finalData);
         setRunning(false);
       }
-    }).catch((error) => {
-      if (!cancelled) console.error("Execution stream failed; polling fallback remains active", error);
+    }, streamController.signal).catch((error) => {
+      const aborted = error instanceof DOMException && error.name === "AbortError";
+      if (!cancelled && !aborted) console.error("Execution stream failed; polling fallback remains active", error);
     });
 
     return () => {
       cancelled = true;
+      streamController.abort();
       if (timeout !== null) window.clearTimeout(timeout);
     };
   }, [testId, enabled, setTestData, setRunning]);

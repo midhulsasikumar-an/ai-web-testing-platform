@@ -41,6 +41,7 @@ export function SignupCard() {
           <form onSubmit={handleSignup} className="space-y-4">
             <input
               type="text"
+              autoComplete="name"
               placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -49,6 +50,7 @@ export function SignupCard() {
             />
             <input
               type="email"
+              autoComplete="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -57,6 +59,7 @@ export function SignupCard() {
             />
             <input
               type="password"
+              autoComplete="new-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

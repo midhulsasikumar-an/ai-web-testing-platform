@@ -1,6 +1,8 @@
 import os
 import json
 import asyncio
+import subprocess
+import sys
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 from backend.services.test_cases.error_page_test import test_error_page
@@ -18,6 +20,37 @@ from backend.agent.services.website_health_service import WebsiteHealthService
 from backend.agent.services.form_fuzzing_service import FormFuzzingService
 from backend.database.mongo import db
 
+
+def _is_missing_playwright_browser_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return any(
+        marker in message
+        for marker in [
+            "executable doesn't exist",
+            "playwright install",
+            "browser executable",
+            "chromium_headless_shell",
+            "chrome-headless-shell",
+        ]
+    )
+
+
+def _install_playwright_browsers_once() -> None:
+    if os.getenv("DISABLE_PLAYWRIGHT_RUNTIME_INSTALL", "").strip().lower() in {"1", "true", "yes"}:
+        raise RuntimeError("Playwright browser executable is missing and runtime install is disabled")
+    command = [sys.executable, "-m", "playwright", "install", "chromium", "chromium-headless-shell"]
+    subprocess.run(command, check=True, timeout=int(os.getenv("PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS", "180")))
+
+
+def _launch_chromium_with_recovery(playwright):
+    try:
+        return playwright.chromium.launch(headless=True)
+    except Exception as exc:
+        if not _is_missing_playwright_browser_error(exc):
+            raise
+        _install_playwright_browsers_once()
+        return playwright.chromium.launch(headless=True)
+
 def run_test(url: str, test_id: str, user_id: str | None = None):
     results = []
     screenshots = []
@@ -34,7 +67,7 @@ def run_test(url: str, test_id: str, user_id: str | None = None):
     }
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _launch_chromium_with_recovery(p)
         page = browser.new_page()
 
         # Collect console and network logs

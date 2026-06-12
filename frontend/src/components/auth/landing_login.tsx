@@ -120,6 +120,7 @@ export function LandingLogin() {
                   </div>
                   <input
                     type="email"
+                    autoComplete="email"
                     placeholder="dev@testpulse.ai"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -136,6 +137,7 @@ export function LandingLogin() {
                   </div>
                   <input
                     type="password"
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

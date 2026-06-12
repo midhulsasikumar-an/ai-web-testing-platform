@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import type { Bug, DashboardStats, AIFinding } from "@/types";
 import { getAllTests } from "@/services/test-api";
 import type { TestApiResponse } from "@/services/test-api";
@@ -29,6 +30,7 @@ const BugContext = createContext<BugContextType | undefined>(undefined);
 
 export function BugProvider({ children }: { children: React.ReactNode }) {
   const { isReady, isAuthenticated } = useAuth();
+  const pathname = usePathname();
   const [backendBugs, setBackendBugs] = useState<Bug[]>([]);
   const [testResults, setTestResults] = useState<TestApiResponse[]>([]);
   const [aiFindings] = useState<AIFinding[]>([]);
@@ -106,6 +108,28 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
     };
   }, [mapBugSeverity, mapBugStatus]);
 
+  const refreshBackendData = useCallback(async (active: () => boolean = () => true) => {
+    try {
+      const [tests, bugs] = await Promise.all([
+        getAllTests(),
+        getAllBugs(),
+      ]);
+
+      if (active()) {
+        setTestResults(tests);
+        setBackendBugs(bugs.map(toBug));
+      }
+    } catch (error) {
+      // A stale session can make these dashboard-side requests return 401.
+      // Keep the shell mounted and let the page render an empty state instead
+      // of forcing a global logout/redirect from a background load.
+      if (error instanceof ApiHttpError && error.status === 401) {
+        return;
+      }
+      console.error("Failed to load tests/bugs:", error);
+    }
+  }, [toBug]);
+
   useEffect(() => {
     // Only fetch when the auth context is ready AND the user is
     // authenticated. Without the second guard we issue unauthenticated
@@ -127,34 +151,15 @@ export function BugProvider({ children }: { children: React.ReactNode }) {
 
     let active = true;
 
-    async function loadTests() {
-      try {
-        const [tests, bugs] = await Promise.all([
-          getAllTests(),
-          getAllBugs(),
-        ]);
-
-        if (active) {
-          setTestResults(tests);
-          setBackendBugs(bugs.map(toBug));
-        }
-      } catch (error) {
-        // A stale session can make these dashboard-side requests return 401.
-        // Keep the shell mounted and let the page render an empty state instead
-        // of forcing a global logout/redirect from a background load.
-        if (error instanceof ApiHttpError && error.status === 401) {
-          return;
-        }
-        console.error("Failed to load tests/bugs:", error);
-      }
-    }
-
-    loadTests();
+    // Route changes should refresh backend-backed history/bug data so
+    // result pages do not show a stale empty snapshot after a run.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refreshBackendData(() => active);
 
     return () => {
       active = false;
     };
-  }, [isReady, isAuthenticated, toBug]);
+  }, [isReady, isAuthenticated, pathname, refreshBackendData]);
 
   const visibleTestResults = useMemo(
     () => (isReady && isAuthenticated ? testResults : []),

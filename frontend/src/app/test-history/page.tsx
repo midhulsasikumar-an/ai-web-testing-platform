@@ -42,6 +42,30 @@ function isFailingStatus(value: string | undefined | null): boolean {
   return NON_PASSING_STATUSES.has(String(value || "").toLowerCase());
 }
 
+function getHistoryStatus(test: {
+  overall_status?: string | null;
+  test_verdict?: string | null;
+  execution_status?: string | null;
+  status?: string | null;
+  failure_type?: string | null;
+}): { bucket: "pass" | "fail" | "warning"; label: string } {
+  const verdict = String(test.test_verdict || "").toLowerCase();
+  const execution = String(test.execution_status || test.status || "").toLowerCase();
+  const overall = String(test.overall_status || "").toLowerCase();
+  const failureType = String(test.failure_type || "").toLowerCase();
+
+  if (verdict === "pass" || (execution === "completed" && overall === "pass")) {
+    return { bucket: "pass", label: "pass" };
+  }
+  if (verdict === "blocked" || failureType === "browser_error" || failureType === "target_blocked") {
+    return { bucket: "fail", label: "blocked" };
+  }
+  if (verdict === "fail" || isFailingStatus(execution) || isFailingStatus(overall)) {
+    return { bucket: "fail", label: overall === "fail" ? "fail" : execution || "fail" };
+  }
+  return { bucket: "warning", label: execution || overall || "unknown" };
+}
+
 function formatDuration(test: { updated_at?: string; created_at?: string; runtime_ms?: number }): string {
   if (typeof test.runtime_ms === "number" && Number.isFinite(test.runtime_ms) && test.runtime_ms >= 0) {
     const seconds = test.runtime_ms / 1000;
@@ -78,7 +102,7 @@ export default function TestHistoryPage() {
     searchQuery,
     setSearchQuery,
   } = useFilteredList(testResults, {
-    getStatus: (t) => t.overall_status || "unknown",
+    getStatus: (t) => getHistoryStatus(t).bucket,
     getSearchText: (t) => {
       const testName = resolveTestDisplayName(t);
       const website = extractHostname(t.target_url || t.url);
@@ -96,8 +120,8 @@ export default function TestHistoryPage() {
     return acc;
   }, {});
 
-  const passedCount = testResults.filter((t) => String(t.overall_status || "").toLowerCase() === "pass").length;
-  const failedCount = testResults.filter((t) => isFailingStatus(t.overall_status)).length;
+  const passedCount = testResults.filter((t) => getHistoryStatus(t).bucket === "pass").length;
+  const failedCount = testResults.filter((t) => getHistoryStatus(t).bucket === "fail").length;
 
   return (
     <>
@@ -161,8 +185,8 @@ export default function TestHistoryPage() {
       ) : (
         <div className="space-y-4">
           {Object.entries(groupedByUrl).map(([url, tests]) => {
-            const urlPassed = tests.filter((t) => String(t.overall_status || "").toLowerCase() === "pass").length;
-            const urlFailed = tests.filter((t) => isFailingStatus(t.overall_status)).length;
+            const urlPassed = tests.filter((t) => getHistoryStatus(t).bucket === "pass").length;
+            const urlFailed = tests.filter((t) => getHistoryStatus(t).bucket === "fail").length;
 
             return (
               <Card key={url}>
@@ -208,20 +232,20 @@ export default function TestHistoryPage() {
                             <TableCell>
                               <Badge
                                 variant={
-                                  String(test.overall_status || "").toLowerCase() === "pass"
+                                  getHistoryStatus(test).bucket === "pass"
                                     ? "secondary"
                                     : "destructive"
                                 }
                                 className="text-xs"
                               >
                                 <span className="flex items-center gap-1">
-                                  {String(test.overall_status || "").toLowerCase() === "pass" ? (
+                                  {getHistoryStatus(test).bucket === "pass" ? (
                                     <CheckCircle2 className="h-3 w-3" />
                                   ) : (
                                     <XCircle className="h-3 w-3" />
                                   )}
 
-                                  {test.overall_status || "unknown"}
+                                  {getHistoryStatus(test).label}
                                 </span>
                               </Badge>
                             </TableCell>

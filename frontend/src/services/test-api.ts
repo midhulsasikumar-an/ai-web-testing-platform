@@ -236,9 +236,10 @@ export async function getTestStream(testId: string): Promise<Partial<TestApiResp
 
 export async function streamTestEvents(
   testId: string,
-  onEvent: (event: { type: "snapshot"; data: Partial<TestApiResponse> } | { type: "done"; data: Record<string, unknown> } | { type: "error"; data: Record<string, unknown> }) => void
+  onEvent: (event: { type: "snapshot"; data: Partial<TestApiResponse> } | { type: "done"; data: Record<string, unknown> } | { type: "error"; data: Record<string, unknown> }) => void,
+  signal?: AbortSignal
 ): Promise<void> {
-  const response = await apiFetch(`/api/tests/${testId}/events`);
+  const response = await apiFetch(`/api/tests/${testId}/events`, { signal });
   if (!response.body) return;
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -256,6 +257,7 @@ export async function streamTestEvents(
   };
 
   while (true) {
+    if (signal?.aborted) break;
     const { value, done } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });

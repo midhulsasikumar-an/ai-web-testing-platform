@@ -43,6 +43,24 @@ const RERUN_CONFIG_KEY = "test_history_rerun_config";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TestRecord = Record<string, any>;
 
+function resolveHistoryDetailStatus(test?: TestRecord | null): { label: string; status: "pass" | "fail" | "warning" | "unknown" } {
+  const verdict = String(test?.test_verdict || "").toLowerCase();
+  const execution = String(test?.execution_status || test?.status || "").toLowerCase();
+  const overall = String(test?.overall_status || "").toLowerCase();
+  const failureType = String(test?.failure_type || "").toLowerCase();
+
+  if (verdict === "pass" || (execution === "completed" && overall === "pass")) {
+    return { label: "pass", status: "pass" };
+  }
+  if (verdict === "blocked" || failureType === "browser_error" || failureType === "target_blocked") {
+    return { label: "blocked", status: "fail" };
+  }
+  if (verdict === "fail" || ["failed", "fail", "timed_out", "timeout", "cancelled", "error"].includes(execution) || ["fail", "warning"].includes(overall)) {
+    return { label: overall === "fail" ? "fail" : execution || "fail", status: overall === "warning" ? "warning" : "fail" };
+  }
+  return { label: execution || overall || "unknown", status: execution === "running" ? "warning" : "unknown" };
+}
+
 type DetailResult = {
   test?: string;
   details?: unknown;
@@ -343,8 +361,9 @@ export default function TestDetailPage() {
   const typeConfig = resolveTestTypeConfig(activeTest?.test_type);
   const TypeIcon = typeConfig.icon ?? DEFAULT_TEST_TYPE_CONFIG.icon;
   const typeLabel = typeConfig.label ?? DEFAULT_TEST_TYPE_CONFIG.label;
-  const statusLabel = activeTest?.overall_status ?? activeTest?.status ?? "unknown";
-  const mainStatus = statusLabel === "pass" ? "pass" : statusLabel === "warning" ? "warning" : statusLabel === "fail" ? "fail" : "unknown";
+  const resolvedStatus = resolveHistoryDetailStatus(activeTest);
+  const statusLabel = resolvedStatus.label;
+  const mainStatus = resolvedStatus.status;
 
   const downloadReport = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-report.txt`, reportText || summaryText || "No report available");
   const downloadLogs = () => downloadTextFile(`test-${activeTest?.test_id ?? "run"}-logs.json`, JSON.stringify(streamLogs, null, 2));
