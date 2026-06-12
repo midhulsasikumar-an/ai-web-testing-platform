@@ -116,7 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setSession(restoredSession);
-      setIsReady(true);
 
       try {
         const token = restoredSession.token;
@@ -134,9 +133,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           switch (error.code) {
             case "UNAUTHORIZED":
               if (active) {
+                clearRefreshToken();
+                clearAuthToken();
+                setSession(null);
                 setInitWarning({
                   code: "BACKEND_UNAVAILABLE",
-                  message: "Saved session could not be validated. Sign in again if protected actions fail.",
+                  message: "Saved session has expired or is invalid. Please sign in again.",
                 });
               }
               break;

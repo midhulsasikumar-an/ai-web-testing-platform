@@ -718,6 +718,134 @@ def _build_step_execution_context(page, test_case, previous_successful_actions: 
     }
 
 
+def _build_selector_for_element(el: dict) -> str | None:
+    if el.get("id"):
+        return f"#{el['id']}"
+    if el.get("name"):
+        return f'[name="{el["name"]}"]'
+    if el.get("btn_type") == "submit":
+        return 'button[type="submit"]'
+    if el.get("text"):
+        escaped_text = el["text"].replace('"', '\\"')
+        return f'text="{escaped_text}"'
+    if el.get("class"):
+        first_class = el["class"].split()[0]
+        if ":" not in first_class and "/" not in first_class and first_class not in ["btn", "link", "active", "nav-link", "button"]:
+            return f".{first_class}"
+    return None
+
+
+def _find_click_fallback_selector(target: str, dom: dict) -> str | None:
+    if not dom:
+        return None
+    target_lower = (target or "").lower().strip()
+    target_tokens = [w for w in target_lower.split() if len(w) > 2]
+    if not target_tokens:
+        target_tokens = [w for w in target_lower.split() if w]
+    if not target_tokens:
+        return None
+
+    buttons = dom.get("buttons") or []
+    links = dom.get("links") or []
+
+    elements = []
+    for b in buttons:
+        elements.append({
+            "type": "button",
+            "text": (b.get("text") or "").strip(),
+            "aria_label": (b.get("aria_label") or "").strip(),
+            "id": (b.get("id") or "").strip(),
+            "name": (b.get("name") or "").strip(),
+            "class": (b.get("class") or "").strip(),
+            "btn_type": (b.get("type") or "").strip(),
+            "raw": b
+        })
+    for l in links:
+        elements.append({
+            "type": "link",
+            "text": (l.get("text") or "").strip(),
+            "aria_label": "",
+            "id": "",
+            "name": "",
+            "class": "",
+            "btn_type": "",
+            "href": (l.get("href") or "").strip(),
+            "raw": l
+        })
+
+    scored_elements = []
+    for el in elements:
+        score = 0
+        el_text = el["text"].lower()
+        el_id = el["id"].lower()
+        el_name = el["name"].lower()
+        el_class = el["class"].lower()
+        el_aria = el["aria_label"].lower()
+        el_href = el.get("href", "").lower()
+
+        if target_lower == el_text:
+            score += 15
+        elif target_lower in el_text:
+            score += 8
+
+        for t in target_tokens:
+            if t in el_text:
+                score += 5
+            if t in el_id:
+                score += 4
+            if t in el_class:
+                score += 3
+            if t in el_aria:
+                score += 4
+            if t in el_href:
+                score += 2
+
+        if any(w in target_lower for w in ["submit", "login", "signin", "action"]):
+            if el["btn_type"] == "submit" or "submit" in el_id or "submit" in el_class or "submit" in el_text:
+                score += 10
+            if "login" in el_id or "login" in el_class or "login" in el_text:
+                score += 10
+
+        if any(w in target_lower for w in ["nav", "navigation", "link", "menu"]):
+            if el["type"] == "link" or "nav" in el_id or "nav" in el_class or "menu" in el_class or "menu" in el_id:
+                score += 8
+
+        if not el["text"] and not el["id"] and not el["class"]:
+            score = 0
+
+        if score > 0:
+            scored_elements.append((score, el))
+
+    scored_elements.sort(key=lambda x: x[0], reverse=True)
+
+    if scored_elements:
+        best_score, best_el = scored_elements[0]
+        sel = _build_selector_for_element(best_el)
+        if sel:
+            return sel
+
+    if any(w in target_lower for w in ["nav", "navigation", "link", "menu"]):
+        nav_elements = []
+        for el in elements:
+            el_id = el["id"].lower()
+            el_class = el["class"].lower()
+            if len(el["text"]) >= 2:
+                if any(w in el_id or w in el_class for w in ["nav", "menu", "header", "top", "main"]):
+                    nav_elements.append(el)
+        if nav_elements:
+            sel = _build_selector_for_element(nav_elements[0])
+            if sel:
+                return sel
+
+    for el in elements:
+        if len(el["text"]) >= 2:
+            sel = _build_selector_for_element(el)
+            if sel:
+                return sel
+
+    return None
+
+
 def _resolve_step_selector(step, dom, test_case=None, current_url: str = ""):
     # Build candidate hints
     candidates = []
@@ -808,6 +936,9 @@ def _resolve_step_selector(step, dom, test_case=None, current_url: str = ""):
         return None, step.selector or step.target
 
     if step.target and _normalize_text(step.action) not in INPUT_ACTIONS:
+        fallback_sel = _find_click_fallback_selector(step.target, dom)
+        if fallback_sel:
+            return fallback_sel, step.target
         # For non-inputs we may use text locator, but mark as text-based
         return f'text="{step.target}"', step.target
 
@@ -1126,10 +1257,20 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                 "step": step.model_dump(),
             })
             # Refresh live DOM for accurate resolution (ensures resolver sees current page state)
+            # Bounded to 5s per query so slow pages don't consume the entire scenario budget.
             try:
-                live_inputs = await page.eval_on_selector_all('input', "nodes => nodes.map(n => ({name: n.name, placeholder: n.placeholder, id: n.id, aria_label: n.getAttribute('aria-label'), label: (n.labels && n.labels.length>0)? n.labels[0].innerText: null, type: n.type}))")
-                live_buttons = await page.eval_on_selector_all('button, input[type=submit], a', "nodes => nodes.map(n => ({text: n.innerText || n.value || n.getAttribute('aria-label') || '', aria_label: n.getAttribute('aria-label'), id: n.id, name: n.name, class: n.className, type: n.type}))")
-                live_links = await page.eval_on_selector_all('a', "nodes => nodes.map(n => ({text: n.innerText || '', href: n.href}))")
+                live_inputs = await asyncio.wait_for(
+                    page.eval_on_selector_all('input', "nodes => nodes.map(n => ({name: n.name, placeholder: n.placeholder, id: n.id, aria_label: n.getAttribute('aria-label'), label: (n.labels && n.labels.length>0)? n.labels[0].innerText: null, type: n.type}))"),
+                    timeout=5.0,
+                )
+                live_buttons = await asyncio.wait_for(
+                    page.eval_on_selector_all('button, input[type=submit], a', "nodes => nodes.map(n => ({text: n.innerText || n.value || n.getAttribute('aria-label') || '', aria_label: n.getAttribute('aria-label'), id: n.id, name: n.name, class: n.className, type: n.type}))"),
+                    timeout=5.0,
+                )
+                live_links = await asyncio.wait_for(
+                    page.eval_on_selector_all('a', "nodes => nodes.map(n => ({text: n.innerText || '', href: n.href}))"),
+                    timeout=5.0,
+                )
                 live_dom = {"inputs": live_inputs or [], "buttons": live_buttons or [], "links": live_links or []}
             except Exception:
                 live_dom = dom or {}
