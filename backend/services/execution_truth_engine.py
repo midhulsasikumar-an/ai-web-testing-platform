@@ -344,8 +344,9 @@ def evaluate_test_run(test_run: Dict[str, Any]) -> Dict[str, Any]:
             # single-step scenario so the canonical shape is uniform.
             raw_steps = [raw_scenario]
 
+        raw_scenario_status = _normalize_status(raw_scenario.get("status"))
         scenario_canonical_steps: List[Dict[str, Any]] = []
-        scenario_failed = False
+        scenario_failed = raw_scenario_status == STATUS_FAIL
         for raw_step in raw_steps:
             step_counter += 1
             canonical_step = _build_canonical_step(raw_step, step_counter)
