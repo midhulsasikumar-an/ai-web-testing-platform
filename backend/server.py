@@ -229,7 +229,7 @@ async def _run_ai_plan_task(test_data: dict, req: TestRequest, user_id: str) -> 
                         },
                     )
             await asyncio.wait_for(
-                run_ai_plan_and_update(test_data.copy(), req.url, user_id, plan or {}),
+                run_ai_plan_and_update(test_data.copy(), req.url, user_id, plan or {}, session_manager=_browser_session_manager),
                 timeout=BACKGROUND_TASK_TIMEOUT_SECONDS,
             )
     except asyncio.TimeoutError:
@@ -741,18 +741,16 @@ async def startup_event():
     # Validate secrets and warn on default/development credentials before serving traffic
     run_startup_guards()
 
-    # Warm up Playwright browser for faster first request. We give the warmup a
-    # bounded timeout (default 15s) so the server never blocks on browser launch
-    # failures; tests and small environments can opt out via
-    # SKIP_BROWSER_WARMUP=1.
+    # Always create the global BrowserSessionManager so test runs can reuse it.
+    from backend.agent.browser_session import BrowserSessionManager
+
+    global _browser_session_manager
+    if _browser_session_manager is None:
+        _browser_session_manager = BrowserSessionManager(headless=True)
+
     if os.getenv("SKIP_BROWSER_WARMUP", "").strip().lower() in {"1", "true", "yes"}:
         logger.info("SKIP_BROWSER_WARMUP=1 set; skipping Playwright warmup at startup")
     else:
-        from backend.agent.browser_session import BrowserSessionManager
-
-        global _browser_session_manager
-        if _browser_session_manager is None:
-            _browser_session_manager = BrowserSessionManager(headless=True)
         try:
             await asyncio.wait_for(_browser_session_manager.start(), timeout=15.0)
         except asyncio.TimeoutError:

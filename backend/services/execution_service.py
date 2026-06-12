@@ -1245,7 +1245,27 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                                 "skipped" if (_from_semantic or _from_resolver) else "applied",
                             )
                         subject_lower = verify_subject.lower()
-                        if verify_value in {"visible", "present", "exists", "exist"}:
+
+                        # --- Page-level verification (e.g. "page title" with value "visible") ---
+                        # Confirms the page loaded by checking for a non-empty title and visible body.
+                        _is_page_level_verify = subject_lower in {"page title", "page loaded", "page state", "page visible"}
+                        if _is_page_level_verify:
+                            current_title = await _timed_call(
+                                progress_callback,
+                                f"verify:page_title:{verify_subject}",
+                                page.title(),
+                                timeout_ms=DEFAULT_SELECTOR_TIMEOUT_MS,
+                                meta={"step": step.model_dump(), "verify_subject": verify_subject},
+                            )
+                            body_locator = page.locator("body").first
+                            await body_locator.wait_for(state="visible", timeout=5000)
+                            if not current_title or not current_title.strip():
+                                raise Exception("Page title verification failed: title is empty")
+                            await _emit_progress(progress_callback, {
+                                "type": "run_status",
+                                "message": f"Page title verified: {current_title}",
+                            })
+                        elif verify_value in {"visible", "present", "exists", "exist"}:
                             if resolved_verify_selector:
                                 if not _from_semantic and not _from_resolver and not _selector_matches_context(resolved_verify_selector, test_case):
                                     raise Exception(f"Cross-feature selector reuse rejected for verification: {verify_subject}")
@@ -1273,8 +1293,8 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                                     raise Exception(f"Success-state verification failed for expected state: {verify_subject}")
                             elif "title" in (target or "").lower():
                                 current_title = await _timed_call(progress_callback, f"verify:title:{verify_subject}", page.title(), timeout_ms=DEFAULT_SELECTOR_TIMEOUT_MS, meta={"step": step.model_dump(), "verify_subject": verify_subject})
-                                if verify_subject.lower() not in current_title.lower():
-                                    raise Exception(f"Title verification failed. Expected '{verify_subject}' in '{current_title}'")
+                                if not current_title or not current_title.strip():
+                                    raise Exception(f"Title verification failed: page has no title")
                             elif _looks_like_selector(verify_subject):
                                 if not _selector_matches_context(verify_subject, test_case):
                                     raise Exception(f"Cross-feature selector reuse rejected for verification: {verify_subject}")

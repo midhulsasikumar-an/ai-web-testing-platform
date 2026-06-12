@@ -1322,7 +1322,7 @@ def _build_scenario_result(
     }
 
 
-async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: str, plan: Dict[str, Any]):
+async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: str, plan: Dict[str, Any], session_manager=None):
     from backend.services.execution_watchdog import (
         ProgressWatchdog,
         WatchdogTimer,
@@ -1702,7 +1702,11 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
 
         from backend.agent.browser_session import BrowserSessionManager
 
-        session_manager = BrowserSessionManager(headless=True)
+        # Prefer the pre-warmed session manager passed from server.py.
+        # Only create a new one as a fallback (e.g. tests or direct calls).
+        _owns_session_manager = session_manager is None
+        if session_manager is None:
+            session_manager = BrowserSessionManager(headless=True)
         try:
             if progress_callback:
                 await progress_callback({
@@ -1856,7 +1860,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 _persist_partial_state(status="running")
         finally:
             try:
-                await session_manager.shutdown()
+                if _owns_session_manager:
+                    await session_manager.shutdown()
             except Exception:
                 logger.exception("BrowserSessionManager shutdown failed during AI execution finalization")
             finally:

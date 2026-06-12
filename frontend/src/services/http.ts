@@ -184,7 +184,7 @@ export async function apiFetch(path: string, init: RequestInit = {}, options: Ap
 
   if (!response.ok) {
     const body = await response.text();
-    if (response.status === 401 && options.clearAuthOnUnauthorized === true) {
+    if (response.status === 401 && options.skipAuthRefresh !== true) {
       clearRefreshToken();
       clearAuthToken();
     }

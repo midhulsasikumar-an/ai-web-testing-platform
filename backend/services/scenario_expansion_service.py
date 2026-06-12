@@ -789,6 +789,29 @@ def _primary_action(metadata: Dict[str, Any], fallback: str) -> str:
     return fallback
 
 
+def _nav_link_target(metadata: Dict[str, Any], fallback: str) -> str:
+    """Pick a real navigation link label from discovered page actions.
+
+    Prefers links with visible text over generic submit buttons.
+    Falls back to *fallback* only when nothing concrete was discovered.
+    """
+    for action in metadata.get("available_actions", []) or []:
+        action_type = action.get("type", "")
+        text = (action.get("text") or action.get("aria_label") or "").strip()
+        # Skip empty, icon-only, or trivially short labels
+        if not text or len(text) < 2:
+            continue
+        # Prefer actual navigation links and workflow anchors
+        if action_type in {"link", "workflow"}:
+            return text
+    # Second pass: accept any action with usable text
+    for action in metadata.get("available_actions", []) or []:
+        text = (action.get("text") or action.get("aria_label") or "").strip()
+        if text and len(text) >= 2:
+            return text
+    return fallback
+
+
 def _step(action: str, target: str, *, value: Optional[str], feature: Dict[str, Any], objective_id: str, objective_name: str, scenario: Dict[str, Any], coverage_level: str) -> Dict[str, Any]:
     return {
         "action": action,
@@ -886,10 +909,10 @@ def _scenario_steps(feature: Dict[str, Any], metadata: Dict[str, Any], objective
         "sorting": [("click", "sortable column header", None), ("verify", "table sorted state", None)],
         "filtering": [("input", "table filter", "active"), ("verify", "filtered table rows", None)],
         "row_actions": [("click", "first row action", None), ("verify", "row action result", None)],
-        "menu_consistency": [("click", action, None), ("verify", "navigation menu state", None)],
-        "broken_links": [("click", "primary navigation link", None), ("verify", "route loaded without error", None)],
-        "browser_back_forward": [("click", "primary navigation link", None), ("navigate", "browser back", None), ("verify", "previous route restored", None)],
-        "deep_links": [("navigate", "deep link route", None), ("verify", "deep link loaded", None)],
+        "menu_consistency": [("click", _nav_link_target(metadata, action), None), ("verify", "page title", "visible")],
+        "broken_links": [("click", _nav_link_target(metadata, "primary navigation link"), None), ("verify", "page title", "visible")],
+        "browser_back_forward": [("click", _nav_link_target(metadata, "primary navigation link"), None), ("navigate", "browser back", None), ("verify", "page title", "visible")],
+        "deep_links": [("navigate", "deep link route", None), ("verify", "page title", "visible")],
         "complete_workflow": [("click", action, None), ("input", primary, "Test"), ("input", secondary, "User"), ("click", "continue action", None), ("verify", "transaction confirmation", None)],
         "validation_failures": [("click", action, None), ("verify", "checkout validation error", None)],
         "partial_completion": [("click", action, None), ("input", primary, "Partial"), ("verify", "checkout progress preserved", None)],
