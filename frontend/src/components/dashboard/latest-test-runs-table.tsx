@@ -20,7 +20,7 @@ const getIconForProject = (project: string) => {
 
 const getStatusBadge = (status: string | null | undefined) => {
   const s = (status ?? "warning").toLowerCase();
-  if (s === "passed" || s === "completed" || s === "success") {
+  if (s === "pass" || s === "passed" || s === "completed" || s === "success") {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />

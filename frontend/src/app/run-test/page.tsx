@@ -65,6 +65,10 @@ function normalizeStatus(value?: string | null): string {
   return status;
 }
 
+function isActiveRunStatus(value?: string | null): boolean {
+  return ["running", "queued", "planning", "cancel_requested"].includes(normalizeStatus(value));
+}
+
 function statusLabel(value?: string | null): string {
   const status = normalizeStatus(value);
   const map: Record<string, string> = {
@@ -947,6 +951,7 @@ function useTestPolling(
     if (!enabled || !testId) return;
 
     let cancelled = false;
+    setRunning(true);
 
     let pollCount = 0;
     const mergePartial = (data: Partial<TestApiResponse>) => {
@@ -969,8 +974,10 @@ function useTestPolling(
         } else {
           mergePartial(data);
         }
-        const status = (data.status ?? "").toLowerCase();
-        const terminal = Boolean(data.is_terminal) || (status && status !== "running" && status !== "queued" && status !== "planning" && status !== "cancel_requested");
+        const status = normalizeStatus(data.status);
+        const active = isActiveRunStatus(status);
+        setRunning(active);
+        const terminal = Boolean(data.is_terminal) || Boolean(status && !active);
         if (terminal) {
           if (!useFullPayload) {
             const finalData = (await getTestById(testId)) as TestApiResponse;
@@ -1007,8 +1014,10 @@ function useTestPolling(
       if (cancelled) return;
       if (event.type === "snapshot") {
         mergePartial(event.data);
-        const status = String(event.data.status || "").toLowerCase();
-        if (event.data.is_terminal || (status && !["running", "queued", "planning", "cancel_requested"].includes(status))) {
+        const status = normalizeStatus(event.data.status);
+        const active = isActiveRunStatus(status);
+        setRunning(active);
+        if (event.data.is_terminal || Boolean(status && !active)) {
           const finalData = (await getTestById(testId)) as TestApiResponse;
           if (!cancelled) setTestData(finalData);
           setRunning(false);

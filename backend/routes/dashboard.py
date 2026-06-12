@@ -75,19 +75,28 @@ def _derive_risk_level(total_tests: int, failed: int, average_health: int, open_
 
 
 _VERDICT_PROJECT = {
-    "$ifNull": [
-        "$test_verdict",
-        {
+    "$let": {
+        "vars": {
+            "verdict": {"$toLower": {"$ifNull": ["$test_verdict", ""]}},
+            "overall": {"$toLower": {"$ifNull": ["$overall_status", ""]}},
+            "status": {"$toLower": {"$ifNull": ["$status", ""]}},
+        },
+        "in": {
             "$switch": {
                 "branches": [
-                    {"case": {"$eq": ["$overall_status", "pass"]}, "then": "pass"},
-                    {"case": {"$in": ["$overall_status", ["fail", "warning"]]}, "then": "fail"},
-                    {"case": {"$in": ["$status", ["failed", "timed_out", "timeout"]]}, "then": "blocked"},
+                    {"case": {"$in": ["$$verdict", ["pass", "passed", "success"]]}, "then": "pass"},
+                    {"case": {"$in": ["$$verdict", ["fail", "failed", "warning"]]}, "then": "fail"},
+                    {"case": {"$in": ["$$verdict", ["blocked", "timed_out", "timeout"]]}, "then": "blocked"},
+                    {"case": {"$in": ["$$overall", ["pass", "passed", "success", "completed"]]}, "then": "pass"},
+                    {"case": {"$in": ["$$overall", ["fail", "failed", "warning"]]}, "then": "fail"},
+                    {"case": {"$in": ["$$status", ["failed", "timed_out", "timeout", "cancelled"]]}, "then": "blocked"},
+                    {"case": {"$eq": ["$$status", "completed"]}, "then": "pass"},
+                    {"case": {"$eq": ["$$status", "completed_with_failures"]}, "then": "fail"},
                 ],
                 "default": "unknown",
             }
         },
-    ]
+    }
 }
 
 
@@ -96,6 +105,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     user_id = current_user["user_id"]
     projection = {
         "overall_status": 1,
+        "status": 1,
         "execution_status": 1,
         "test_verdict": 1,
         "failure_type": 1,
@@ -244,12 +254,23 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     )
 
     for test in sorted_tests:
+        normalized_verdict = str(test.get("test_verdict") or test.get("overall_status") or "").lower()
+        if normalized_verdict in {"pass", "passed", "success", "completed"}:
+            display_status = "pass"
+        elif normalized_verdict in {"fail", "failed", "warning"}:
+            display_status = "fail"
+        elif str(test.get("status") or "").lower() == "completed":
+            display_status = "pass"
+        elif str(test.get("status") or "").lower() == "completed_with_failures":
+            display_status = "fail"
+        else:
+            display_status = str(test.get("overall_status") or test.get("test_verdict") or test.get("status") or "unknown")
         recent_tests.append({
             "test_id": str(test.get("test_id") or test.get("_id", "")),
             "test_name": test.get("test_name") or test.get("name") or test.get("project") or "",
             "project": test.get("project", "Unknown"),
             "url": test.get("url", ""),
-            "overall_status": test.get("overall_status", "unknown"),
+            "overall_status": display_status,
             "execution_status": test.get("execution_status") or test.get("status") or "unknown",
             "test_verdict": test.get("test_verdict") or test.get("overall_status") or "unknown",
             "failure_type": test.get("failure_type") or "none",

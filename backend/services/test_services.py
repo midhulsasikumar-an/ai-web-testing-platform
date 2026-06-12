@@ -1470,10 +1470,12 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         screenshot_paths: List[str] = []
 
         def _persist_partial_state(status: str = "running", failure_reason: str | None = None) -> None:
+            now_iso = datetime.utcnow().isoformat()
             test_data["results"] = list(scenario_results)
             test_data["stream_logs"] = list(stream_logs)
             test_data["screenshot_paths"] = list(screenshot_paths)
             test_data["status"] = status
+            test_data["updated_at"] = now_iso
             if failure_reason:
                 test_data["failure_reason"] = failure_reason
             apply_run_outcome(test_data)
@@ -1494,6 +1496,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                         "failure_type": test_data.get("failure_type"),
                         "outcome_label": test_data.get("outcome_label"),
                         "is_terminal": test_data.get("is_terminal"),
+                        "updated_at": now_iso,
                         **({"failure_reason": failure_reason} if failure_reason else {}),
                     }
                 },
@@ -1541,6 +1544,8 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 "type": evt.get("type"),
                 "details": evt,
             })
+            now_iso = datetime.utcnow().isoformat()
+            test_data["updated_at"] = now_iso
             collection.update_one(
                 {
                     "test_id": test_data["test_id"],
@@ -1557,6 +1562,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                     "is_terminal": False,
                     "ai_plan": plan,
                     "screenshot_paths": screenshot_paths,
+                    "updated_at": now_iso,
                 }},
                 upsert=True,
             )

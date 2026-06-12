@@ -160,14 +160,21 @@ def reconcile_bugs_on_passing_run(
 
     user_id = str(run_data.get("user_id") or (report_data or {}).get("user_id") or "")
     test_id = str(run_data.get("test_id") or (report_data or {}).get("test_run_id") or "")
+    run_url = str(run_data.get("url") or run_data.get("target_url") or "").strip()
+
+    if not run_url:
+        logger.info("Skipping bug reconciliation for test_id=%s because run URL is missing", test_id)
+        return []
 
     open_query: Dict[str, Any] = {
         "status": {"$in": ["Active", "Monitoring", "Regressed", "Flaky", "open", "in-progress"]},
     }
     if user_id:
         open_query["user_id"] = user_id
-    if test_id:
-        open_query["test_id"] = test_id
+    open_query["$or"] = [
+        {"affected_urls": run_url},
+        {"url": run_url},
+    ]
 
     previously_open_fingerprints = [
         str(record.get("fingerprint") or "")
@@ -176,7 +183,14 @@ def reconcile_bugs_on_passing_run(
     ]
 
     resolution_events = _diff_resolutions(truth, previously_open_fingerprints)
-    return _apply_resolution_events(resolution_events, test_id=test_id, user_id=user_id)
+    resolved = _apply_resolution_events(resolution_events, test_id=test_id, user_id=user_id)
+    _resolve_bug_collection_for_passing_run(
+        user_id=user_id,
+        run_url=run_url,
+        test_id=test_id,
+        failing_fingerprints=set(truth.get("failing_bug_fingerprints") or []),
+    )
+    return resolved
 
 
 def sync_bugs_collection_to_lifecycle(user_id: Optional[str] = None) -> int:
@@ -484,6 +498,56 @@ def _mirror_resolution_to_bug_collection(
     except Exception:
         logger.exception("Failed to mirror resolution to bug_collection for fingerprint=%s", fingerprint)
         return 0
+
+
+def _resolve_bug_collection_for_passing_run(
+    *,
+    user_id: str,
+    run_url: str,
+    test_id: str,
+    failing_fingerprints: set[str],
+) -> int:
+    """Close open bug documents for the same URL that no longer fail.
+
+    Some historical runs only populated ``bugs`` and never created a matching
+    lifecycle document. This keeps the bug tracker consistent after a passing
+    rerun without needing a lifecycle backfill first.
+    """
+    if not user_id or not run_url:
+        return 0
+    try:
+        from backend.database.mongo import bug_collection as _bugs  # local import to avoid cycle
+    except Exception:
+        return 0
+
+    now = datetime.utcnow()
+    updated = 0
+    query = {
+        "user_id": user_id,
+        "url": run_url,
+        "status": {"$in": ["open", "in-progress", "Open", "In Progress"]},
+    }
+    try:
+        for bug in _bugs.find(query, {"fingerprint": 1}):
+            fingerprint = str(bug.get("fingerprint") or "")
+            if fingerprint and fingerprint in failing_fingerprints:
+                continue
+            result = _bugs.update_one(
+                {"_id": bug["_id"]},
+                {
+                    "$set": {
+                        "status": "resolved",
+                        "resolved_at": now,
+                        "updated_at": now,
+                        "resolution_reason": "regression_pass",
+                        "resolved_in_run_id": test_id,
+                    }
+                },
+            )
+            updated += int(result.modified_count or 0)
+    except Exception:
+        logger.exception("Failed to resolve bug_collection documents for passing run test_id=%s", test_id)
+    return updated
 
 
 # ---------------------------------------------------------------------------

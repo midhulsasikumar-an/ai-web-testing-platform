@@ -415,6 +415,11 @@ def evaluate_test_run(test_run: Dict[str, Any]) -> Dict[str, Any]:
         for scenario in canonical_scenarios
         if scenario["status"] == STATUS_PASS
     ]
+    failing_bug_fingerprints = [
+        bug["fingerprint"]
+        for bug in bug_events
+        if bug.get("fingerprint")
+    ]
     failing_scenario_fingerprints = [
         bug["scenario_fingerprint"]
         for bug in bug_events
@@ -429,6 +434,7 @@ def evaluate_test_run(test_run: Dict[str, Any]) -> Dict[str, Any]:
         "bug_events": bug_events,
         "resolution_events": [],  # populated by the bug lifecycle diff step
         "passing_scenario_fingerprints": passing_scenario_fingerprints,
+        "failing_bug_fingerprints": failing_bug_fingerprints,
         "failing_scenario_fingerprints": failing_scenario_fingerprints,
     }
 
@@ -449,7 +455,7 @@ def diff_resolutions(
     we emit a BUG_RESOLVED event. This is the only legitimate way for a
     bug to be closed in the new pipeline.
     """
-    failing = set(truth.get("failing_scenario_fingerprints") or [])
+    failing = set(truth.get("failing_bug_fingerprints") or [])
     resolutions: List[Dict[str, Any]] = []
     for fingerprint in previously_open_fingerprints or []:
         if not fingerprint or fingerprint in failing:

@@ -4,9 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertTriangle,
   Bell,
   ChevronDown,
   ChevronRight,
+  CheckCircle2,
+  Clock,
   HelpCircle,
   KeyRound,
   LogOut,
@@ -18,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
+import { useBugContext } from "@/context/bug-context";
 import { getBreadcrumbs, getPageMeta, PRIMARY_NAV } from "@/lib/navigation";
 
 interface AppHeaderProps {
@@ -45,11 +49,14 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { bugs, testResults } = useBugContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLFormElement | null>(null);
+  const notificationsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -59,11 +66,15 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
       }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
     };
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMenuOpen(false);
         setSearchOpen(false);
+        setNotificationsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
@@ -78,6 +89,7 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false);
     setSearchOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   const breadcrumbs = getBreadcrumbs(pathname);
@@ -92,6 +104,28 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
       `${item.label} ${item.description ?? ""}`.toLowerCase().includes(query)
     ).slice(0, 6);
   }, [searchQuery]);
+  const notifications = useMemo(() => {
+    const bugItems = bugs.slice(0, 4).map((bug) => ({
+      id: `bug-${bug.id}`,
+      href: `/bugs/${bug.id}`,
+      title: bug.title || bug.bug_name || "Detected bug",
+      detail: `${bug.status} · ${bug.severity}`,
+      time: bug.createdAt || "",
+      type: "bug" as const,
+    }));
+    const testItems = testResults.slice(0, 4).map((test) => ({
+      id: `test-${test.test_id}`,
+      href: `/test-history/${test.test_id}`,
+      title: test.test_name || test.project || test.url || "Test run",
+      detail: test.outcome_label || test.overall_status || test.status || "Run update",
+      time: test.created_at || test.updated_at || "",
+      type: "test" as const,
+    }));
+    return [...bugItems, ...testItems]
+      .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
+      .slice(0, 6);
+  }, [bugs, testResults]);
+  const openNotificationCount = bugs.filter((bug) => bug.status === "open" || bug.status === "in-progress").length;
 
   const handleLogout = () => {
     logout();
@@ -102,6 +136,7 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
   const goTo = (href: string) => {
     setMenuOpen(false);
     setSearchOpen(false);
+    setNotificationsOpen(false);
     setSearchQuery("");
     router.push(href);
   };
@@ -224,14 +259,84 @@ export function AppHeader({ onOpenMobileNav, showMobileMenuButton }: AppHeaderPr
           <Sparkles className="h-3.5 w-3.5" />
         </button>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-blue-500" />
-        </button>
+        <div className="relative" ref={notificationsRef}>
+          <button
+            type="button"
+            aria-label="Notifications"
+            aria-haspopup="menu"
+            aria-expanded={notificationsOpen}
+            onClick={() => setNotificationsOpen((value) => !value)}
+            className={cn(
+              "relative inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900",
+              notificationsOpen && "bg-slate-100 text-slate-900"
+            )}
+          >
+            <Bell className="h-4 w-4" />
+            {openNotificationCount > 0 ? (
+              <span className="absolute right-1 top-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold leading-none text-white">
+                {openNotificationCount > 9 ? "9+" : openNotificationCount}
+              </span>
+            ) : null}
+          </button>
+
+          {notificationsOpen ? (
+            <div
+              role="menu"
+              className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg-token"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/60 px-3 py-2.5">
+                <div>
+                  <p className="text-[13px] font-semibold text-slate-900">Notifications</p>
+                  <p className="text-[11.5px] text-slate-500">
+                    {openNotificationCount} active issue{openNotificationCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => goTo("/bugs")}
+                  className="rounded-md px-2 py-1 text-[11.5px] font-medium text-blue-700 hover:bg-blue-50"
+                >
+                  View bugs
+                </button>
+              </div>
+              {notifications.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto p-1">
+                  {notifications.map((item) => {
+                    const Icon = item.type === "bug" ? AlertTriangle : item.detail.toLowerCase().includes("pass") ? CheckCircle2 : Clock;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => goTo(item.href)}
+                        className="flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-100"
+                      >
+                        <span
+                          className={cn(
+                            "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                            item.type === "bug" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700"
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[13px] font-medium text-slate-800">{item.title}</span>
+                          <span className="block truncate text-[11.5px] capitalize text-slate-500">{item.detail}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="px-3 py-6 text-center">
+                  <CheckCircle2 className="mx-auto h-5 w-5 text-emerald-500" />
+                  <p className="mt-2 text-[13px] font-medium text-slate-800">No new notifications</p>
+                  <p className="mt-1 text-[11.5px] text-slate-500">Recent test and bug activity will appear here.</p>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
 
         <button
           type="button"

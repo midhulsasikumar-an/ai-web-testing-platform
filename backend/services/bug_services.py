@@ -167,6 +167,31 @@ def _compute_bug_fingerprint(test_data: dict, result: dict) -> str:
         if isinstance(result.get("original_step"), dict)
         else {}
     )
+    step_index = (
+        step.get("step_index")
+        or step.get("index")
+        or result.get("step_index")
+    )
+    step_name = str(
+        result.get("test")
+        or result.get("failed_step_name")
+        or step.get("action")
+        or step.get("name")
+        or ""
+    )
+    scenario_id = str(
+        result.get("scenario_id")
+        or result.get("objective_id")
+        or test_data.get("scenario_id")
+        or ""
+    )
+    objective_id = str(result.get("objective_id") or test_data.get("objective_id") or "")
+    return compute_bug_fingerprint(
+        scenario_id=scenario_id,
+        objective_id=objective_id,
+        step_index=step_index,
+        step_name=step_name,
+    )
 
 
 def _severity_score(severity: str) -> int:
@@ -194,31 +219,6 @@ def _bug_intelligence_payload(*, severity: str, failure_category: str, root_caus
             " Re-run after fixing to verify lifecycle resolution."
         ),
     }
-    step_index = (
-        step.get("step_index")
-        or step.get("index")
-        or result.get("step_index")
-    )
-    step_name = str(
-        result.get("test")
-        or result.get("failed_step_name")
-        or step.get("action")
-        or step.get("name")
-        or ""
-    )
-    scenario_id = str(
-        result.get("scenario_id")
-        or result.get("objective_id")
-        or test_data.get("scenario_id")
-        or ""
-    )
-    objective_id = str(result.get("objective_id") or test_data.get("objective_id") or "")
-    return compute_bug_fingerprint(
-        scenario_id=scenario_id,
-        objective_id=objective_id,
-        step_index=step_index,
-        step_name=step_name,
-    )
 
 
 def _ensure_bug_indexes() -> None:
