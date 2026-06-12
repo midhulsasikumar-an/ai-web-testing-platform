@@ -87,6 +87,7 @@ def _blocked_target_plan(url: str, instruction: str, dom: Dict[str, Any], discov
 def _plan_step_limit(test_type: str | None) -> int:
     default_limit = int(os.getenv("AI_PLAN_STEP_LIMIT", "18"))
     by_type = {
+        "fast": int(os.getenv("AI_PLAN_SMOKE_STEP_LIMIT", "6")),
         "smoke": int(os.getenv("AI_PLAN_SMOKE_STEP_LIMIT", "6")),
         "quick": int(os.getenv("AI_PLAN_SMOKE_STEP_LIMIT", "6")),
         "regression": int(os.getenv("AI_PLAN_REGRESSION_STEP_LIMIT", "18")),

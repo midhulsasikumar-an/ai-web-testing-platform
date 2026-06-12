@@ -32,6 +32,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from backend.models.schema import TestRequest
 
+from backend.services.ai_plan_service import generate_test_plan
 from backend.services.test_services import create_test_run, run_test_and_update
 from backend.services.test_services import run_ai_plan_and_update
 from backend.database.mongo import collection, bug_collection, client
@@ -177,8 +178,58 @@ async def _run_ai_plan_task(test_data: dict, req: TestRequest, user_id: str) -> 
     await _register_test_task(test_id, task)
     try:
         async with _test_run_semaphore:
+            plan = req.ai_plan
+            if not plan:
+                instruction = str(req.goal or "").strip()
+                if instruction:
+                    collection.update_one(
+                        {"test_id": test_id, "user_id": user_id, "status": {"$in": ["running", "planning"]}},
+                        {
+                            "$set": {
+                                "status": "planning",
+                                "execution_status": "planning",
+                                "outcome_label": "Planning",
+                                "updated_at": datetime.utcnow().isoformat(),
+                            },
+                            "$push": {
+                                "stream_logs": {
+                                    "time": datetime.utcnow().isoformat(),
+                                    "level": "info",
+                                    "msg": "Generating AI test plan from the selected goal.",
+                                    "type": "run_status",
+                                    "details": {"coverage_level": req.coverage_level, "test_type": req.test_type},
+                                }
+                            },
+                        },
+                    )
+                    plan = await generate_test_plan(req.url, instruction, req.coverage_level or req.test_type)
+                    test_data["ai_plan"] = plan
+                    collection.update_one(
+                        {"test_id": test_id, "user_id": user_id},
+                        {
+                            "$set": {
+                                "ai_plan": plan,
+                                "status": "running",
+                                "execution_status": "running",
+                                "outcome_label": "In progress",
+                                "updated_at": datetime.utcnow().isoformat(),
+                            },
+                            "$push": {
+                                "stream_logs": {
+                                    "time": datetime.utcnow().isoformat(),
+                                    "level": "info",
+                                    "msg": "AI plan generated. Starting specified test run.",
+                                    "type": "run_status",
+                                    "details": {
+                                        "scenario_count": len(plan.get("test_cases") or []),
+                                        "step_limit": plan.get("step_limit"),
+                                    },
+                                }
+                            },
+                        },
+                    )
             await asyncio.wait_for(
-                run_ai_plan_and_update(test_data.copy(), req.url, user_id, req.ai_plan or {}),
+                run_ai_plan_and_update(test_data.copy(), req.url, user_id, plan or {}),
                 timeout=BACKGROUND_TASK_TIMEOUT_SECONDS,
             )
     except asyncio.TimeoutError:
@@ -357,7 +408,7 @@ def deep_health_check():
 async def start_test(req: TestRequest, current_user: dict = Depends(get_current_user)):
     test_data = create_test_run(req, current_user["user_id"])
 
-    if req.ai_plan:
+    if req.ai_plan or str(req.goal or "").strip():
         asyncio.create_task(_run_ai_plan_task(test_data, req, current_user["user_id"]))
     else:
         asyncio.create_task(_run_legacy_test_task(test_data, req, current_user["user_id"]))
