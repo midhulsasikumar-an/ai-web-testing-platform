@@ -1091,6 +1091,16 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
             target = step.target
             value = step.value
             action_lower = (action or "").lower()
+            await _emit_progress(progress_callback, {
+                "type": "step_started",
+                "message": f"Starting step {step_index}/{total_steps_for_log}: {action or 'action'}"
+                + (f" on {target}" if target else ""),
+                "step": step.model_dump(),
+                "step_index": step_index,
+                "total_steps": total_steps_for_log,
+                "scenario_id": getattr(test_case, "scenario_id", None),
+                "scenario_name": getattr(test_case, "scenario_name", None),
+            })
 
             # DYNAMIC CREDENTIAL INJECTION
             if (
@@ -1471,6 +1481,16 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                     "status": status,
                     "execution_context": step_execution_context,
                 })
+                await _emit_progress(progress_callback, {
+                    "type": "step_completed",
+                    "message": f"Completed step {step_index}/{total_steps_for_log}: {action or 'action'} -> {status}",
+                    "step": step.model_dump(),
+                    "status": status,
+                    "step_index": step_index,
+                    "total_steps": total_steps_for_log,
+                    "scenario_id": getattr(test_case, "scenario_id", None),
+                    "scenario_name": getattr(test_case, "scenario_name", None),
+                })
 
                 previous_url = page.url
 
@@ -1556,6 +1576,17 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                         "status": "passed",
                         "recovery_type": recovery_info.get("recovery_type") or None,
                     })
+                    await _emit_progress(progress_callback, {
+                        "type": "step_completed",
+                        "message": f"Completed step {step_index}/{total_steps_for_log}: {action or 'action'} -> {status} after recovery",
+                        "step": step.model_dump(),
+                        "status": status,
+                        "step_index": step_index,
+                        "total_steps": total_steps_for_log,
+                        "scenario_id": getattr(test_case, "scenario_id", None),
+                        "scenario_name": getattr(test_case, "scenario_name", None),
+                        "recovery_type": recovery_info.get("recovery_type") or None,
+                    })
                     previous_url = page.url
                     continue
 
@@ -1622,6 +1653,16 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
                     "message": f"Step failed: {action}",
                     "step": step.model_dump(),
                     "error": str(e),
+                })
+                await _emit_progress(progress_callback, {
+                    "type": "step_failed",
+                    "message": f"Failed step {step_index}/{total_steps_for_log}: {action or 'action'} -> {str(e)[:160]}",
+                    "step": step.model_dump(),
+                    "error": str(e),
+                    "step_index": step_index,
+                    "total_steps": total_steps_for_log,
+                    "scenario_id": getattr(test_case, "scenario_id", None),
+                    "scenario_name": getattr(test_case, "scenario_name", None),
                 })
                 previous_url = page.url
 

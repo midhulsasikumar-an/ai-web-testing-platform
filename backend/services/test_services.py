@@ -46,6 +46,21 @@ logger = logging.getLogger("services.test")
 OVERALL_EXECUTION_TIMEOUT_SECONDS = int(os.getenv("AI_PLAN_OVERALL_TIMEOUT_SECONDS", "3600"))
 
 
+def _bounded_int_setting(
+    settings: Dict[str, Any],
+    key: str,
+    default: int,
+    *,
+    min_value: int,
+    max_value: int,
+) -> int:
+    try:
+        value = int(settings.get(key, default))
+    except (TypeError, ValueError):
+        value = default
+    return max(min_value, min(max_value, value))
+
+
 def _derive_progress_msg(evt: Dict[str, Any]) -> str:
     """
     Derive a human-readable stream_log message from a progress event.
@@ -1470,6 +1485,36 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         test_cases_data = plan.get("test_cases") if isinstance(plan.get("test_cases"), list) and plan.get("test_cases") else [plan_case]
         scenario_cases = [TestCase.model_validate(case) for case in test_cases_data]
         scenario_cases = _topologically_order_scenarios(scenario_cases)
+        execution_settings_raw = test_data.get("execution_settings") if isinstance(test_data.get("execution_settings"), dict) else {}
+        execution_settings: Dict[str, Any] = dict(execution_settings_raw or {})
+        coverage_level = str(test_data.get("coverage_level") or plan.get("coverage_level") or "").strip().lower()
+        original_scenario_count = len(scenario_cases)
+        default_max_scenarios = 2 if coverage_level in {"fast", "smoke", "quick"} else max(1, original_scenario_count)
+        max_scenarios = _bounded_int_setting(
+            execution_settings,
+            "max_scenarios",
+            default_max_scenarios,
+            min_value=1,
+            max_value=max(1, original_scenario_count),
+        )
+        scenario_timeout_limit = _bounded_int_setting(
+            execution_settings,
+            "scenario_timeout_seconds",
+            45 if coverage_level in {"fast", "smoke", "quick"} else 90,
+            min_value=15,
+            max_value=180,
+        )
+        if original_scenario_count > max_scenarios:
+            scenario_cases = scenario_cases[:max_scenarios]
+        plan_validation_payload = {
+            **plan_validation_payload,
+            "execution_limits": {
+                "coverage_level": coverage_level or None,
+                "requested_scenarios": original_scenario_count,
+                "executed_scenarios_limit": len(scenario_cases),
+                "scenario_timeout_seconds": scenario_timeout_limit,
+            },
+        }
         translation_logs: List[Dict[str, Any]] = []
         scenario_results: List[Dict[str, Any]] = []
         overall_timed_out = False
@@ -1503,9 +1548,21 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             "type": "run_status",
             "details": {
                 "scenario_count": len(scenario_cases),
+                "requested_scenario_count": original_scenario_count,
                 "discovery_status": test_data["discovery_status"],
             },
         })
+        if original_scenario_count > len(scenario_cases):
+            stream_logs.append({
+                "time": datetime.utcnow().isoformat(),
+                "level": "info",
+                "msg": (
+                    f"Fast execution mode: running {len(scenario_cases)} of "
+                    f"{original_scenario_count} planned scenarios."
+                ),
+                "type": "execution_limits",
+                "details": plan_validation_payload.get("execution_limits"),
+            })
         test_data["stream_logs"] = list(stream_logs)
         test_data["updated_at"] = datetime.utcnow().isoformat()
         collection.update_one(
@@ -1602,9 +1659,20 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
             elif isinstance(evt.get("screenshot"), str):
                 _track_screenshot_path(str(evt.get("screenshot")))
 
+            evt_type = str(evt.get("type") or "").lower()
+            evt_status = str(evt.get("status") or "").lower()
+            if evt_type in {"bug_detected", "step_failed", "recovery_error"} or evt_status in {"failed", "fail", "error"}:
+                log_level = "error"
+            elif evt_type in {"target_blocked", "scenario_dependency_skip"} or evt_status in {"warning", "warn"}:
+                log_level = "warning"
+            elif evt_type in {"step_completed", "scenario_completed"} and evt_status in {"passed", "pass", "completed", "success"}:
+                log_level = "success"
+            else:
+                log_level = "info"
+
             stream_logs.append({
                 "time": datetime.utcnow().isoformat(),
-                "level": "error" if evt.get("type") == "bug_detected" else "info",
+                "level": log_level,
                 "msg": _derive_progress_msg(evt),
                 "type": evt.get("type"),
                 "details": evt,
@@ -1724,7 +1792,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                         }
                     )
 
-                scenario_timeout_seconds = min(90, max(1, int(remaining_overall)))
+                scenario_timeout_seconds = min(scenario_timeout_limit, max(1, int(remaining_overall)))
                 if progress_callback:
                     await progress_callback({
                         "type": "run_status",
@@ -1751,7 +1819,7 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                 scenario_run_status = str((scenario_run.get("result", {}) or {}).get("run_status") or "").lower()
                 scenario_failed = any(item.get("status") == "fail" for item in step_results) or scenario_run_status in {"failed", "timed_out", "timeout", "cancelled"}
                 scenario_status = "failed" if scenario_failed else "completed"
-                if scenario_run_status in {"timed_out", "timeout", "cancelled"} and scenario_timeout_seconds < 90:
+                if scenario_run_status in {"timed_out", "timeout", "cancelled"} and scenario_timeout_seconds < scenario_timeout_limit:
                     overall_timed_out = True
                 shared_state = scenario_run.get("shared_state") or _update_shared_state_from_run(shared_state, translated_case, scenario_run.get("result", {}))
                 scenario_results.append(
@@ -1771,6 +1839,20 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
                         runtime_ms=scenario_runtime_ms,
                     )
                 )
+                if progress_callback:
+                    await progress_callback({
+                        "type": "scenario_completed",
+                        "message": (
+                            f"Scenario finished: {scenario_label} -> {scenario_status} "
+                            f"({len(step_results)} step{'s' if len(step_results) != 1 else ''}, "
+                            f"{scenario_runtime_ms}ms)"
+                        ),
+                        "scenario_id": translated_case.scenario_id,
+                        "scenario_name": translated_case.scenario_name,
+                        "status": scenario_status,
+                        "runtime_ms": scenario_runtime_ms,
+                        "step_count": len(step_results),
+                    })
                 _persist_partial_state(status="running")
         finally:
             try:

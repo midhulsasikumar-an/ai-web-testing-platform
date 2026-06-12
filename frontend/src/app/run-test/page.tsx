@@ -103,36 +103,51 @@ function statusTone(value?: string | null): string {
 }
 
 function compressTimelineRows(rows: TimelineRow[]): TimelineRow[] {
-  const output: TimelineRow[] = [];
-  let successRun: TimelineRow[] = [];
-
-  const flushSuccessRun = () => {
-    if (successRun.length === 0) return;
-    if (successRun.length === 1) {
-      output.push(successRun[0]);
-    } else {
-      const first = successRun[0];
-      const last = successRun[successRun.length - 1];
-      output.push({
-        ...first,
-        text: `${successRun.length} successful steps collapsed: ${first.text}${last.text !== first.text ? ` ... ${last.text}` : ""}`,
-        count: successRun.length,
-      });
-    }
-    successRun = [];
-  };
-
-  rows.forEach((row) => {
-    if ((row.status || row.level).toLowerCase() === "pass") {
-      successRun.push(row);
-      return;
-    }
-    flushSuccessRun();
-    output.push(row);
-  });
-  flushSuccessRun();
-  return output.slice(0, 160);
+  return rows;
 }
+
+const FAST_EXECUTION_SETTINGS = {
+  max_scenarios: 2,
+  scenario_timeout_seconds: 45,
+  step_timeout_seconds: 15,
+};
+
+type SampleTestCase = {
+  id: string;
+  title: string;
+  description: string;
+  testName: string;
+  goal: string;
+  coverageLevel: string;
+  executionSettings: Record<string, unknown>;
+};
+
+const SAMPLE_TEST_CASES: SampleTestCase[] = [
+  {
+    id: "fast-smoke",
+    title: "Fast Smoke Test",
+    description: "Checks page load, navigation, visible content, console errors, and one primary action.",
+    testName: "Fast website smoke test",
+    goal:
+      "Run a fast smoke test for this website. Verify the homepage loads, key navigation links or menus are visible, the main content/header renders, one primary button/link can be interacted with when safe, and capture console or network errors.",
+    coverageLevel: "fast",
+    executionSettings: FAST_EXECUTION_SETTINGS,
+  },
+  {
+    id: "core-journey",
+    title: "Core User Journey",
+    description: "Exercises a common visitor path with forms, search, menus, or CTA flows when present.",
+    testName: "Core website journey test",
+    goal:
+      "Test a core user journey for this website. Start from the homepage, inspect the main navigation, try the most obvious search/form/menu or call-to-action flow that is safe to run, validate visible success or error states, and report all browser console or network failures.",
+    coverageLevel: "fast",
+    executionSettings: {
+      max_scenarios: 2,
+      scenario_timeout_seconds: 60,
+      step_timeout_seconds: 15,
+    },
+  },
+];
 
 function readLatestCopilotText(aiPanelHost: HTMLDivElement | null): string {
   if (!aiPanelHost) return "";
@@ -302,9 +317,11 @@ export default function RunTestPage() {
           color:
             entry.level === "error"
               ? "text-red-400"
-              : entry.level === "warn"
+              : entry.level === "warn" || entry.level === "warning"
                 ? "text-amber-400"
-                : "text-blue-400",
+                : entry.level === "success"
+                  ? "text-emerald-400"
+                  : "text-blue-400",
           status: entry.level,
         }))
       );
@@ -345,6 +362,25 @@ export default function RunTestPage() {
   const handleClearPlan = useCallback(() => {
     update({ planSuppressed: true, aiPlan: null });
   }, [update]);
+
+  const applySampleTestCase = useCallback(
+    (sample: SampleTestCase) => {
+      update((prev) => ({
+        ...prev,
+        testName: sample.testName,
+        coverageLevel: sample.coverageLevel,
+        executionSettings: sample.executionSettings,
+        aiPlan: null,
+        planSuppressed: false,
+        planExpanded: true,
+        chatInput: sample.goal,
+        initialInstruction: sample.goal,
+        lastInstruction: sample.goal,
+      }));
+      setFormErrors({});
+    },
+    [update]
+  );
 
   const runTest = async () => {
     const nextErrors: FormErrors = {};
@@ -444,6 +480,12 @@ export default function RunTestPage() {
             onTestNameChange={(value) => update({ testName: value })}
             onRun={runTest}
             onNewTest={handleNewTest}
+          />
+
+          <SampleTestCasesPanel
+            running={state.running}
+            selectedGoal={state.chatInput || state.initialInstruction}
+            onApply={applySampleTestCase}
           />
 
           {terminalSummary ? (
@@ -689,6 +731,60 @@ function RunTestForm({
       {formErrors.goal ? (
         <p className="mt-2 text-[11.5px] text-red-600">{formErrors.goal}</p>
       ) : null}
+    </section>
+  );
+}
+
+function SampleTestCasesPanel({
+  running,
+  selectedGoal,
+  onApply,
+}: {
+  running: boolean;
+  selectedGoal: string;
+  onApply: (sample: SampleTestCase) => void;
+}) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs-token">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-h3">Sample Test Cases</h2>
+          <p className="text-muted-sm">Generic templates for any website URL.</p>
+        </div>
+        <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10.5px] font-semibold text-emerald-700">
+          Fast mode
+        </span>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {SAMPLE_TEST_CASES.map((sample) => {
+          const selected = selectedGoal === sample.goal;
+          return (
+            <div
+              key={sample.id}
+              className={cn(
+                "rounded-lg border p-3 transition-colors",
+                selected ? "border-blue-300 bg-blue-50/70" : "border-slate-200 bg-slate-50/60"
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1">
+                  <p className="text-[13px] font-semibold leading-snug text-slate-900">{sample.title}</p>
+                  <p className="text-[12px] leading-relaxed text-slate-600">{sample.description}</p>
+                </div>
+                <Button
+                  variant={selected ? "default" : "outline"}
+                  size="xs"
+                  disabled={running}
+                  onClick={() => onApply(sample)}
+                  className="shrink-0"
+                >
+                  {selected ? "Selected" : "Use"}
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }
