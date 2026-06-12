@@ -1028,10 +1028,15 @@ async def run_test_steps(url: str, test_case, dom: dict = None,credentials: dict
         # Open the target URL (shared and non-shared sessions both follow this path)
         await _emit_progress(progress_callback, {"type": "run_status", "message": f"Opening {url}"})
         try:
-            await _timed_call(progress_callback, f"goto:{url}:domcontentloaded", page.goto(url, wait_until="domcontentloaded", timeout=DEFAULT_NAVIGATION_TIMEOUT_MS), timeout_ms=DEFAULT_NAVIGATION_TIMEOUT_MS, meta={"url": url})
+            await _timed_call(progress_callback, f"goto:{url}:commit", page.goto(url, wait_until="commit", timeout=DEFAULT_NAVIGATION_TIMEOUT_MS), timeout_ms=DEFAULT_NAVIGATION_TIMEOUT_MS, meta={"url": url})
+            # Wait for body to be visible — this is the real readiness signal
+            try:
+                await page.locator("body").first.wait_for(state="visible", timeout=15000)
+            except Exception:
+                pass  # Body might not be visible yet on very slow sites; continue anyway
         except Exception:
             await _emit_progress(progress_callback, {"type": "run_status", "message": "Retrying page load"})
-            await _timed_call(progress_callback, f"goto:{url}:load", page.goto(url, wait_until="load", timeout=60000), timeout_ms=60000, meta={"url": url})
+            await _timed_call(progress_callback, f"goto:{url}:domcontentloaded", page.goto(url, wait_until="domcontentloaded", timeout=60000), timeout_ms=60000, meta={"url": url})
         if shared_state.get("session_storage"):
             try:
                 await page.evaluate(

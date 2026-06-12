@@ -1500,9 +1500,9 @@ async def run_ai_plan_and_update(test_data: Dict[str, Any], url: str, user_id: s
         scenario_timeout_limit = _bounded_int_setting(
             execution_settings,
             "scenario_timeout_seconds",
-            45 if coverage_level in {"fast", "smoke", "quick"} else 90,
-            min_value=15,
-            max_value=180,
+            120 if coverage_level in {"fast", "smoke", "quick"} else 180,
+            min_value=30,
+            max_value=300,
         )
         if original_scenario_count > max_scenarios:
             scenario_cases = scenario_cases[:max_scenarios]
